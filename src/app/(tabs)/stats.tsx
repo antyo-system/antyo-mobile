@@ -1,6 +1,7 @@
 import { ScrollView, View, Text, Pressable, Image } from 'react-native';
+import { Feather } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Tabs } from 'expo-router';
+import { Tabs, router } from 'expo-router';
 import { useState, useEffect } from 'react';
 import { useSessionStore } from '@/store/useSessionStore';
 import { useSettingsStore } from '@/store/useSettingsStore';
@@ -24,6 +25,14 @@ export default function StatsScreen() {
   // All-Time Stats
   const totalSecondsAllTime = sessions.reduce((acc, curr) => acc + curr.durationSeconds, 0);
   const totalSessionsAllTime = sessions.length;
+
+  // Smart Analytics
+  const smartSessions = sessions.filter(s => s.isSmartMode && s.focusDurationSeconds !== undefined && s.distractedDurationSeconds !== undefined);
+  const totalSmartDuration = smartSessions.reduce((acc, curr) => acc + curr.durationSeconds, 0);
+  const totalFocusDuration = smartSessions.reduce((acc, curr) => acc + (curr.focusDurationSeconds || 0), 0);
+  const totalDistractedDuration = smartSessions.reduce((acc, curr) => acc + (curr.distractedDurationSeconds || 0), 0);
+  const focusPercentage = totalSmartDuration > 0 ? Math.round((totalFocusDuration / totalSmartDuration) * 100) : 0;
+  const distractedPercentage = totalSmartDuration > 0 ? Math.round((totalDistractedDuration / totalSmartDuration) * 100) : 0;
 
   // History List (Newest first)
   const sortedSessions = [...sessions].sort((a, b) => new Date(b.startTime).getTime() - new Date(a.startTime).getTime());
@@ -97,30 +106,6 @@ export default function StatsScreen() {
     return () => clearInterval(interval);
   }, [sleepStart, sleepEnd]);
 
-  const isEmpty = totalSessionsAllTime === 0;
-
-  if (isEmpty) {
-    return (
-      <SafeAreaView className="flex-1 bg-gray-50 dark:bg-gray-950" edges={['top']}>
-        {/* Hide duplicate expo router header */}
-        <Tabs.Screen options={{ headerShown: false }} />
-        
-        <View className="flex-row justify-between items-center mb-8 mt-4 px-6">
-          <Text className="text-3xl font-black tracking-tight text-gray-900 dark:text-white">
-            Statistics
-          </Text>
-          <Pressable onPress={() => setSettingsVisible(true)} className="p-3 bg-gray-200 dark:bg-gray-800 rounded-full">
-            <Text className="text-xl leading-none">⚙️</Text>
-          </Pressable>
-        </View>
-
-        {/* Empty State Watermark Removed */}
-
-        <SettingsModal visible={settingsVisible} onClose={() => setSettingsVisible(false)} />
-      </SafeAreaView>
-    );
-  }
-
   return (
     <SafeAreaView className="flex-1 bg-gray-50 dark:bg-gray-950" edges={['top']}>
       {/* Hide duplicate expo router header */}
@@ -131,53 +116,46 @@ export default function StatsScreen() {
           <Text className="text-3xl font-black tracking-tight text-gray-900 dark:text-white">
             Statistics
           </Text>
-          <Pressable onPress={() => setSettingsVisible(true)} className="p-3 bg-gray-200 dark:bg-gray-800 rounded-full">
-            <Text className="text-xl leading-none">⚙️</Text>
-          </Pressable>
+          <View className="flex-row items-center gap-3">
+            <Pressable onPress={() => setSettingsVisible(true)} className="w-10 h-10 items-center justify-center bg-gray-200 dark:bg-gray-800 rounded-full">
+              <Feather name="settings" size={20} color="#6B7280" />
+            </Pressable>
+            <Pressable onPress={() => router.push('/profile')} className="w-10 h-10 rounded-full bg-emerald-500/10 items-center justify-center border-2 border-emerald-500/30 overflow-hidden">
+              <Feather name="user" size={18} color="#10B981" />
+            </Pressable>
+          </View>
         </View>
 
         {/* TIME LEFT WIDGET */}
         <View className={`rounded-3xl p-6 shadow-sm mb-6 relative overflow-hidden border ${
-          isStillAwake 
+          timeLeft.sleeping 
             ? 'bg-red-50 dark:bg-red-950/40 border-red-200 dark:border-red-900' 
             : 'bg-orange-50 dark:bg-orange-950/40 border-orange-200 dark:border-orange-900'
         }`}>
           <Text className={`font-black tracking-widest uppercase text-[10px] mb-2 ${
-            isStillAwake ? 'text-red-600 dark:text-red-500' : 'text-orange-600 dark:text-orange-500'
+            timeLeft.sleeping ? 'text-red-600 dark:text-red-500' : 'text-orange-600 dark:text-orange-500'
           }`}>
-            {isStillAwake ? 'Sleep Debt (Borrowed from tomorrow)' : 'Time Left Today'}
+            {timeLeft.sleeping ? 'Sleep Debt (Borrowed from tomorrow) 🌙' : 'Time Left Today'}
           </Text>
           
-          {timeLeft.sleeping && !isStillAwake ? (
-            <View>
-              <Text className="text-3xl font-black text-orange-400 mb-4">Sleep Time 🌙</Text>
-              <Pressable 
-                onPress={() => setIsStillAwake(true)}
-                className="bg-orange-100 dark:bg-orange-900/50 py-2.5 px-4 rounded-xl self-start border border-orange-200 dark:border-orange-800"
-              >
-                <Text className="text-orange-700 dark:text-orange-300 font-bold text-xs uppercase tracking-wider">I'm Still Awake</Text>
-              </Pressable>
-            </View>
-          ) : (
-            <View className="flex-row items-baseline gap-1">
-              {isStillAwake && <Text className="text-4xl font-black tabular-nums text-red-600 dark:text-red-500 mr-2">-</Text>}
-              
-              <Text className={`text-5xl font-black tabular-nums ${isStillAwake ? 'text-red-600 dark:text-red-500' : 'text-orange-600 dark:text-orange-500'}`}>
-                {timeLeft.hours.toString().padStart(2, '0')}
-              </Text>
-              <Text className={`text-xl font-bold mr-2 ${isStillAwake ? 'text-red-400' : 'text-orange-400'}`}>h</Text>
-              
-              <Text className={`text-5xl font-black tabular-nums ${isStillAwake ? 'text-red-600 dark:text-red-500' : 'text-orange-600 dark:text-orange-500'}`}>
-                {timeLeft.minutes.toString().padStart(2, '0')}
-              </Text>
-              <Text className={`text-xl font-bold mr-2 ${isStillAwake ? 'text-red-400' : 'text-orange-400'}`}>m</Text>
-              
-              <Text className={`text-5xl font-black tabular-nums ${isStillAwake ? 'text-red-600/80 dark:text-red-500/80' : 'text-orange-600/80 dark:text-orange-500/80'}`}>
-                {timeLeft.seconds.toString().padStart(2, '0')}
-              </Text>
-              <Text className={`text-xl font-bold ${isStillAwake ? 'text-red-400' : 'text-orange-400'}`}>s</Text>
-            </View>
-          )}
+          <View className="flex-row items-baseline gap-1">
+            {timeLeft.sleeping && <Text className="text-4xl font-black tabular-nums text-red-600 dark:text-red-500 mr-2">-</Text>}
+            
+            <Text className={`text-5xl font-black tabular-nums ${timeLeft.sleeping ? 'text-red-600 dark:text-red-500' : 'text-orange-600 dark:text-orange-500'}`}>
+              {timeLeft.hours.toString().padStart(2, '0')}
+            </Text>
+            <Text className={`text-xl font-bold mr-2 ${timeLeft.sleeping ? 'text-red-400' : 'text-orange-400'}`}>h</Text>
+            
+            <Text className={`text-5xl font-black tabular-nums ${timeLeft.sleeping ? 'text-red-600 dark:text-red-500' : 'text-orange-600 dark:text-orange-500'}`}>
+              {timeLeft.minutes.toString().padStart(2, '0')}
+            </Text>
+            <Text className={`text-xl font-bold mr-2 ${timeLeft.sleeping ? 'text-red-400' : 'text-orange-400'}`}>m</Text>
+            
+            <Text className={`text-5xl font-black tabular-nums ${timeLeft.sleeping ? 'text-red-600/80 dark:text-red-500/80' : 'text-orange-600/80 dark:text-orange-500/80'}`}>
+              {timeLeft.seconds.toString().padStart(2, '0')}
+            </Text>
+            <Text className={`text-xl font-bold ${timeLeft.sleeping ? 'text-red-400' : 'text-orange-400'}`}>s</Text>
+          </View>
         </View>
 
         <View className="flex-row gap-4 mb-6">
@@ -202,7 +180,7 @@ export default function StatsScreen() {
           </View>
         </View>
 
-        <View className="bg-gray-900 dark:bg-black rounded-3xl p-6 shadow-lg border border-gray-800 mb-8">
+        <View className="bg-gray-900 dark:bg-black rounded-3xl p-6 shadow-lg border border-gray-800 mb-6">
           <Text className="text-gray-400 font-bold tracking-wider uppercase text-xs mb-2">
             All-Time Focus
           </Text>
@@ -213,6 +191,41 @@ export default function StatsScreen() {
             {totalSessionsAllTime} total sessions completed
           </Text>
         </View>
+
+        {/* Global Smart Mode Analytics */}
+        {totalSmartDuration > 0 && (
+          <View className="bg-white dark:bg-gray-900 rounded-3xl p-6 shadow-sm border border-gray-100 dark:border-gray-800 mb-8">
+            <View className="flex-row items-center gap-2 mb-4">
+              <Text className="text-xl">🤖</Text>
+              <Text className="text-gray-900 dark:text-white font-black text-xl">Smart Analytics</Text>
+            </View>
+            
+            <View className="flex-row gap-4 mb-4">
+              <View className="flex-1">
+                <Text className="text-green-600 dark:text-green-500 text-[10px] font-black tracking-widest uppercase mb-1">Focused</Text>
+                <Text className="text-green-600 dark:text-green-400 font-black text-2xl">
+                  {formatLongTime(totalFocusDuration)}
+                </Text>
+              </View>
+              <View className="flex-1 border-l border-gray-100 dark:border-gray-800 pl-4">
+                <Text className="text-red-600 dark:text-red-500 text-[10px] font-black tracking-widest uppercase mb-1">Distracted</Text>
+                <Text className="text-red-600 dark:text-red-400 font-black text-2xl">
+                  {formatLongTime(totalDistractedDuration)}
+                </Text>
+              </View>
+            </View>
+
+            <View className="w-full h-5 bg-gray-100 dark:bg-gray-800 rounded-full flex-row overflow-hidden mb-2">
+              <View style={{ width: `${focusPercentage}%` }} className="h-full bg-green-500" />
+              <View style={{ width: `${distractedPercentage}%` }} className="h-full bg-red-500" />
+            </View>
+            
+            <View className="flex-row justify-between">
+              <Text className="text-gray-500 dark:text-gray-400 font-bold text-xs">{focusPercentage}% Global Focus Score</Text>
+              <Text className="text-gray-500 dark:text-gray-400 font-bold text-xs">{distractedPercentage}% Distracted</Text>
+            </View>
+          </View>
+        )}
 
         <Text className="text-xl font-bold tracking-tight text-gray-900 dark:text-white mb-4">
           Recent Sessions

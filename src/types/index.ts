@@ -5,6 +5,11 @@ export interface Session {
   startTime: string; // ISO string
   endTime: string; // ISO string
   description?: string;
+  
+  // Smart Mode Analytics
+  isSmartMode?: boolean;
+  focusDurationSeconds?: number;
+  distractedDurationSeconds?: number;
 }
 
 export interface Plan {

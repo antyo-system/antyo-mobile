@@ -28,7 +28,7 @@ export function InteractivePlanBlock({ plan, pixelsPerMinute, onUpdatePlan, onEd
       onPanResponderMove: (evt, gestureState) => {
         const minuteDelta = Math.round(gestureState.dy / pixelsPerMinute);
         let newStart = plan.startMinutes + minuteDelta;
-        newStart = Math.round(newStart / 15) * 15; // snap to 15m intervals
+        // Track perfectly with finger, no snap during move
         if (newStart < 0) newStart = 0;
         if (newStart > 24 * 60 - tempDuration) newStart = 24 * 60 - tempDuration;
         setTempStart(newStart);
@@ -51,7 +51,7 @@ export function InteractivePlanBlock({ plan, pixelsPerMinute, onUpdatePlan, onEd
       onPanResponderMove: (evt, gestureState) => {
         const minuteDelta = Math.round(gestureState.dy / pixelsPerMinute);
         let newDuration = plan.durationMinutes + minuteDelta;
-        newDuration = Math.round(newDuration / 15) * 15;
+        // Track perfectly with finger, no snap during move
         if (newDuration < 15) newDuration = 15; // Minimum 15 minutes
         setTempDuration(newDuration);
       },
@@ -71,7 +71,7 @@ export function InteractivePlanBlock({ plan, pixelsPerMinute, onUpdatePlan, onEd
 
   return (
     <View 
-      className="absolute w-[42%] bg-yellow-50 dark:bg-yellow-900/40 border-l-4 border-yellow-400 rounded-md shadow-sm left-16 z-10 flex-col"
+      className="absolute right-4 bg-yellow-50 dark:bg-yellow-900/40 border-l-4 border-yellow-400 rounded-md shadow-sm left-16 z-10 flex-col"
       style={{ top, height: Math.max(height, 30) }}
     >
       <View {...moveResponder.panHandlers} className="flex-1">

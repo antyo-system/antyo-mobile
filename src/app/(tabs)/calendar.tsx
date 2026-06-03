@@ -36,6 +36,7 @@ export default function CalendarScreen() {
   const updatePlan = usePlanStore(s => s.updatePlan);
   const deletePlan = usePlanStore(s => s.deletePlan);
 
+  const [activeTab, setActiveTab] = useState<'plan' | 'real'>('plan');
   const [isScrollEnabled, setIsScrollEnabled] = useState(true);
   const [editorVisible, setEditorVisible] = useState(false);
   const [editingPlan, setEditingPlan] = useState<Plan | null>(null);
@@ -141,18 +142,29 @@ export default function CalendarScreen() {
       
       <DateSelector selectedDate={selectedDate} onSelectDate={setSelectedDate} />
       
-      {/* PLAN vs REAL Labels */}
-      <View className="flex-row border-b border-gray-100 dark:border-gray-900 bg-white dark:bg-gray-950 pb-2 shadow-sm z-10">
-        <View className="flex-1 items-center justify-center border-r border-gray-100 dark:border-gray-800">
-          <Text className="text-[10px] font-black tracking-widest text-yellow-600 dark:text-yellow-500 uppercase">
+      {/* PLAN vs REAL Minimalist Toggle */}
+      <View className="flex-row bg-white dark:bg-gray-950 py-2.5 z-10 border-b border-gray-100 dark:border-gray-900 justify-center gap-12 shadow-sm">
+        <Pressable 
+          onPress={() => setActiveTab('plan')}
+          className="items-center justify-center py-1 px-4"
+        >
+          <Text className={`text-[10px] font-black tracking-[0.2em] uppercase ${
+            activeTab === 'plan' ? 'text-yellow-600 dark:text-yellow-500' : 'text-gray-400 dark:text-gray-600'
+          }`}>
             Plan
           </Text>
-        </View>
-        <View className="flex-1 items-center justify-center">
-          <Text className="text-[10px] font-black tracking-widest text-blue-600 dark:text-blue-500 uppercase">
+        </Pressable>
+
+        <Pressable 
+          onPress={() => setActiveTab('real')}
+          className="items-center justify-center py-1 px-4"
+        >
+          <Text className={`text-[10px] font-black tracking-[0.2em] uppercase ${
+            activeTab === 'real' ? 'text-blue-600 dark:text-blue-500' : 'text-gray-400 dark:text-gray-600'
+          }`}>
             Real
           </Text>
-        </View>
+        </Pressable>
       </View>
 
       <View className="flex-1" {...panResponder.panHandlers}>
@@ -181,30 +193,40 @@ export default function CalendarScreen() {
 
         {/* Render Planned Blocks */}
         {dailyPlans.map(plan => (
-          <InteractivePlanBlock
-            key={plan.id}
-            plan={plan}
-            pixelsPerMinute={PIXELS_PER_MINUTE}
-            onUpdatePlan={updatePlan}
-            onEditPress={handleEditPress}
-            setScrollEnabled={setIsScrollEnabled}
-          />
+          <View 
+            key={plan.id} 
+            style={{ opacity: activeTab === 'plan' ? 1 : 0.35, zIndex: activeTab === 'plan' ? 30 : 10 }}
+            pointerEvents={activeTab === 'plan' ? 'box-none' : 'none'}
+          >
+            <InteractivePlanBlock
+              plan={plan}
+              pixelsPerMinute={PIXELS_PER_MINUTE}
+              onUpdatePlan={updatePlan}
+              onEditPress={handleEditPress}
+              setScrollEnabled={setIsScrollEnabled}
+            />
+          </View>
         ))}
 
         {/* Render Real Sessions */}
         {dailySessions.map(session => (
-          <TimelineBlock
-            key={session.id}
-            title={session.title}
-            startMinutes={getMinutesFromMidnight(session.startTime)}
-            durationMinutes={session.durationSeconds / 60}
-            pixelsPerMinute={PIXELS_PER_MINUTE}
-            type="real"
-            onPress={() => {
-              setEditingRealSession(session);
-              setRealEditorVisible(true);
-            }}
-          />
+          <View 
+            key={session.id} 
+            style={{ opacity: activeTab === 'real' ? 1 : 0.35, zIndex: activeTab === 'real' ? 30 : 10 }}
+            pointerEvents={activeTab === 'real' ? 'box-none' : 'none'}
+          >
+            <TimelineBlock
+              title={session.title}
+              startMinutes={getMinutesFromMidnight(session.startTime)}
+              durationMinutes={session.durationSeconds / 60}
+              pixelsPerMinute={PIXELS_PER_MINUTE}
+              type="real"
+              onPress={() => {
+                setEditingRealSession(session);
+                setRealEditorVisible(true);
+              }}
+            />
+          </View>
         ))}
         
         {/* Render the current time red line indicator if viewing today */}

@@ -1,4 +1,5 @@
-import { View, Text, Switch, Pressable } from 'react-native';
+import { View, Text, Switch, Pressable, Platform, LayoutAnimation } from 'react-native';
+import { Feather } from '@expo/vector-icons';
 import { useTimerStore } from '@/store/useTimerStore';
 import { useShallow } from 'zustand/react/shallow';
 import { useCameraPermission } from 'react-native-vision-camera';
@@ -66,7 +67,7 @@ export function SmartModeToggle({ onViewPress }: Props) {
             onPress={onViewPress}
             className="flex-row items-center gap-1.5 active:opacity-60 bg-gray-100 dark:bg-gray-800 px-3 py-1.5 rounded-full"
           >
-            <Text className="text-sm">📹</Text>
+            <Feather name="video" size={16} color="#0f172a" />
             <Text className="text-gray-700 dark:text-gray-300 font-bold text-xs">View</Text>
           </Pressable>
         )}

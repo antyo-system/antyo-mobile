@@ -1,5 +1,6 @@
 import { View, Pressable, Text } from 'react-native';
 import { Tabs } from 'expo-router';
+import { Feather } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { useTimerStore } from '@/store/useTimerStore';
 
@@ -29,9 +30,9 @@ function CustomTabBar({ state, descriptors, navigation }: any) {
         };
 
         // Icon Mapping based on route name
-        let icon = '⏱️';
-        if (route.name === 'calendar') icon = '📅';
-        if (route.name === 'stats') icon = '📊';
+        let IconComponent = <Feather name="clock" size={24} color={isFocused ? "#2563eb" : "#64748b"} />;
+        if (route.name === 'calendar') IconComponent = <Feather name="calendar" size={24} color={isFocused ? "#2563eb" : "#64748b"} />;
+        if (route.name === 'stats') IconComponent = <Feather name="bar-chart-2" size={24} color={isFocused ? "#2563eb" : "#64748b"} />;
 
         return (
           <Pressable
@@ -41,7 +42,7 @@ function CustomTabBar({ state, descriptors, navigation }: any) {
               isFocused ? 'bg-blue-100 dark:bg-blue-900/40' : 'bg-transparent'
             }`}
           >
-            <Text className="text-lg">{icon}</Text>
+            {IconComponent}
             {isFocused && (
               <Text className="text-blue-600 dark:text-blue-400 font-bold text-xs tracking-wide">
                 {options.title}

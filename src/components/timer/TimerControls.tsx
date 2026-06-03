@@ -24,14 +24,18 @@ function AnimatedButton({ onPress, className, children }: { onPress: () => void,
   );
 }
 
-export function TimerControls() {
-  const { status, startTimer, pauseTimer, stopTimer, isSmartMode } = useTimerStore(
+interface TimerControlsProps {
+  onSaveAndStop: () => void;
+}
+
+export function TimerControls({ onSaveAndStop }: TimerControlsProps) {
+  const { status, startTimer, pauseTimer, stopTimer, mode } = useTimerStore(
     useShallow((s) => ({
       status: s.status,
       startTimer: s.startTimer,
       pauseTimer: s.pauseTimer,
       stopTimer: s.stopTimer,
-      isSmartMode: s.isSmartMode,
+      mode: s.mode,
     }))
   );
 
@@ -58,6 +62,11 @@ export function TimerControls() {
     stopTimer(); // Abandon without saving
   };
 
+  const handleFinish = () => {
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    onSaveAndStop();
+  };
+
   return (
     <View className="items-center justify-center w-full px-8 mt-4 h-24">
       {status === 'idle' && (
@@ -69,7 +78,7 @@ export function TimerControls() {
         </AnimatedButton>
       )}
 
-      {status === 'running' && !isSmartMode && (
+      {status === 'running' && (
         <AnimatedButton 
           onPress={handlePause} 
           className="w-20 h-20 bg-blue-100 dark:bg-blue-900/40 border border-blue-200 dark:border-blue-800 rounded-full items-center justify-center"
@@ -78,18 +87,15 @@ export function TimerControls() {
         </AnimatedButton>
       )}
 
-      {status === 'running' && isSmartMode && (
-        <AnimatedButton 
-          onPress={handleGiveUpPress} 
-          className="flex-row items-center justify-center gap-2 px-8 py-4 bg-transparent border border-red-200 dark:border-red-800 rounded-full"
-        >
-          <Text className="text-red-500 font-bold text-lg mb-0.5">✕</Text>
-          <Text className="text-red-600 dark:text-red-500 font-bold text-lg">Give Up</Text>
-        </AnimatedButton>
-      )}
-
       {status === 'paused' && (
-        <View className="flex-row items-center gap-6">
+        <View className="flex-row items-center gap-4">
+          <AnimatedButton 
+            onPress={handleGiveUpPress} 
+            className="w-16 h-16 bg-red-100 dark:bg-red-900/40 border border-red-200 dark:border-red-800 rounded-full items-center justify-center"
+          >
+            <Text className="text-red-600 dark:text-red-400 text-xl font-bold">✕</Text>
+          </AnimatedButton>
+
           <AnimatedButton 
             onPress={handleStart} 
             className="w-20 h-20 bg-blue-600 rounded-full items-center justify-center shadow-lg"
@@ -98,10 +104,10 @@ export function TimerControls() {
           </AnimatedButton>
           
           <AnimatedButton 
-            onPress={handleGiveUpPress} 
-            className="w-20 h-20 bg-red-100 dark:bg-red-900/40 border border-red-200 dark:border-red-800 rounded-full items-center justify-center"
+            onPress={handleFinish} 
+            className="w-16 h-16 bg-green-100 dark:bg-green-900/40 border border-green-200 dark:border-green-800 rounded-full items-center justify-center"
           >
-            <Text className="text-red-600 dark:text-red-400 text-2xl font-bold">⏹</Text>
+            <Text className="text-green-600 dark:text-green-400 text-xl font-bold">✓</Text>
           </AnimatedButton>
         </View>
       )}

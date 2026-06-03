@@ -19,6 +19,7 @@ The app tracks planned sessions versus actual focus time, displaying them side-b
 - **State Management:** Zustand
 - **Local Storage:** `react-native-mmkv` (Strictly preferred over AsyncStorage for timer performance)
 - **Authentication:** Clerk
+- **Analytics:** PostHog
 - **Dates/Time:** date-fns
 
 *Rule: Do not introduce new major libraries unless there is a strong reason. Ask before installing anything new.*

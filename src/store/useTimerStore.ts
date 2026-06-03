@@ -7,49 +7,35 @@ interface TimerState {
   status: TimerStatus;
   mode: TimerMode;
   duration: number; // Configured total duration in seconds
+  breakDuration: number; // Configured break duration in seconds
   timeLeft: number; // Remaining time in seconds
   timeElapsed: number; // Elapsed time in seconds for stopwatch
   sessionStartTime: string | null; // ISO timestamp
   currentTitle: string;
 
-  // Smart Mode States
-  isSmartMode: boolean;
-  cameraPermissionStatus: 'granted' | 'denied' | 'undetermined';
-  distractedTime: number; // Elapsed distracted time in seconds
-  isDistracted: boolean; // Current detection state
 
   // Actions
   setTitle: (title: string) => void;
   setMode: (mode: TimerMode) => void;
   setDuration: (seconds: number) => void;
+  setBreakDuration: (seconds: number) => void;
   startTimer: () => void;
   pauseTimer: () => void;
   stopTimer: () => void;
   tick: () => void;
-
-  setSmartMode: (enabled: boolean) => void;
-  setCameraPermission: (status: 'granted' | 'denied' | 'undetermined') => void;
-  setDistracted: (distracted: boolean) => void;
 }
 
 export const useTimerStore = create<TimerState>((set, get) => ({
   status: 'idle',
   mode: 'timer',
   duration: 25 * 60, // Default 25 minutes
+  breakDuration: 5 * 60, // Default 5 minutes
   timeLeft: 25 * 60,
   timeElapsed: 0,
   sessionStartTime: null,
   currentTitle: '',
-  isSmartMode: false,
-  cameraPermissionStatus: 'undetermined',
-  distractedTime: 0,
-  isDistracted: false,
 
   setTitle: (title) => set({ currentTitle: title }),
-
-  setSmartMode: (enabled) => set({ isSmartMode: enabled }),
-  setCameraPermission: (status) => set({ cameraPermissionStatus: status }),
-  setDistracted: (distracted) => set({ isDistracted: distracted }),
 
   setMode: (mode) => {
     const { status, duration } = get();
@@ -64,6 +50,10 @@ export const useTimerStore = create<TimerState>((set, get) => ({
     if (status === 'idle') {
       set({ duration: seconds, timeLeft: seconds });
     }
+  },
+
+  setBreakDuration: (seconds) => {
+    set({ breakDuration: seconds });
   },
 
   startTimer: () => {
@@ -91,29 +81,18 @@ export const useTimerStore = create<TimerState>((set, get) => ({
       timeLeft: duration,
       timeElapsed: 0,
       sessionStartTime: null,
-      distractedTime: 0,
-      isDistracted: false,
     });
   },
 
   tick: () => {
-    const { status, mode, timeLeft, timeElapsed, isSmartMode, isDistracted, distractedTime } = get();
+    const { status, mode, timeLeft, timeElapsed } = get();
     if (status === 'running') {
-      if (isSmartMode && isDistracted) {
-        // Only increment distracted time
-        set({ distractedTime: distractedTime + 1 });
-      } else {
-        // Normal timer progression
-        if (mode === 'timer') {
-          if (timeLeft > 0) {
-            set({ timeLeft: timeLeft - 1 });
-          } else {
-            // Auto-stop when time hits 0
-            set({ status: 'idle', sessionStartTime: null, timeLeft: get().duration, distractedTime: 0, isDistracted: false });
-          }
-        } else if (mode === 'stopwatch') {
-          set({ timeElapsed: timeElapsed + 1 });
+      if (mode === 'timer') {
+        if (timeLeft > 0) {
+          set({ timeLeft: timeLeft - 1 });
         }
+      } else if (mode === 'stopwatch') {
+        set({ timeElapsed: timeElapsed + 1 });
       }
     }
   },

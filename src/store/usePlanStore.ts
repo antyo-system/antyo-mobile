@@ -12,6 +12,8 @@ export interface Plan {
   recurrence: Recurrence;
   baseDate: string; // ISO string of the date it was created for
   recurrenceDays?: number[]; // 0 = Sunday, 1 = Monday, etc.
+  isAllDay?: boolean;
+  notes?: string;
 }
 
 interface PlanState {

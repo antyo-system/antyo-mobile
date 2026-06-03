@@ -19,10 +19,10 @@ export function TimelineBlock({ title, startMinutes, durationMinutes, pixelsPerM
   return (
     <Container 
       onPress={onPress}
-      className={`absolute w-[40%] rounded-md px-2 py-1.5 border-l-4 shadow-sm z-10
+      className={`absolute left-16 right-4 rounded-md px-2 py-1.5 border-l-4 shadow-sm z-10
         ${isReal 
-          ? 'bg-blue-100 dark:bg-blue-900/50 border-blue-600 right-4' 
-          : 'bg-yellow-50 dark:bg-yellow-900/40 border-yellow-400 left-16'
+          ? 'bg-blue-100 dark:bg-blue-900/50 border-blue-600' 
+          : 'bg-yellow-50 dark:bg-yellow-900/40 border-yellow-400'
         }
       `}
       style={{ top, height: Math.max(height, 24) }}

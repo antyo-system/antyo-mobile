@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
-import { Modal, View, Text, TextInput, Pressable, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
+import { Modal, View, Text, TextInput, Pressable, ScrollView, KeyboardAvoidingView, Platform, Switch } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Plan, Recurrence } from '@/store/usePlanStore';
+import { useSettingsStore } from '@/store/useSettingsStore';
 
 interface Props {
   visible: boolean;
@@ -28,40 +29,60 @@ const parseTimeInput = (str: string, defaultMins: number) => {
 };
 
 export function PlanEditorModal({ visible, plan, onClose, onSave, onDelete }: Props) {
+  const { sleepStart, sleepEnd } = useSettingsStore();
   const [title, setTitle] = useState('');
   const [recurrence, setRecurrence] = useState<Recurrence>('none');
   const [recurrenceDays, setRecurrenceDays] = useState<number[]>([]);
+  const [isAllDay, setIsAllDay] = useState(false);
+  const [notes, setNotes] = useState('');
   const [startTimeStr, setStartTimeStr] = useState('');
   const [endTimeStr, setEndTimeStr] = useState('');
 
   useEffect(() => {
-    if (plan) {
-      setTitle(plan.title);
-      setRecurrence(plan.recurrence);
-      setRecurrenceDays(plan.recurrenceDays || []);
+    setTitle(plan?.title || '');
+    setRecurrence(plan?.recurrence || 'none');
+    setRecurrenceDays(plan?.recurrenceDays || []);
+    setIsAllDay(plan?.isAllDay || false);
+    setNotes(plan?.notes || '');
+    
+    if (plan && !isNaN(plan.startMinutes) && !plan?.isAllDay) {
       setStartTimeStr(formatTimeInput(plan.startMinutes));
       setEndTimeStr(formatTimeInput(plan.startMinutes + plan.durationMinutes));
     } else {
-      setTitle('');
-      setRecurrence('none');
-      setRecurrenceDays([]);
-      setStartTimeStr('09:00');
-      setEndTimeStr('09:30');
+      setStartTimeStr('');
+      setEndTimeStr('');
     }
   }, [plan, visible]);
 
   const handleSave = () => {
     if (!title.trim()) return;
-    const startMinutes = parseTimeInput(startTimeStr, plan ? plan.startMinutes : 9 * 60);
-    let endMinutes = parseTimeInput(endTimeStr, startMinutes + 30);
-    if (endMinutes <= startMinutes) endMinutes = startMinutes + 15; // enforce min 15m duration
+    
+    let startMinutes = 0;
+    let durationMinutes = 1440;
+
+    if (!isAllDay) {
+      startMinutes = parseTimeInput(startTimeStr, plan ? plan.startMinutes : 9 * 60);
+      let endMinutes = parseTimeInput(endTimeStr, startMinutes + 30);
+      if (endMinutes <= startMinutes) endMinutes = startMinutes + 15; // enforce min 15m duration
+      durationMinutes = endMinutes - startMinutes;
+    } else {
+      const wakeUpMins = parseTimeInput(sleepEnd, 6 * 60);
+      const goSleepMins = parseTimeInput(sleepStart, 23 * 60);
+      
+      startMinutes = wakeUpMins;
+      durationMinutes = goSleepMins > wakeUpMins 
+        ? goSleepMins - wakeUpMins 
+        : (24 * 60 - wakeUpMins) + goSleepMins;
+    }
 
     onSave({ 
       title, 
       recurrence,
       recurrenceDays: recurrence === 'specific_days' ? recurrenceDays : undefined,
       startMinutes,
-      durationMinutes: endMinutes - startMinutes
+      durationMinutes,
+      isAllDay,
+      notes
     });
   };
 
@@ -94,30 +115,37 @@ export function PlanEditorModal({ visible, plan, onClose, onSave, onDelete }: Pr
               autoFocus={!plan?.title}
             />
 
-            <View className="flex-row gap-4 mb-6">
-              <View className="flex-1">
-                <Text className="text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Start Time (HH:MM)</Text>
-                <TextInput
-                  value={startTimeStr}
-                  onChangeText={setStartTimeStr}
-                  keyboardType="numeric"
-                  placeholder="09:00"
-                  placeholderTextColor="#9ca3af"
-                  className="bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-4 rounded-2xl text-gray-900 dark:text-white font-bold text-lg text-center shadow-sm"
-                />
-              </View>
-              <View className="flex-1">
-                <Text className="text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">End Time (HH:MM)</Text>
-                <TextInput
-                  value={endTimeStr}
-                  onChangeText={setEndTimeStr}
-                  keyboardType="numeric"
-                  placeholder="09:30"
-                  placeholderTextColor="#9ca3af"
-                  className="bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-4 rounded-2xl text-gray-900 dark:text-white font-bold text-lg text-center shadow-sm"
-                />
-              </View>
+            <View className="flex-row items-center justify-between mb-4 bg-gray-50 dark:bg-gray-900 p-4 rounded-2xl border border-gray-200 dark:border-gray-800">
+              <Text className="text-sm font-bold text-gray-700 dark:text-gray-300">All Day Plan</Text>
+              <Switch value={isAllDay} onValueChange={setIsAllDay} />
             </View>
+
+            {!isAllDay && (
+              <View className="flex-row gap-4 mb-6">
+                <View className="flex-1">
+                  <Text className="text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Start Time</Text>
+                  <TextInput
+                    value={startTimeStr}
+                    onChangeText={setStartTimeStr}
+                    keyboardType="numeric"
+                    placeholder="09:00"
+                    placeholderTextColor="#9ca3af"
+                    className="bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-4 rounded-2xl text-gray-900 dark:text-white font-bold text-lg text-center shadow-sm"
+                  />
+                </View>
+                <View className="flex-1">
+                  <Text className="text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">End Time</Text>
+                  <TextInput
+                    value={endTimeStr}
+                    onChangeText={setEndTimeStr}
+                    keyboardType="numeric"
+                    placeholder="09:30"
+                    placeholderTextColor="#9ca3af"
+                    className="bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-4 rounded-2xl text-gray-900 dark:text-white font-bold text-lg text-center shadow-sm"
+                  />
+                </View>
+              </View>
+            )}
 
             <Text className="text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Recurrence</Text>
             <View className="flex-row flex-wrap gap-2 mb-4">
@@ -169,15 +197,18 @@ export function PlanEditorModal({ visible, plan, onClose, onSave, onDelete }: Pr
               </View>
             )}
 
-            {/* Hint Box */}
-            <View className="bg-yellow-50 dark:bg-yellow-900/30 p-5 rounded-2xl mb-8 border border-yellow-100 dark:border-yellow-800/50">
-              <Text className="text-yellow-800 dark:text-yellow-200 text-sm font-black tracking-wide mb-1 uppercase">
-                💡 Pro Tip
-              </Text>
-              <Text className="text-yellow-700 dark:text-yellow-300 text-sm leading-relaxed">
-                You can dynamically adjust the start time and duration by grabbing the handles and dragging the block directly on the calendar timeline!
-              </Text>
-            </View>
+            <Text className="text-sm font-bold text-gray-700 dark:text-gray-300 mb-2 mt-4">Notes (Optional)</Text>
+            <TextInput
+              value={notes}
+              onChangeText={setNotes}
+              placeholder="Add details or context..."
+              placeholderTextColor="#9ca3af"
+              multiline
+              textAlignVertical="top"
+              className="bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-4 rounded-2xl text-gray-900 dark:text-white font-medium text-base mb-8 shadow-sm min-h-[100px]"
+            />
+
+
           </ScrollView>
 
           <View className="flex-row gap-4 mt-auto pt-4 border-t border-gray-100 dark:border-gray-900">

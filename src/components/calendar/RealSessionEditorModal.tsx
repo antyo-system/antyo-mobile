@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { Modal, View, Text, TextInput, Pressable, KeyboardAvoidingView, Platform, ScrollView, SafeAreaView } from 'react-native';
+import { Modal, View, Text, TextInput, Pressable, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Session } from '@/types';
 import { format } from 'date-fns';
 import { formatLongTime } from '@/utils/time';
@@ -53,6 +54,53 @@ export function RealSessionEditorModal({ visible, session, onClose, onSave, onDe
                 {format(new Date(session.startTime), 'h:mm a')} • Duration: {formatLongTime(session.durationSeconds)}
               </Text>
             </View>
+
+            {/* Smart Mode Analytics Infographic */}
+            {session.isSmartMode && session.focusDurationSeconds !== undefined && session.distractedDurationSeconds !== undefined && (
+              <View className="mb-8">
+                <View className="flex-row items-center gap-2 mb-4">
+                  <Text className="text-lg">🤖</Text>
+                  <Text className="text-gray-900 dark:text-white font-black text-lg">Smart Analytics</Text>
+                </View>
+                
+                {/* Stat Cards */}
+                <View className="flex-row gap-3 mb-4">
+                  <View className="flex-1 bg-green-50 dark:bg-green-900/20 p-4 rounded-2xl border border-green-100 dark:border-green-900/30">
+                    <Text className="text-green-800 dark:text-green-300 text-[10px] font-black tracking-widest uppercase mb-1">Focused</Text>
+                    <Text className="text-green-600 dark:text-green-400 font-bold text-lg">
+                      {formatLongTime(session.focusDurationSeconds)}
+                    </Text>
+                  </View>
+                  <View className="flex-1 bg-red-50 dark:bg-red-900/20 p-4 rounded-2xl border border-red-100 dark:border-red-900/30">
+                    <Text className="text-red-800 dark:text-red-300 text-[10px] font-black tracking-widest uppercase mb-1">Distracted</Text>
+                    <Text className="text-red-600 dark:text-red-400 font-bold text-lg">
+                      {formatLongTime(session.distractedDurationSeconds)}
+                    </Text>
+                  </View>
+                </View>
+
+                {/* Progress Bar Chart */}
+                <View className="w-full h-4 bg-gray-100 dark:bg-gray-800 rounded-full flex-row overflow-hidden mb-2">
+                  <View 
+                    style={{ width: `${(session.focusDurationSeconds / Math.max(1, session.durationSeconds)) * 100}%` }} 
+                    className="h-full bg-green-500" 
+                  />
+                  <View 
+                    style={{ width: `${(session.distractedDurationSeconds / Math.max(1, session.durationSeconds)) * 100}%` }} 
+                    className="h-full bg-red-500" 
+                  />
+                </View>
+                
+                <View className="flex-row justify-between">
+                  <Text className="text-gray-500 text-xs font-bold">
+                    {Math.round((session.focusDurationSeconds / Math.max(1, session.durationSeconds)) * 100)}% Focus
+                  </Text>
+                  <Text className="text-gray-500 text-xs font-bold">
+                    {Math.round((session.distractedDurationSeconds / Math.max(1, session.durationSeconds)) * 100)}% Distracted
+                  </Text>
+                </View>
+              </View>
+            )}
 
             <Text className="text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Task / Focus</Text>
             <TextInput

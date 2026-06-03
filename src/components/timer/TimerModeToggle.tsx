@@ -1,9 +1,9 @@
-import { View, Text, Pressable } from 'react-native';
+import { View, Text, Pressable, Switch } from 'react-native';
 import { useShallow } from 'zustand/react/shallow';
 import { useTimerStore } from '@/store/useTimerStore';
 import * as Haptics from 'expo-haptics';
 
-export function TimerModeToggle({ onSettingsPress }: { onSettingsPress: () => void }) {
+export function TimerModeToggle() {
   const { mode, setMode, status } = useTimerStore(
     useShallow((s) => ({
       mode: s.mode,
@@ -29,14 +29,7 @@ export function TimerModeToggle({ onSettingsPress }: { onSettingsPress: () => vo
           Timer
         </Text>
       </Pressable>
-      
-      <Pressable 
-        onPress={onSettingsPress}
-        className="items-center justify-center active:opacity-60"
-      >
-        <Text className="text-xl">⚙️</Text>
-      </Pressable>
-
+      <View className="w-8" /> {/* Spacer instead of Switch */}
       <Pressable
         onPress={() => handlePress('stopwatch')}
         className="active:opacity-60 py-2"

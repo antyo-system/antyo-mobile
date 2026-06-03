@@ -1,5 +1,14 @@
 # ANTYO Focus - Project Checklist
 
+## Project Documentation & Usage
+This checklist tracks the progress of **ANTYO Focus**. 
+- **Status Legend:**
+  - ✅ **Completed:** Task is finished and verified in the app.
+  - 🏗️ **In Progress:** Task is currently being developed.
+  - ⏳ **Pending:** Task is scheduled for future work.
+  - 📋 **Documentation:** Linked documentation for specific features.
+- **Maintenance:** Update this file whenever a task is completed or when requirements shift.
+
 ## Phase 1: Environment & Core Setup (Completed ✅)
 - [x] Create Expo App & TypeScript
 - [x] Configure Expo Router
@@ -40,16 +49,30 @@
   - **Goal:** Design beautiful empty states for the Calendar and Stats when no sessions exist.
 - [x] **Task 4.2: Animations & Haptics**
   - **Goal:** Add subtle micro-animations and haptic feedback when pressing Start/Stop.
-- [ ] **Task 4.3: Branding Assets**
+- [x] **Task 4.3: Branding Assets**
   - **Goal:** Configure the custom App Icon and Splash Screen via Expo.
 
-## Phase 5: Authentication & Cloud (Future Scope)
-**Epic:** Enable multi-device syncing.
+## Phase 5: Authentication & Cloud (Deferred to v2.0)
+**Epic:** Enable multi-device syncing. (Deferred to ensure faster MVP time-to-market)
 - [ ] **Task 5.1: Integrate Clerk Auth**
+  - **Goal:** Set up secure user authentication using Clerk to allow users to sign in and sync their data.
 - [ ] **Task 5.2: Sync Local MMKV data to a Backend (e.g., Supabase)**
+  - **Goal:** Implement a synchronization layer that pushes local MMKV data to a Supabase database for multi-device access.
 
 ## Phase 6: Release
 **Epic:** Ship the app to production.
+- [x] **Task 6.0: Integrate PostHog for local event analytics**
+  - **Goal:** Track specific usage events (e.g., Session Starts, Stopwatch Mode toggles) to gather product insights without bloating the app.
 - [ ] **Task 6.1: Build Android APK / AAB**
+  - **Goal:** Generate production-ready build files for the Google Play Store using EAS Build or local Gradle.
 - [ ] **Task 6.2: Privacy Policy & Store Screenshots**
+  - **Goal:** Prepare the necessary marketing and legal assets required for store submission.
 - [ ] **Task 6.3: Internal Testing & Production Release**
+  - **Goal:** Distribute the app to internal testers and then publish the final version to the store.
+
+---
+
+## Technical Documentation & Reference
+- **[AGENTS.md](./AGENTS.md):** Coding standards, philosophy, and architectural rules.
+- **[README.md](./README.md):** High-level overview, features, and setup instructions.
+- **Source Code Guide:** (Planned) Detailed documentation of hooks, stores, and utils.
