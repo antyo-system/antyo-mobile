@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useMemo } from 'react';
 import { ScrollView, View, PanResponder, Pressable, Text, Image } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Tabs } from 'expo-router';
@@ -11,9 +11,11 @@ import { TimelineBlock } from '@/components/calendar/TimelineBlock';
 import { InteractivePlanBlock } from '@/components/calendar/InteractivePlanBlock';
 import { PlanEditorModal } from '@/components/calendar/PlanEditorModal';
 import { RealSessionEditorModal } from '@/components/calendar/RealSessionEditorModal';
+import { useMasteryStore } from '@/store/useMasteryStore';
 import { SleepBlock } from '@/components/calendar/SleepBlock';
 import { TimelineNowIndicator } from '@/components/calendar/TimelineNowIndicator';
 import { DateSelector } from '@/components/calendar/DateSelector';
+import { calculateStreak } from '@/utils/streak';
 import { ScheduleFeedView } from '@/components/calendar/ScheduleFeedView';
 import { TaskListView } from '@/components/calendar/TaskListView';
 import { getMinutesFromMidnight } from '@/utils/time';
@@ -47,7 +49,10 @@ export default function CalendarScreen() {
   
   const verticalScrollRef = useRef<ScrollView>(null);
   
-  const { sleepStart, sleepEnd } = useSettingsStore();
+  const { sleepStart, sleepEnd, dailyFocusTargetHours } = useSettingsStore();
+  const skills = useMasteryStore(s => s.skills);
+
+  const { achievedDates } = useMemo(() => calculateStreak(sessions, dailyFocusTargetHours), [sessions, dailyFocusTargetHours]);
 
   // Calculate Sleep Blocks
   const parseMins = (str: string) => {
@@ -151,13 +156,14 @@ export default function CalendarScreen() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-white dark:bg-gray-950" edges={['top']}>
+    <SafeAreaView className="flex-1 bg-gray-50 dark:bg-gray-950" edges={['top']}>
       {/* Force hide the duplicate Expo Router header */}
       <Tabs.Screen options={{ headerShown: false }} />
       
       <DateSelector 
         selectedDate={selectedDate} 
         onSelectDate={setSelectedDate} 
+        achievedDates={achievedDates}
       />
       
       {/* PLAN vs REAL Minimalist Toggle */}
@@ -231,25 +237,37 @@ export default function CalendarScreen() {
         ))}
 
         {/* Render Real Sessions */}
-        {dailySessions.map(session => (
-          <View 
-            key={session.id} 
-            style={{ opacity: activeTab === 'real' ? 1 : 0.35, zIndex: activeTab === 'real' ? 30 : 10 }}
-            pointerEvents={activeTab === 'real' ? 'box-none' : 'none'}
-          >
-            <TimelineBlock
-              title={session.title}
-              startMinutes={getMinutesFromMidnight(session.startTime)}
-              durationMinutes={session.durationSeconds / 60}
-              pixelsPerMinute={PIXELS_PER_MINUTE}
-              type="real"
-              onPress={() => {
-                setEditingRealSession(session);
-                setRealEditorVisible(true);
-              }}
-            />
-          </View>
-        ))}
+        {dailySessions.map(session => {
+          const startMins = getMinutesFromMidnight(session.startTime);
+          const durationMins = Math.max(1, Math.round(session.durationSeconds / 60));
+          
+          let skillIcon = undefined;
+          if (session.skillId) {
+            const s = skills.find(sk => sk.id === session.skillId);
+            if (s) skillIcon = s.icon;
+          }
+
+          return (
+            <View 
+              key={session.id} 
+              style={{ opacity: activeTab === 'real' ? 1 : 0.35, zIndex: activeTab === 'real' ? 30 : 10 }}
+              pointerEvents={activeTab === 'real' ? 'box-none' : 'none'}
+            >
+              <TimelineBlock
+                title={session.title}
+                startMinutes={startMins}
+                durationMinutes={durationMins}
+                pixelsPerMinute={PIXELS_PER_MINUTE}
+                type="real"
+                skillIcon={skillIcon}
+                onPress={() => {
+                  setEditingRealSession(session);
+                  setRealEditorVisible(true);
+                }}
+              />
+            </View>
+          );
+        })}
         
         {/* Render the current time red line indicator if viewing today */}
         {isSelectedToday && <TimelineNowIndicator pixelsPerMinute={PIXELS_PER_MINUTE} />}

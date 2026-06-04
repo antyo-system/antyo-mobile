@@ -15,7 +15,7 @@ import { useMasteryStore } from '@/store/useMasteryStore';
 import { SkillSelector } from '@/components/timer/SkillSelector';
 
 export default function TimerScreen() {
-  const { status, mode, timeLeft, timeElapsed, tick, currentTitle, duration, stopTimer, sessionStartTime, selectedSkillId } = useTimerStore(
+  const { status, mode, timeLeft, timeElapsed, tick, currentTitle, duration, stopTimer, sessionStartTime, selectedSkillId, selectedPillarId } = useTimerStore(
     useShallow((s) => ({
       status: s.status,
       mode: s.mode,
@@ -27,6 +27,7 @@ export default function TimerScreen() {
       stopTimer: s.stopTimer,
       sessionStartTime: s.sessionStartTime,
       selectedSkillId: s.selectedSkillId,
+      selectedPillarId: s.selectedPillarId,
     }))
   );
   const addSession = useSessionStore((s: any) => s.addSession);
@@ -46,15 +47,17 @@ export default function TimerScreen() {
         isSmartMode: false,
         focusDurationSeconds: undefined,
         distractedDurationSeconds: undefined,
+        skillId: selectedSkillId,
+        pillarId: selectedPillarId,
       });
       
       if (selectedSkillId) {
-        useMasteryStore.getState().addTimeToSkill(selectedSkillId, totalDuration);
+        useMasteryStore.getState().addTimeToSkill(selectedSkillId, selectedPillarId, totalDuration);
       }
       
       stopTimer();
     }
-  }, [timeLeft, status, mode, sessionStartTime, duration, currentTitle, selectedSkillId, addSession, stopTimer]);
+  }, [timeLeft, status, mode, sessionStartTime, duration, currentTitle, selectedSkillId, selectedPillarId, addSession, stopTimer]);
 
   // Tick interval
   useEffect(() => {
@@ -86,10 +89,12 @@ export default function TimerScreen() {
         isSmartMode: false,
         focusDurationSeconds: undefined,
         distractedDurationSeconds: undefined,
+        skillId: selectedSkillId,
+        pillarId: selectedPillarId,
       });
       
       if (selectedSkillId) {
-        useMasteryStore.getState().addTimeToSkill(selectedSkillId, totalDuration);
+        useMasteryStore.getState().addTimeToSkill(selectedSkillId, selectedPillarId, totalDuration);
       }
     }
     stopTimer();

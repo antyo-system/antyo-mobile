@@ -10,6 +10,8 @@ export interface Session {
   isSmartMode?: boolean;
   focusDurationSeconds?: number;
   distractedDurationSeconds?: number;
+  skillId?: string | null;
+  pillarId?: string | null;
 }
 
 export interface Plan {

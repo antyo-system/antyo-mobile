@@ -8,9 +8,10 @@ interface Props {
   selectedDate: Date;
   onSelectDate: (date: Date) => void;
   onClose: () => void;
+  achievedDates?: Date[];
 }
 
-export function MonthlyCalendarModal({ visible, selectedDate, onSelectDate, onClose }: Props) {
+export function MonthlyCalendarModal({ visible, selectedDate, onSelectDate, onClose, achievedDates = [] }: Props) {
   const [currentMonth, setCurrentMonth] = useState(startOfMonth(selectedDate));
 
   // Sync state if selectedDate changes externally
@@ -60,6 +61,31 @@ export function MonthlyCalendarModal({ visible, selectedDate, onSelectDate, onCl
               const isCurrentMonth = isSameMonth(day, monthStart);
               const isSelected = isSameDay(day, selectedDate);
               const today = isToday(day);
+              const isAchieved = achievedDates.some(ad => isSameDay(ad, day));
+
+              let bgClass = '';
+              if (isSelected) {
+                bgClass = isAchieved ? 'bg-orange-500 shadow-md shadow-orange-500/30' : 'bg-blue-600 shadow-md shadow-blue-500/30';
+              } else if (today && isCurrentMonth) {
+                bgClass = isAchieved 
+                  ? 'bg-orange-50 dark:bg-orange-900/30 border border-orange-200 dark:border-orange-800' 
+                  : 'bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800';
+              } else if (isAchieved && isCurrentMonth) {
+                bgClass = 'bg-orange-50/50 dark:bg-orange-900/10 border border-orange-200/50 dark:border-orange-800/50';
+              }
+
+              let textClass = '';
+              if (isSelected) {
+                textClass = 'text-white';
+              } else if (today && isCurrentMonth) {
+                textClass = isAchieved ? 'text-orange-600 dark:text-orange-400' : 'text-blue-600 dark:text-blue-400';
+              } else if (isAchieved && isCurrentMonth) {
+                textClass = 'text-orange-600 dark:text-orange-500';
+              } else if (isCurrentMonth) {
+                textClass = 'text-gray-900 dark:text-gray-200';
+              } else {
+                textClass = 'text-gray-300 dark:text-gray-800';
+              }
 
               return (
                 <Pressable
@@ -68,23 +94,9 @@ export function MonthlyCalendarModal({ visible, selectedDate, onSelectDate, onCl
                     onSelectDate(day);
                     onClose();
                   }}
-                  className={`w-[13%] aspect-square items-center justify-center rounded-full mb-2 ${
-                    isSelected 
-                      ? 'bg-blue-600 shadow-md shadow-blue-500/30' 
-                      : today && isCurrentMonth 
-                        ? 'bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800' 
-                        : ''
-                  }`}
+                  className={`w-[13%] aspect-square items-center justify-center rounded-full mb-2 ${bgClass}`}
                 >
-                  <Text className={`font-bold ${
-                    isSelected 
-                      ? 'text-white' 
-                      : today && isCurrentMonth 
-                        ? 'text-blue-600 dark:text-blue-400' 
-                        : isCurrentMonth 
-                          ? 'text-gray-900 dark:text-gray-200' 
-                          : 'text-gray-300 dark:text-gray-800'
-                  }`}>
+                  <Text className={`font-bold ${textClass}`}>
                     {format(day, 'd')}
                   </Text>
                 </Pressable>

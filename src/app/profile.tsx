@@ -16,6 +16,7 @@ export default function ProfileScreen() {
     sleepStart, sleepEnd,
     defaultBreakMinutes,
     dailySessionTarget,
+    dailyFocusTargetHours,
     appearance,
     updateSettings,
   } = useSettingsStore();
@@ -24,6 +25,8 @@ export default function ProfileScreen() {
   const [sleepExpanded, setSleepExpanded] = useState(false);
   const [localSleepStart, setLocalSleepStart] = useState(sleepStart);
   const [localSleepEnd, setLocalSleepEnd] = useState(sleepEnd);
+  
+  const [developerExpanded, setDeveloperExpanded] = useState(false);
 
   useEffect(() => {
     setLocalSleepStart(sleepStart);
@@ -104,7 +107,7 @@ export default function ProfileScreen() {
         <Pressable onPress={() => router.back()} className="w-10 h-10 items-center justify-center rounded-full bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800">
           <Feather name="x" size={20} color={isDark ? 'white' : 'black'} />
         </Pressable>
-        <Text className="text-lg font-black text-gray-900 dark:text-white">Profile & Settings</Text>
+        <Text className="text-lg font-black text-gray-900 dark:text-white">Settings</Text>
         <View className="w-10" />
       </View>
 
@@ -247,6 +250,35 @@ export default function ProfileScreen() {
               ))}
             </View>
           </View>
+
+          {/* Daily Focus Target (Hours) */}
+          <View className="p-4 border-t border-gray-100 dark:border-gray-800">
+            <View className="flex-row items-center gap-3 mb-3">
+              <View className="w-8 h-8 rounded-full bg-red-500/10 items-center justify-center">
+                <Feather name="flame" size={16} color="#EF4444" />
+              </View>
+              <Text className="text-base font-semibold text-gray-900 dark:text-white">Daily Focus Target (Streak)</Text>
+            </View>
+            <View className="flex-row gap-2">
+              {[1, 2, 3, 4, 5, 8].map(hours => (
+                <Pressable
+                  key={hours}
+                  onPress={() => updateSettings({ dailyFocusTargetHours: hours })}
+                  className={`flex-1 py-2.5 rounded-xl items-center ${
+                    dailyFocusTargetHours === hours
+                      ? 'bg-red-500'
+                      : 'bg-gray-100 dark:bg-gray-800'
+                  }`}
+                >
+                  <Text className={`text-sm font-bold ${
+                    dailyFocusTargetHours === hours
+                      ? 'text-white'
+                      : 'text-gray-600 dark:text-gray-400'
+                  }`}>{hours}h</Text>
+                </Pressable>
+              ))}
+            </View>
+          </View>
         </View>
 
         {/* ── 4. Appearance ── */}
@@ -298,28 +330,39 @@ export default function ProfileScreen() {
             <Text className="text-sm font-bold text-gray-400">v1.0.1</Text>
           </View>
 
-          <View className="flex-row items-center justify-between p-4 border-b border-gray-100 dark:border-gray-800">
+          <Pressable 
+            onPress={() => setDeveloperExpanded(!developerExpanded)}
+            className="flex-row items-center justify-between p-4 border-b border-gray-100 dark:border-gray-800 active:bg-gray-100 dark:active:bg-gray-800"
+          >
             <View className="flex-row items-center gap-3">
               <View className="w-8 h-8 rounded-full bg-emerald-500/10 items-center justify-center">
                 <Feather name="code" size={16} color="#10B981" />
               </View>
               <Text className="text-base font-semibold text-gray-900 dark:text-white">Developer</Text>
             </View>
-            <Text className="text-sm font-bold text-gray-400">Antonius Prasetyo</Text>
-          </View>
+            <View className="flex-row items-center gap-2">
+              <Text className="text-sm font-bold text-gray-400">Antonius Prasetyo</Text>
+              <Feather name={developerExpanded ? "chevron-up" : "chevron-down"} size={16} color="#9CA3AF" />
+            </View>
+          </Pressable>
 
-          <SettingRow
-            icon="github"
-            iconBg="bg-gray-500/10"
-            label="GitHub"
-            onPress={() => Linking.openURL('https://github.com/antyo-system')}
-          />
-          <SettingRow
-            icon="instagram"
-            iconBg="bg-pink-500/10"
-            label="Instagram"
-            onPress={() => Linking.openURL('https://instagram.com/antyolab')}
-          />
+          {developerExpanded && (
+            <View className="bg-gray-50 dark:bg-gray-800/50">
+              <SettingRow
+                icon="github"
+                iconBg="bg-gray-500/10"
+                label="GitHub"
+                onPress={() => Linking.openURL('https://github.com/antyo-system')}
+              />
+              <SettingRow
+                icon="instagram"
+                iconBg="bg-pink-500/10"
+                label="Instagram"
+                isLast
+                onPress={() => Linking.openURL('https://instagram.com/antyolab')}
+              />
+            </View>
+          )}
           <SettingRow
             icon="shield"
             iconBg="bg-blue-500/10"

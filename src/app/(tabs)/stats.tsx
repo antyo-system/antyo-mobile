@@ -2,13 +2,16 @@ import { ScrollView, View, Text, Pressable, Image } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Tabs, router } from 'expo-router';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useSessionStore } from '@/store/useSessionStore';
 import { useSettingsStore } from '@/store/useSettingsStore';
 
 import { isToday, isThisWeek, format } from 'date-fns';
 import { formatLongTime } from '@/utils/time';
 import { images } from '@/constants/images';
+import { calculateStreak } from '@/utils/streak';
+import { WeeklyBarChart } from '@/components/stats/WeeklyBarChart';
+import { ContributionHeatmap } from '@/components/stats/ContributionHeatmap';
 
 export default function StatsScreen() {
   const sessions = useSessionStore(s => s.sessions);
@@ -38,7 +41,9 @@ export default function StatsScreen() {
   const sortedSessions = [...sessions].sort((a, b) => new Date(b.startTime).getTime() - new Date(a.startTime).getTime());
 
   // Settings & Time Left Logic
-  const { sleepStart, sleepEnd } = useSettingsStore();
+  const { sleepStart, sleepEnd, dailyFocusTargetHours } = useSettingsStore();
+
+  const { currentStreak, achievedDates } = useMemo(() => calculateStreak(sessions, dailyFocusTargetHours), [sessions, dailyFocusTargetHours]);
 
   const [timeLeft, setTimeLeft] = useState({ hours: 0, minutes: 0, seconds: 0, sleeping: false });
   const [isStillAwake, setIsStillAwake] = useState(false);
@@ -117,9 +122,23 @@ export default function StatsScreen() {
             Statistics
           </Text>
           <View className="flex-row items-center gap-3">
-            <Pressable onPress={() => router.push('/profile')} className="w-10 h-10 rounded-full bg-emerald-500/10 items-center justify-center border-2 border-emerald-500/30 overflow-hidden">
-              <Feather name="user" size={18} color="#10B981" />
+            <Pressable onPress={() => router.push('/profile')} className="w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-800 items-center justify-center overflow-hidden">
+              <Feather name="settings" size={18} color="#6B7280" />
             </Pressable>
+          </View>
+        </View>
+
+        {/* STREAK WIDGET */}
+        <View className="bg-white dark:bg-gray-900 rounded-3xl p-6 shadow-sm border border-gray-100 dark:border-gray-800 mb-6 flex-row items-center justify-between">
+          <View>
+            <Text className="text-[10px] font-black uppercase tracking-widest text-orange-500 mb-1">
+              {dailyFocusTargetHours}h Target
+            </Text>
+            <Text className="text-xl font-black text-gray-900 dark:text-white">Day Streak</Text>
+          </View>
+          <View className="flex-row items-baseline gap-1">
+            <Text className="text-4xl font-black tabular-nums text-orange-500">{currentStreak}</Text>
+            <Text className="text-base font-bold text-gray-400">🔥</Text>
           </View>
         </View>
 
@@ -155,6 +174,10 @@ export default function StatsScreen() {
           </View>
         </View>
 
+        {/* WEEKLY BAR CHART */}
+        <WeeklyBarChart sessions={sessions} />
+
+        {/* TODAY / THIS WEEK */}
         <View className="flex-row gap-4 mb-6">
           <View className="flex-1 bg-white dark:bg-gray-900 rounded-3xl p-5 shadow-sm border border-gray-100 dark:border-gray-800">
             <Text className="text-gray-500 dark:text-gray-400 font-bold tracking-wider uppercase text-[10px] mb-2">
@@ -177,17 +200,9 @@ export default function StatsScreen() {
           </View>
         </View>
 
-        <View className="bg-gray-900 dark:bg-black rounded-3xl p-6 shadow-lg border border-gray-800 mb-6">
-          <Text className="text-gray-400 font-bold tracking-wider uppercase text-xs mb-2">
-            All-Time Focus
-          </Text>
-          <Text className="text-5xl font-black tabular-nums text-white">
-            {formatLongTime(totalSecondsAllTime)}
-          </Text>
-          <Text className="text-sm text-gray-500 font-medium mt-2">
-            {totalSessionsAllTime} total sessions completed
-          </Text>
-        </View>
+        {/* MASTERY HEATMAP (ALL TIME) */}
+        <ContributionHeatmap sessions={sessions} />
+
 
         {/* Global Smart Mode Analytics */}
         {totalSmartDuration > 0 && (

@@ -1,4 +1,4 @@
-import { View, Text, ScrollView, Pressable, useColorScheme, Animated, Dimensions } from 'react-native';
+import { View, Text, ScrollView, Pressable, useColorScheme, Animated, Dimensions, TextInput, Modal, KeyboardAvoidingView, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Tabs, router } from 'expo-router';
 import { Feather } from '@expo/vector-icons';
@@ -24,6 +24,7 @@ function SkillCard({ skill }: { skill: Skill }) {
 
   return (
     <Pressable 
+      onPress={() => router.push(`/skill/${skill.id}` as any)}
       className="bg-white dark:bg-gray-900 rounded-3xl p-5 mb-4 shadow-sm border border-gray-100 dark:border-gray-800"
     >
       <View className="flex-row justify-between items-start mb-4">
@@ -78,6 +79,10 @@ function SkillCard({ skill }: { skill: Skill }) {
 export default function MasteryScreen() {
   const isDark = useColorScheme() === 'dark';
   const skills = useMasteryStore(s => s.skills);
+  const addSkill = useMasteryStore(s => s.addSkill);
+  
+  const [modalVisible, setModalVisible] = useState(false);
+  const [newSkillName, setNewSkillName] = useState('');
 
   return (
     <SafeAreaView className="flex-1 bg-gray-50 dark:bg-gray-950" edges={['top']}>
@@ -89,11 +94,11 @@ export default function MasteryScreen() {
             Mastery
           </Text>
           <View className="flex-row items-center gap-3">
-            <Pressable className="w-10 h-10 items-center justify-center bg-gray-200 dark:bg-gray-800 rounded-full">
+            <Pressable 
+              onPress={() => setModalVisible(true)}
+              className="w-10 h-10 items-center justify-center bg-gray-200 dark:bg-gray-800 rounded-full"
+            >
               <Feather name="plus" size={20} color="#6B7280" />
-            </Pressable>
-            <Pressable onPress={() => router.push('/profile')} className="w-10 h-10 rounded-full bg-emerald-500/10 items-center justify-center border-2 border-emerald-500/30 overflow-hidden">
-              <Feather name="user" size={18} color="#10B981" />
             </Pressable>
           </View>
         </View>
@@ -115,7 +120,7 @@ export default function MasteryScreen() {
           )}
         </View>
 
-        <View className="mt-8 bg-blue-50 dark:bg-blue-900/20 p-5 rounded-3xl border border-blue-100 dark:border-blue-900/50">
+        <View className="mt-8 bg-blue-50 dark:bg-blue-900/20 p-5 rounded-3xl border border-blue-100 dark:border-blue-900/50 mb-10">
           <Text className="text-sm font-bold text-blue-800 dark:text-blue-300 mb-2">Why 10,000 Hours?</Text>
           <Text className="text-xs font-semibold text-blue-600 dark:text-blue-400 leading-relaxed">
             It takes approximately 10,000 hours of deliberate practice to achieve world-class mastery in any field. Every focus session brings you one step closer to greatness.
@@ -123,6 +128,52 @@ export default function MasteryScreen() {
         </View>
 
       </ScrollView>
+
+      {/* Add Skill Modal */}
+      <Modal visible={modalVisible} transparent animationType="slide">
+        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} className="flex-1 justify-end bg-black/50">
+          <View className="bg-white dark:bg-gray-900 rounded-t-3xl p-6 h-[80%] border-t border-gray-200 dark:border-gray-800 pb-12">
+            <View className="flex-row justify-between items-center mb-6">
+              <Text className="text-2xl font-black text-gray-900 dark:text-white">New Skill</Text>
+              <Pressable onPress={() => setModalVisible(false)} className="w-8 h-8 items-center justify-center bg-gray-100 dark:bg-gray-800 rounded-full">
+                <Feather name="x" size={16} color={isDark ? "white" : "black"} />
+              </Pressable>
+            </View>
+
+            <Text className="text-sm font-bold text-gray-500 dark:text-gray-400 mb-2">Skill Name</Text>
+            <View className="bg-gray-100 dark:bg-gray-800 rounded-2xl px-4 py-4 mb-6 border border-gray-200 dark:border-gray-700">
+              <TextInput
+                value={newSkillName}
+                onChangeText={setNewSkillName}
+                placeholder="e.g. Coding, Guitar, Writing..."
+                placeholderTextColor={isDark ? "#6B7280" : "#9CA3AF"}
+                className="text-gray-900 dark:text-white font-bold text-lg"
+                autoFocus
+              />
+            </View>
+
+            <View className="flex-1" />
+
+            <Pressable 
+              onPress={() => {
+                if (newSkillName.trim()) {
+                  addSkill({
+                    name: newSkillName.trim(),
+                    icon: 'star', // default icon
+                    color: 'blue' // default color
+                  });
+                  setNewSkillName('');
+                  setModalVisible(false);
+                }
+              }}
+              className={`py-4 rounded-2xl items-center ${newSkillName.trim() ? 'bg-blue-600' : 'bg-gray-300 dark:bg-gray-700'}`}
+              disabled={!newSkillName.trim()}
+            >
+              <Text className="text-white font-black text-lg">Create Skill</Text>
+            </Pressable>
+          </View>
+        </KeyboardAvoidingView>
+      </Modal>
     </SafeAreaView>
   );
 }

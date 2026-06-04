@@ -13,10 +13,12 @@ interface TimerState {
   sessionStartTime: string | null; // ISO timestamp
   currentTitle: string;
   selectedSkillId: string | null;
+  selectedPillarId: string | null;
 
   // Actions
   setTitle: (title: string) => void;
   setSelectedSkillId: (id: string | null) => void;
+  setSelectedPillarId: (id: string | null) => void;
   setMode: (mode: TimerMode) => void;
   setDuration: (seconds: number) => void;
   setBreakDuration: (seconds: number) => void;
@@ -36,9 +38,11 @@ export const useTimerStore = create<TimerState>((set, get) => ({
   sessionStartTime: null,
   currentTitle: '',
   selectedSkillId: null,
+  selectedPillarId: null,
 
   setTitle: (title) => set({ currentTitle: title }),
-  setSelectedSkillId: (id) => set({ selectedSkillId: id }),
+  setSelectedSkillId: (id) => set({ selectedSkillId: id, selectedPillarId: null }),
+  setSelectedPillarId: (id: string | null) => set({ selectedPillarId: id }),
 
   setMode: (mode) => {
     const { status, duration } = get();
@@ -84,6 +88,9 @@ export const useTimerStore = create<TimerState>((set, get) => ({
       timeLeft: duration,
       timeElapsed: 0,
       sessionStartTime: null,
+      currentTitle: '',
+      selectedSkillId: null,
+      selectedPillarId: null,
     });
   },
 

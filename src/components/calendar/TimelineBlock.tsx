@@ -6,10 +6,13 @@ interface Props {
   durationMinutes: number;
   pixelsPerMinute: number;
   type: 'plan' | 'real';
+  skillIcon?: string;
   onPress?: () => void;
 }
 
-export function TimelineBlock({ title, startMinutes, durationMinutes, pixelsPerMinute, type, onPress }: Props) {
+import { Feather } from '@expo/vector-icons';
+
+export function TimelineBlock({ title, startMinutes, durationMinutes, pixelsPerMinute, type, skillIcon, onPress }: Props) {
   const top = startMinutes * pixelsPerMinute;
   const height = durationMinutes * pixelsPerMinute;
   const isReal = type === 'real';
@@ -27,9 +30,16 @@ export function TimelineBlock({ title, startMinutes, durationMinutes, pixelsPerM
       `}
       style={{ top, height: Math.max(height, 24) }}
     >
-      <Text className={`text-xs font-bold ${isReal ? 'text-blue-900 dark:text-blue-100' : 'text-yellow-900 dark:text-yellow-100'}`} numberOfLines={1}>
-        {title}
-      </Text>
+      <View className="flex-row justify-between items-start">
+        <Text className={`text-xs font-bold flex-1 ${isReal ? 'text-blue-900 dark:text-blue-100' : 'text-yellow-900 dark:text-yellow-100'}`} numberOfLines={1}>
+          {title}
+        </Text>
+        {skillIcon && isReal && (
+          <View className="bg-white/40 dark:bg-black/20 rounded-full p-0.5 ml-1">
+            <Feather name={skillIcon as any} size={10} color="#1E3A8A" />
+          </View>
+        )}
+      </View>
       {height > 30 && (
         <Text className={`text-[10px] font-medium mt-0.5 ${isReal ? 'text-blue-800 dark:text-blue-200' : 'text-yellow-800 dark:text-yellow-200'}`}>
           {durationMinutes} min
