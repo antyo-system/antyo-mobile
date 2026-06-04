@@ -11,7 +11,6 @@ import { TimelineBlock } from '@/components/calendar/TimelineBlock';
 import { InteractivePlanBlock } from '@/components/calendar/InteractivePlanBlock';
 import { PlanEditorModal } from '@/components/calendar/PlanEditorModal';
 import { RealSessionEditorModal } from '@/components/calendar/RealSessionEditorModal';
-import { SettingsModal } from '@/components/stats/SettingsModal';
 import { SleepBlock } from '@/components/calendar/SleepBlock';
 import { TimelineNowIndicator } from '@/components/calendar/TimelineNowIndicator';
 import { DateSelector } from '@/components/calendar/DateSelector';
@@ -49,7 +48,6 @@ export default function CalendarScreen() {
   const verticalScrollRef = useRef<ScrollView>(null);
   
   const { sleepStart, sleepEnd } = useSettingsStore();
-  const [settingsVisible, setSettingsVisible] = useState(false);
 
   // Calculate Sleep Blocks
   const parseMins = (str: string) => {
@@ -98,7 +96,7 @@ export default function CalendarScreen() {
   useEffect(() => {
     if (isSelectedToday) {
       setTimeout(() => {
-        const currentMins = getMinutesFromMidnight(new Date());
+        const currentMins = getMinutesFromMidnight(new Date().toISOString());
         // Calculate Y position of current time, subtract ~300px to center it on screen
         const yPos = Math.max(0, currentMins * PIXELS_PER_MINUTE - 300);
         verticalScrollRef.current?.scrollTo({ y: yPos, animated: true });
@@ -212,7 +210,6 @@ export default function CalendarScreen() {
             startMinutes={block.start}
             durationMinutes={block.duration}
             pixelsPerMinute={PIXELS_PER_MINUTE}
-            onPress={() => setSettingsVisible(true)}
           />
         ))}
 
@@ -301,7 +298,7 @@ export default function CalendarScreen() {
 
 
 
-      <SettingsModal visible={settingsVisible} onClose={() => setSettingsVisible(false)} />
+
     </SafeAreaView>
   );
 }

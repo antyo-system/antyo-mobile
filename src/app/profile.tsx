@@ -1,15 +1,40 @@
-import { View, Text, Pressable, ScrollView, Switch } from 'react-native';
+import { View, Text, Pressable, ScrollView, Linking, Alert, TextInput } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Feather } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useSessionStore } from '@/store/useSessionStore';
+import { useSettingsStore } from '@/store/useSettingsStore';
 import { useColorScheme } from 'react-native';
-import { useMemo } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 
 export default function ProfileScreen() {
   const sessions = useSessionStore(s => s.sessions);
   const colorScheme = useColorScheme();
-  
+  const isDark = colorScheme === 'dark';
+
+  const {
+    sleepStart, sleepEnd,
+    defaultBreakMinutes,
+    dailySessionTarget,
+    appearance,
+    updateSettings,
+  } = useSettingsStore();
+
+  // Local state for inline sleep editor
+  const [sleepExpanded, setSleepExpanded] = useState(false);
+  const [localSleepStart, setLocalSleepStart] = useState(sleepStart);
+  const [localSleepEnd, setLocalSleepEnd] = useState(sleepEnd);
+
+  useEffect(() => {
+    setLocalSleepStart(sleepStart);
+    setLocalSleepEnd(sleepEnd);
+  }, [sleepStart, sleepEnd]);
+
+  const saveSleep = () => {
+    updateSettings({ sleepStart: localSleepStart, sleepEnd: localSleepEnd });
+    setSleepExpanded(false);
+  };
+
   const stats = useMemo(() => {
     let totalSeconds = 0;
     let smartSeconds = 0;
@@ -22,118 +47,330 @@ export default function ProfileScreen() {
     return {
       totalHours: (totalSeconds / 3600).toFixed(1),
       smartHours: (smartSeconds / 3600).toFixed(1),
-      totalSessions: sessions.length
+      totalSessions: sessions.length,
     };
   }, [sessions]);
 
+  const breakOptions = [5, 10, 15, 20];
+  const sessionTargetOptions = [2, 3, 4, 5, 6, 8];
+
+  const handleDeleteAllData = () => {
+    Alert.alert(
+      'Delete All Data',
+      'This will permanently remove all sessions, plans, and tasks. This action cannot be undone.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete Everything',
+          style: 'destructive',
+          onPress: () => {
+            useSessionStore.getState().clearSessions?.();
+          },
+        },
+      ]
+    );
+  };
+
+  // ── Reusable row component ──
+  const SettingRow = ({
+    icon, iconBg, label, right, onPress, isLast, danger,
+  }: {
+    icon: string; iconBg: string; label: string;
+    right?: React.ReactNode; onPress?: () => void;
+    isLast?: boolean; danger?: boolean;
+  }) => (
+    <Pressable
+      onPress={onPress}
+      className={`flex-row items-center justify-between p-4 active:bg-gray-100 dark:active:bg-gray-800 ${
+        isLast ? '' : 'border-b border-gray-100 dark:border-gray-800'
+      }`}
+    >
+      <View className="flex-row items-center gap-3">
+        <View className={`w-8 h-8 rounded-full items-center justify-center ${iconBg}`}>
+          <Feather name={icon as any} size={16} color={danger ? '#EF4444' : isDark ? '#D1D5DB' : '#6B7280'} />
+        </View>
+        <Text className={`text-base font-semibold ${danger ? 'text-red-500' : 'text-gray-900 dark:text-white'}`}>
+          {label}
+        </Text>
+      </View>
+      {right || <Feather name="chevron-right" size={18} color="#9CA3AF" />}
+    </Pressable>
+  );
+
   return (
-    <SafeAreaView className="flex-1 bg-white dark:bg-gray-950" edges={['top']}>
+    <SafeAreaView className="flex-1 bg-gray-50 dark:bg-gray-950" edges={['top']}>
       {/* Header */}
       <View className="flex-row items-center justify-between px-6 py-4">
-        <Pressable onPress={() => router.back()} className="w-10 h-10 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-900">
-          <Feather name="x" size={20} color={colorScheme === 'dark' ? 'white' : 'black'} />
+        <Pressable onPress={() => router.back()} className="w-10 h-10 items-center justify-center rounded-full bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800">
+          <Feather name="x" size={20} color={isDark ? 'white' : 'black'} />
         </Pressable>
-        <Text className="text-lg font-bold text-gray-900 dark:text-white">Profile</Text>
+        <Text className="text-lg font-black text-gray-900 dark:text-white">Profile & Settings</Text>
         <View className="w-10" />
       </View>
 
-      <ScrollView className="flex-1 px-6 pt-4" showsVerticalScrollIndicator={false}>
-        {/* User Card */}
-        <View className="items-center mb-8">
-          <View className="w-24 h-24 rounded-full bg-emerald-500/20 items-center justify-center mb-4 border-2 border-emerald-500">
-            <Feather name="user" size={40} className="text-emerald-500" />
-          </View>
-          <Text className="text-2xl font-bold text-gray-900 dark:text-white">Deep Worker</Text>
-          <Text className="text-gray-500 dark:text-gray-400 mt-1">user@example.com</Text>
-          
-          <View className="mt-4 bg-gray-100 dark:bg-gray-900 px-4 py-2 rounded-full">
-            <Text className="text-sm font-semibold text-gray-700 dark:text-gray-300">
-              Novice Level
-            </Text>
-          </View>
-        </View>
-
-        {/* Highlights */}
-        <View className="flex-row justify-between mb-8 space-x-4">
-          <View className="flex-1 bg-gray-50 dark:bg-gray-900 p-4 rounded-3xl border border-gray-100 dark:border-gray-800 items-center">
-            <Text className="text-2xl font-black text-gray-900 dark:text-white">{stats.totalHours}</Text>
-            <Text className="text-xs text-gray-500 dark:text-gray-400 font-semibold uppercase tracking-wider mt-1">Total Hrs</Text>
-          </View>
-          <View className="flex-1 bg-emerald-50 dark:bg-emerald-950/30 p-4 rounded-3xl border border-emerald-100 dark:border-emerald-900/50 items-center">
-            <Text className="text-2xl font-black text-emerald-600 dark:text-emerald-400">{stats.smartHours}</Text>
-            <Text className="text-xs text-emerald-600/70 dark:text-emerald-400/70 font-semibold uppercase tracking-wider mt-1">Smart Hrs</Text>
-          </View>
-          <View className="flex-1 bg-gray-50 dark:bg-gray-900 p-4 rounded-3xl border border-gray-100 dark:border-gray-800 items-center">
-            <Text className="text-2xl font-black text-gray-900 dark:text-white">{stats.totalSessions}</Text>
-            <Text className="text-xs text-gray-500 dark:text-gray-400 font-semibold uppercase tracking-wider mt-1">Sessions</Text>
-          </View>
-        </View>
-
-        {/* Settings Group 1 */}
-        <View className="mb-6">
-          <Text className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3 ml-2">Preferences</Text>
-          <View className="bg-gray-50 dark:bg-gray-900 rounded-3xl overflow-hidden border border-gray-100 dark:border-gray-800">
-            
-            <View className="flex-row items-center justify-between p-5 border-b border-gray-100 dark:border-gray-800">
-              <View className="flex-row items-center gap-3">
-                <View className="w-8 h-8 rounded-full bg-blue-500/10 items-center justify-center">
-                  <Feather name="moon" size={16} className="text-blue-500" />
-                </View>
-                <Text className="text-base font-semibold text-gray-900 dark:text-white">Dark Mode</Text>
-              </View>
-              <Switch value={colorScheme === 'dark'} disabled trackColor={{ true: '#10b981' }} />
-            </View>
-
-            <View className="flex-row items-center justify-between p-5 border-b border-gray-100 dark:border-gray-800">
-              <View className="flex-row items-center gap-3">
-                <View className="w-8 h-8 rounded-full bg-purple-500/10 items-center justify-center">
-                  <Feather name="bell" size={16} className="text-purple-500" />
-                </View>
-                <Text className="text-base font-semibold text-gray-900 dark:text-white">Notifications</Text>
-              </View>
-              <Feather name="chevron-right" size={20} className="text-gray-400" />
-            </View>
-
-            <Pressable 
-              onPress={() => router.replace('/onboarding' as any)}
-              className="flex-row items-center justify-between p-5 active:bg-gray-100 dark:active:bg-gray-800"
-            >
-              <View className="flex-row items-center gap-3">
-                <View className="w-8 h-8 rounded-full bg-blue-500/10 items-center justify-center">
-                  <Feather name="monitor" size={16} className="text-blue-500" />
-                </View>
-                <Text className="text-base font-semibold text-blue-500">Show Onboarding</Text>
-              </View>
-            </Pressable>
-
-          </View>
-        </View>
-
-        {/* Settings Group 2 */}
-        <View className="mb-8">
-          <Text className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3 ml-2">Data</Text>
-          <View className="bg-gray-50 dark:bg-gray-900 rounded-3xl overflow-hidden border border-gray-100 dark:border-gray-800">
-            <Pressable className="flex-row items-center justify-between p-5 active:bg-gray-100 dark:active:bg-gray-800 border-b border-gray-100 dark:border-gray-800">
-              <View className="flex-row items-center gap-3">
-                <View className="w-8 h-8 rounded-full bg-orange-500/10 items-center justify-center">
-                  <Feather name="download" size={16} className="text-orange-500" />
-                </View>
-                <Text className="text-base font-semibold text-gray-900 dark:text-white">Export Data</Text>
-              </View>
-            </Pressable>
-            <Pressable className="flex-row items-center justify-between p-5 active:bg-gray-100 dark:active:bg-gray-800">
-              <View className="flex-row items-center gap-3">
-                <View className="w-8 h-8 rounded-full bg-red-500/10 items-center justify-center">
-                  <Feather name="trash-2" size={16} className="text-red-500" />
-                </View>
-                <Text className="text-base font-semibold text-red-500">Delete Account</Text>
-              </View>
-            </Pressable>
-          </View>
-        </View>
+      <ScrollView className="flex-1" showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 60 }}>
         
-        <View className="items-center mb-12">
-          <Text className="text-xs text-gray-400">ANTYO Focus v1.0.0</Text>
+        {/* ── 1. User Card ── */}
+        <View className="items-center mb-6 mt-2">
+          <View className="w-20 h-20 rounded-full bg-emerald-500/20 items-center justify-center mb-3 border-2 border-emerald-500">
+            <Feather name="user" size={36} color="#10B981" />
+          </View>
+          <Text className="text-2xl font-black text-gray-900 dark:text-white">Deep Worker</Text>
+          <View className="mt-2 bg-emerald-50 dark:bg-emerald-900/30 px-4 py-1.5 rounded-full border border-emerald-200 dark:border-emerald-800">
+            <Text className="text-xs font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider">Novice Level</Text>
+          </View>
+        </View>
+
+        {/* ── 2. Quick Stats ── */}
+        <View className="flex-row gap-3 mb-8">
+          <View className="flex-1 bg-white dark:bg-gray-900 p-4 rounded-2xl border border-gray-100 dark:border-gray-800 items-center">
+            <Text className="text-2xl font-black text-gray-900 dark:text-white">{stats.totalHours}</Text>
+            <Text className="text-[10px] text-gray-500 dark:text-gray-400 font-bold uppercase tracking-wider mt-1">Total Hrs</Text>
+          </View>
+          <View className="flex-1 bg-emerald-50 dark:bg-emerald-950/30 p-4 rounded-2xl border border-emerald-100 dark:border-emerald-900/50 items-center">
+            <Text className="text-2xl font-black text-emerald-600 dark:text-emerald-400">{stats.smartHours}</Text>
+            <Text className="text-[10px] text-emerald-600/70 dark:text-emerald-400/70 font-bold uppercase tracking-wider mt-1">Smart Hrs</Text>
+          </View>
+          <View className="flex-1 bg-white dark:bg-gray-900 p-4 rounded-2xl border border-gray-100 dark:border-gray-800 items-center">
+            <Text className="text-2xl font-black text-gray-900 dark:text-white">{stats.totalSessions}</Text>
+            <Text className="text-[10px] text-gray-500 dark:text-gray-400 font-bold uppercase tracking-wider mt-1">Sessions</Text>
+          </View>
+        </View>
+
+        {/* ── 3. Settings ── */}
+        <Text className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 ml-2">Settings</Text>
+        <View className="bg-white dark:bg-gray-900 rounded-2xl overflow-hidden border border-gray-100 dark:border-gray-800 mb-6">
+          
+          {/* Sleep Time */}
+          <Pressable
+            onPress={() => setSleepExpanded(!sleepExpanded)}
+            className="flex-row items-center justify-between p-4 border-b border-gray-100 dark:border-gray-800 active:bg-gray-50 dark:active:bg-gray-800"
+          >
+            <View className="flex-row items-center gap-3">
+              <View className="w-8 h-8 rounded-full bg-indigo-500/10 items-center justify-center">
+                <Feather name="moon" size={16} color="#6366F1" />
+              </View>
+              <Text className="text-base font-semibold text-gray-900 dark:text-white">Sleep Time</Text>
+            </View>
+            <View className="flex-row items-center gap-2">
+              <Text className="text-sm font-bold text-gray-500 dark:text-gray-400">{sleepStart} – {sleepEnd}</Text>
+              <Feather name={sleepExpanded ? 'chevron-up' : 'chevron-down'} size={18} color="#9CA3AF" />
+            </View>
+          </Pressable>
+
+          {sleepExpanded && (
+            <View className="px-4 py-4 bg-gray-50 dark:bg-gray-950 border-b border-gray-100 dark:border-gray-800">
+              <View className="flex-row gap-4 mb-3">
+                <View className="flex-1">
+                  <Text className="text-[10px] font-bold text-gray-500 dark:text-gray-400 mb-1.5 uppercase tracking-wider">Bedtime</Text>
+                  <TextInput
+                    value={localSleepStart}
+                    onChangeText={setLocalSleepStart}
+                    keyboardType="numeric"
+                    className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-3 rounded-xl text-gray-900 dark:text-white font-bold text-center"
+                    placeholder="23:00"
+                    placeholderTextColor="#9CA3AF"
+                  />
+                </View>
+                <View className="flex-1">
+                  <Text className="text-[10px] font-bold text-gray-500 dark:text-gray-400 mb-1.5 uppercase tracking-wider">Wake Up</Text>
+                  <TextInput
+                    value={localSleepEnd}
+                    onChangeText={setLocalSleepEnd}
+                    keyboardType="numeric"
+                    className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-3 rounded-xl text-gray-900 dark:text-white font-bold text-center"
+                    placeholder="06:00"
+                    placeholderTextColor="#9CA3AF"
+                  />
+                </View>
+              </View>
+              <Pressable onPress={saveSleep} className="bg-indigo-600 py-2.5 rounded-xl items-center active:opacity-80">
+                <Text className="text-white font-bold text-sm">Save</Text>
+              </Pressable>
+            </View>
+          )}
+
+          {/* Break Duration */}
+          <View className="p-4 border-b border-gray-100 dark:border-gray-800">
+            <View className="flex-row items-center gap-3 mb-3">
+              <View className="w-8 h-8 rounded-full bg-orange-500/10 items-center justify-center">
+                <Feather name="coffee" size={16} color="#F97316" />
+              </View>
+              <Text className="text-base font-semibold text-gray-900 dark:text-white">Break Duration</Text>
+            </View>
+            <View className="flex-row gap-2">
+              {breakOptions.map(mins => (
+                <Pressable
+                  key={mins}
+                  onPress={() => updateSettings({ defaultBreakMinutes: mins })}
+                  className={`flex-1 py-2.5 rounded-xl items-center ${
+                    defaultBreakMinutes === mins
+                      ? 'bg-orange-500'
+                      : 'bg-gray-100 dark:bg-gray-800'
+                  }`}
+                >
+                  <Text className={`text-sm font-bold ${
+                    defaultBreakMinutes === mins
+                      ? 'text-white'
+                      : 'text-gray-600 dark:text-gray-400'
+                  }`}>{mins}m</Text>
+                </Pressable>
+              ))}
+            </View>
+          </View>
+
+          {/* Daily Session Target */}
+          <View className="p-4">
+            <View className="flex-row items-center gap-3 mb-3">
+              <View className="w-8 h-8 rounded-full bg-blue-500/10 items-center justify-center">
+                <Feather name="target" size={16} color="#3B82F6" />
+              </View>
+              <Text className="text-base font-semibold text-gray-900 dark:text-white">Daily Session Target</Text>
+            </View>
+            <View className="flex-row gap-2">
+              {sessionTargetOptions.map(count => (
+                <Pressable
+                  key={count}
+                  onPress={() => updateSettings({ dailySessionTarget: count })}
+                  className={`flex-1 py-2.5 rounded-xl items-center ${
+                    dailySessionTarget === count
+                      ? 'bg-blue-500'
+                      : 'bg-gray-100 dark:bg-gray-800'
+                  }`}
+                >
+                  <Text className={`text-sm font-bold ${
+                    dailySessionTarget === count
+                      ? 'text-white'
+                      : 'text-gray-600 dark:text-gray-400'
+                  }`}>{count}</Text>
+                </Pressable>
+              ))}
+            </View>
+          </View>
+        </View>
+
+        {/* ── 4. Appearance ── */}
+        <Text className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 ml-2">Appearance</Text>
+        <View className="bg-white dark:bg-gray-900 rounded-2xl overflow-hidden border border-gray-100 dark:border-gray-800 mb-6 p-4">
+          <View className="flex-row items-center gap-3 mb-4">
+            <View className="w-8 h-8 rounded-full bg-purple-500/10 items-center justify-center">
+              <Feather name={appearance === 'dark' ? 'moon' : 'sun'} size={16} color="#A855F7" />
+            </View>
+            <Text className="text-base font-semibold text-gray-900 dark:text-white">Theme</Text>
+          </View>
+          <View className="flex-row gap-2">
+            {(['system', 'light', 'dark'] as const).map(option => (
+              <Pressable
+                key={option}
+                onPress={() => updateSettings({ appearance: option })}
+                className={`flex-1 py-3 rounded-xl items-center ${
+                  appearance === option
+                    ? 'bg-purple-500'
+                    : 'bg-gray-100 dark:bg-gray-800'
+                }`}
+              >
+                <Feather
+                  name={option === 'system' ? 'smartphone' : option === 'light' ? 'sun' : 'moon'}
+                  size={16}
+                  color={appearance === option ? 'white' : isDark ? '#9CA3AF' : '#6B7280'}
+                />
+                <Text className={`text-xs font-bold mt-1 capitalize ${
+                  appearance === option
+                    ? 'text-white'
+                    : 'text-gray-600 dark:text-gray-400'
+                }`}>{option === 'system' ? 'System' : option === 'light' ? 'Light' : 'Dark'}</Text>
+              </Pressable>
+            ))}
+          </View>
+        </View>
+
+        {/* ── 5. About ── */}
+        <Text className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 ml-2">About</Text>
+        <View className="bg-white dark:bg-gray-900 rounded-2xl overflow-hidden border border-gray-100 dark:border-gray-800 mb-6">
+          
+          <View className="flex-row items-center justify-between p-4 border-b border-gray-100 dark:border-gray-800">
+            <View className="flex-row items-center gap-3">
+              <View className="w-8 h-8 rounded-full bg-gray-500/10 items-center justify-center">
+                <Feather name="info" size={16} color={isDark ? '#D1D5DB' : '#6B7280'} />
+              </View>
+              <Text className="text-base font-semibold text-gray-900 dark:text-white">Version</Text>
+            </View>
+            <Text className="text-sm font-bold text-gray-400">v1.0.1</Text>
+          </View>
+
+          <View className="flex-row items-center justify-between p-4 border-b border-gray-100 dark:border-gray-800">
+            <View className="flex-row items-center gap-3">
+              <View className="w-8 h-8 rounded-full bg-emerald-500/10 items-center justify-center">
+                <Feather name="code" size={16} color="#10B981" />
+              </View>
+              <Text className="text-base font-semibold text-gray-900 dark:text-white">Developer</Text>
+            </View>
+            <Text className="text-sm font-bold text-gray-400">Antonius Prasetyo</Text>
+          </View>
+
+          <SettingRow
+            icon="github"
+            iconBg="bg-gray-500/10"
+            label="GitHub"
+            onPress={() => Linking.openURL('https://github.com/antyo-system')}
+          />
+          <SettingRow
+            icon="instagram"
+            iconBg="bg-pink-500/10"
+            label="Instagram"
+            onPress={() => Linking.openURL('https://instagram.com/antyolab')}
+          />
+          <SettingRow
+            icon="shield"
+            iconBg="bg-blue-500/10"
+            label="Privacy Policy"
+            onPress={() => Linking.openURL('https://antyo-system.github.io/privacy')}
+          />
+          <SettingRow
+            icon="file-text"
+            iconBg="bg-yellow-500/10"
+            label="License (MIT)"
+            onPress={() => Linking.openURL('https://github.com/antyo-system/antyo-mobile/blob/main/LICENSE')}
+          />
+          <SettingRow
+            icon="star"
+            iconBg="bg-amber-500/10"
+            label="Rate App"
+            isLast
+            onPress={() => {
+              Alert.alert('Rate App', 'This will open the store page when the app is published.');
+            }}
+          />
+        </View>
+
+        {/* ── 6. Data (Danger Zone) ── */}
+        <Text className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 ml-2">Data</Text>
+        <View className="bg-white dark:bg-gray-900 rounded-2xl overflow-hidden border border-gray-100 dark:border-gray-800 mb-6">
+          <SettingRow
+            icon="download"
+            iconBg="bg-orange-500/10"
+            label="Export Data"
+            onPress={() => Alert.alert('Export', 'Coming soon!')}
+          />
+          <SettingRow
+            icon="monitor"
+            iconBg="bg-blue-500/10"
+            label="Show Onboarding"
+            onPress={() => router.replace('/onboarding' as any)}
+          />
+          <SettingRow
+            icon="trash-2"
+            iconBg="bg-red-500/10"
+            label="Delete All Data"
+            danger
+            isLast
+            onPress={handleDeleteAllData}
+          />
+        </View>
+
+        <View className="items-center mb-8">
+          <Text className="text-[10px] text-gray-400 font-bold">ANTYO Focus v1.0.1</Text>
+          <Text className="text-[10px] text-gray-300 dark:text-gray-700 mt-1">Made with ❤️ by Antonius Prasetyo</Text>
         </View>
       </ScrollView>
     </SafeAreaView>

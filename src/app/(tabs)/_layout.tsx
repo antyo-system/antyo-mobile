@@ -38,6 +38,7 @@ function CustomTabBar({ state, descriptors, navigation }: any) {
         let IconComponent = <Feather name="clock" size={24} color={isFocused ? "#2563eb" : "#64748b"} />;
         if (route.name === 'calendar') IconComponent = <Feather name="calendar" size={24} color={isFocused ? "#2563eb" : "#64748b"} />;
         if (route.name === 'stats') IconComponent = <Feather name="bar-chart-2" size={24} color={isFocused ? "#2563eb" : "#64748b"} />;
+        if (route.name === 'mastery') IconComponent = <Feather name="award" size={24} color={isFocused ? "#2563eb" : "#64748b"} />;
 
         return (
           <Pressable
@@ -68,6 +69,7 @@ export default function TabLayout() {
     >
       <Tabs.Screen name="index" options={{ title: 'Focus' }} />
       <Tabs.Screen name="calendar" options={{ title: 'Calendar' }} />
+      <Tabs.Screen name="mastery" options={{ title: 'Mastery' }} />
       <Tabs.Screen name="stats" options={{ title: 'Stats' }} />
     </Tabs>
   );

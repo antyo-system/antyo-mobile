@@ -8,6 +8,7 @@ interface SessionState {
   addSession: (session: Session) => void;
   removeSession: (id: string) => void;
   updateSession: (id: string, updates: Partial<Session>) => void;
+  clearSessions: () => void;
 }
 
 export const useSessionStore = create<SessionState>()(
@@ -22,6 +23,7 @@ export const useSessionStore = create<SessionState>()(
         set((state) => ({
           sessions: state.sessions.map((s) => (s.id === id ? { ...s, ...updates } : s)),
         })),
+      clearSessions: () => set({ sessions: [] }),
     }),
     {
       name: 'session-storage',

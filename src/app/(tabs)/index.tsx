@@ -11,9 +11,11 @@ import { CircularTimer } from '@/components/timer/CircularTimer';
 import { TimerDurationModal } from '@/components/timer/TimerDurationModal';
 import { useShallow } from 'zustand/react/shallow';
 import { useSessionStore } from '@/store/useSessionStore';
+import { useMasteryStore } from '@/store/useMasteryStore';
+import { SkillSelector } from '@/components/timer/SkillSelector';
 
 export default function TimerScreen() {
-  const { status, mode, timeLeft, timeElapsed, tick, currentTitle, duration, stopTimer, sessionStartTime } = useTimerStore(
+  const { status, mode, timeLeft, timeElapsed, tick, currentTitle, duration, stopTimer, sessionStartTime, selectedSkillId } = useTimerStore(
     useShallow((s) => ({
       status: s.status,
       mode: s.mode,
@@ -24,6 +26,7 @@ export default function TimerScreen() {
       duration: s.duration,
       stopTimer: s.stopTimer,
       sessionStartTime: s.sessionStartTime,
+      selectedSkillId: s.selectedSkillId,
     }))
   );
   const addSession = useSessionStore((s: any) => s.addSession);
@@ -44,13 +47,18 @@ export default function TimerScreen() {
         focusDurationSeconds: undefined,
         distractedDurationSeconds: undefined,
       });
+      
+      if (selectedSkillId) {
+        useMasteryStore.getState().addTimeToSkill(selectedSkillId, totalDuration);
+      }
+      
       stopTimer();
     }
-  }, [timeLeft, status, mode, sessionStartTime, duration, currentTitle, addSession, stopTimer]);
+  }, [timeLeft, status, mode, sessionStartTime, duration, currentTitle, selectedSkillId, addSession, stopTimer]);
 
   // Tick interval
   useEffect(() => {
-    let interval: NodeJS.Timeout;
+    let interval: ReturnType<typeof setInterval>;
     if (status === 'running') {
       interval = setInterval(() => {
         tick();
@@ -79,6 +87,10 @@ export default function TimerScreen() {
         focusDurationSeconds: undefined,
         distractedDurationSeconds: undefined,
       });
+      
+      if (selectedSkillId) {
+        useMasteryStore.getState().addTimeToSkill(selectedSkillId, totalDuration);
+      }
     }
     stopTimer();
   };
@@ -101,6 +113,7 @@ export default function TimerScreen() {
             <CircularTimer>
               <View className="items-center justify-center -mt-2">
                 <TimerTitleInput />
+                <SkillSelector />
                 
                 <View className="mt-1">
                   <TimerDisplay onOpenModal={() => setDurationModalVisible(true)} />

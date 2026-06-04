@@ -8,6 +8,8 @@ export interface SettingsState {
   defaultFocusMinutes: number;
   defaultBreakMinutes: number;
   hapticsEnabled: boolean;
+  appearance: 'system' | 'light' | 'dark';
+  dailySessionTarget: number;
   updateSettings: (updates: Partial<SettingsState>) => void;
 }
 
@@ -19,6 +21,8 @@ export const useSettingsStore = create<SettingsState>()(
       defaultFocusMinutes: 25,
       defaultBreakMinutes: 5,
       hapticsEnabled: true,
+      appearance: 'system',
+      dailySessionTarget: 4,
       updateSettings: (updates) => set((state) => ({ ...state, ...updates })),
     }),
     {

@@ -12,10 +12,11 @@ interface TimerState {
   timeElapsed: number; // Elapsed time in seconds for stopwatch
   sessionStartTime: string | null; // ISO timestamp
   currentTitle: string;
-
+  selectedSkillId: string | null;
 
   // Actions
   setTitle: (title: string) => void;
+  setSelectedSkillId: (id: string | null) => void;
   setMode: (mode: TimerMode) => void;
   setDuration: (seconds: number) => void;
   setBreakDuration: (seconds: number) => void;
@@ -34,8 +35,10 @@ export const useTimerStore = create<TimerState>((set, get) => ({
   timeElapsed: 0,
   sessionStartTime: null,
   currentTitle: '',
+  selectedSkillId: null,
 
   setTitle: (title) => set({ currentTitle: title }),
+  setSelectedSkillId: (id) => set({ selectedSkillId: id }),
 
   setMode: (mode) => {
     const { status, duration } = get();

@@ -5,7 +5,7 @@ import { Tabs, router } from 'expo-router';
 import { useState, useEffect } from 'react';
 import { useSessionStore } from '@/store/useSessionStore';
 import { useSettingsStore } from '@/store/useSettingsStore';
-import { SettingsModal } from '@/components/stats/SettingsModal';
+
 import { isToday, isThisWeek, format } from 'date-fns';
 import { formatLongTime } from '@/utils/time';
 import { images } from '@/constants/images';
@@ -39,7 +39,7 @@ export default function StatsScreen() {
 
   // Settings & Time Left Logic
   const { sleepStart, sleepEnd } = useSettingsStore();
-  const [settingsVisible, setSettingsVisible] = useState(false);
+
   const [timeLeft, setTimeLeft] = useState({ hours: 0, minutes: 0, seconds: 0, sleeping: false });
   const [isStillAwake, setIsStillAwake] = useState(false);
 
@@ -117,9 +117,6 @@ export default function StatsScreen() {
             Statistics
           </Text>
           <View className="flex-row items-center gap-3">
-            <Pressable onPress={() => setSettingsVisible(true)} className="w-10 h-10 items-center justify-center bg-gray-200 dark:bg-gray-800 rounded-full">
-              <Feather name="settings" size={20} color="#6B7280" />
-            </Pressable>
             <Pressable onPress={() => router.push('/profile')} className="w-10 h-10 rounded-full bg-emerald-500/10 items-center justify-center border-2 border-emerald-500/30 overflow-hidden">
               <Feather name="user" size={18} color="#10B981" />
             </Pressable>
@@ -266,7 +263,6 @@ export default function StatsScreen() {
         </View>
       </ScrollView>
 
-      <SettingsModal visible={settingsVisible} onClose={() => setSettingsVisible(false)} />
     </SafeAreaView>
   );
 }

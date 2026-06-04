@@ -1,10 +1,11 @@
 import '../global.css';
 
 import { Stack } from 'expo-router';
-import { useColorScheme, LogBox } from 'react-native';
+import { useColorScheme, LogBox, Appearance } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
+import { useSettingsStore } from '@/store/useSettingsStore';
 
 // Ignore harmless strict-mode warnings from Reanimated triggered by NativeWind's internal Pressable CSS interop.
 LogBox.ignoreLogs([
@@ -14,10 +15,20 @@ LogBox.ignoreLogs([
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
+  const appearanceSetting = useSettingsStore(s => s.appearance);
 
   useEffect(() => {
     SplashScreen.hideAsync();
   }, []);
+
+  // Enforce Theme based on settings
+  useEffect(() => {
+    if (appearanceSetting === 'system') {
+      Appearance.setColorScheme(null); // Reset to system
+    } else {
+      Appearance.setColorScheme(appearanceSetting);
+    }
+  }, [appearanceSetting]);
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>

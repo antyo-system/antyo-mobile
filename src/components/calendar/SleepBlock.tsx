@@ -4,7 +4,7 @@ interface Props {
   startMinutes: number;
   durationMinutes: number;
   pixelsPerMinute: number;
-  onPress: () => void;
+  onPress?: () => void;
 }
 
 export function SleepBlock({ startMinutes, durationMinutes, pixelsPerMinute, onPress }: Props) {
