@@ -19,8 +19,12 @@ export function TimerTitleInput() {
         editable={status === 'idle'}
         placeholder="FOCUS"
         placeholderTextColor="#9CA3AF" // Tailwind gray-400
-        className="w-full text-center text-sm font-bold tracking-wider text-gray-500 dark:text-gray-400 uppercase py-2"
+        className="w-full text-center text-base font-black tracking-wider text-black dark:text-white uppercase py-2"
         maxLength={30}
+        autoCorrect={false}
+        spellCheck={false}
+        autoComplete="off"
+        autoCapitalize="characters"
       />
     </View>
   );

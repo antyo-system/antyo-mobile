@@ -2,16 +2,21 @@ import { View, Pressable, Text } from 'react-native';
 import { Tabs } from 'expo-router';
 import { Feather } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTimerStore } from '@/store/useTimerStore';
 
 function CustomTabBar({ state, descriptors, navigation }: any) {
   const status = useTimerStore(s => s.status);
+  const insets = useSafeAreaInsets();
 
   // Hide Navbar when timer is active
   if (status !== 'idle') return null;
 
   return (
-    <View className="absolute bottom-6 left-12 right-12 bg-white dark:bg-gray-900 rounded-full shadow-2xl flex-row items-center justify-between px-4 py-2 border border-gray-100 dark:border-gray-800">
+    <View 
+      className="absolute left-12 right-12 bg-white dark:bg-gray-900 rounded-full shadow-2xl flex-row items-center justify-between px-4 py-2 border border-gray-100 dark:border-gray-800"
+      style={{ bottom: Math.max(insets.bottom + 12, 24) }}
+    >
       {state.routes.map((route: any, index: number) => {
         const { options } = descriptors[route.key];
         const isFocused = state.index === index;

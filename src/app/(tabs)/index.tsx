@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { View, Text, Pressable, Switch } from 'react-native';
+import { View, Text, Pressable, Switch, KeyboardAvoidingView, Platform } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTimerStore } from '@/store/useTimerStore';
@@ -85,32 +85,37 @@ export default function TimerScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-white dark:bg-gray-950">
-      <View className="flex-1 pt-6 pb-8 px-6" pointerEvents="box-none">
-        
-        {/* Top: Smart Mode Toggle */}
-        <View className="items-center justify-start z-10 pt-2 w-full">
-          <TimerModeToggle />
-        </View>
+      <KeyboardAvoidingView 
+        className="flex-1"
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      >
+        <View className="flex-1 pt-6 pb-8 px-6" pointerEvents="box-none">
+          
+          {/* Top: Smart Mode Toggle */}
+          <View className="items-center justify-start z-10 pt-2 w-full">
+            <TimerModeToggle />
+          </View>
 
-        {/* Middle: Circular Timer (Shifted lower) */}
-        <View className="flex-1 items-center justify-center z-0 mt-4" pointerEvents="box-none">
-          <CircularTimer>
-            <View className="items-center justify-center -mt-2">
-              <TimerTitleInput />
-              
-              <View className="mt-1">
-                <TimerDisplay onOpenModal={() => setDurationModalVisible(true)} />
+          {/* Middle: Circular Timer (Shifted lower) */}
+          <View className="flex-1 items-center justify-center z-0 mt-4" pointerEvents="box-none">
+            <CircularTimer>
+              <View className="items-center justify-center -mt-2">
+                <TimerTitleInput />
+                
+                <View className="mt-1">
+                  <TimerDisplay onOpenModal={() => setDurationModalVisible(true)} />
+                </View>
               </View>
-            </View>
-          </CircularTimer>
-        </View>
+            </CircularTimer>
+          </View>
 
-        {/* Bottom 1/3: Controls */}
-        <View className="items-center justify-center h-[20%] z-10 mb-20">
-          <TimerControls onSaveAndStop={handleSaveAndStop} />
+          {/* Bottom 1/3: Controls */}
+          <View className="items-center justify-center h-[20%] z-10 mb-20">
+            <TimerControls onSaveAndStop={handleSaveAndStop} />
+          </View>
+          
         </View>
-        
-      </View>
+      </KeyboardAvoidingView>
       <TimerDurationModal visible={durationModalVisible} onClose={() => setDurationModalVisible(false)} />
     </SafeAreaView>
   );

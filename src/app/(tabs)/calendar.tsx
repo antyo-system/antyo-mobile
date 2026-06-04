@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react';
 import { ScrollView, View, PanResponder, Pressable, Text, Image } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Tabs } from 'expo-router';
 import { useSessionStore } from '@/store/useSessionStore';
 import { usePlanStore, Plan } from '@/store/usePlanStore';
@@ -23,6 +23,7 @@ const PIXELS_PER_MINUTE = 1.5;
 
 export default function CalendarScreen() {
   const [selectedDate, setSelectedDate] = useState(new Date());
+  const insets = useSafeAreaInsets();
   
   // Real Sessions
   const sessions = useSessionStore(s => s.sessions);
@@ -243,7 +244,8 @@ export default function CalendarScreen() {
       {/* Floating Action Button (FAB) */}
       <Pressable 
         onPress={handleCreateNew}
-        className="absolute bottom-28 right-6 w-14 h-14 bg-blue-600 rounded-full items-center justify-center shadow-lg shadow-blue-500/50 z-50"
+        className="absolute right-6 w-14 h-14 bg-blue-600 rounded-full items-center justify-center shadow-lg shadow-blue-500/50 z-50"
+        style={{ bottom: Math.max(insets.bottom + 84, 112) }}
       >
         <Text className="text-white text-3xl leading-none mt-[-2px]">+</Text>
       </Pressable>
