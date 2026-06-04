@@ -15,8 +15,8 @@ export default function ProfileScreen() {
   const {
     sleepStart, sleepEnd,
     defaultBreakMinutes,
-    dailySessionTarget,
     dailyFocusTargetHours,
+    birthYear, retirementAge,
     appearance,
     updateSettings,
   } = useSettingsStore();
@@ -25,6 +25,8 @@ export default function ProfileScreen() {
   const [sleepExpanded, setSleepExpanded] = useState(false);
   const [localSleepStart, setLocalSleepStart] = useState(sleepStart);
   const [localSleepEnd, setLocalSleepEnd] = useState(sleepEnd);
+  const [localBirthYear, setLocalBirthYear] = useState(birthYear.toString());
+  const [localRetirementAge, setLocalRetirementAge] = useState(retirementAge.toString());
   
   const [developerExpanded, setDeveloperExpanded] = useState(false);
 
@@ -55,7 +57,6 @@ export default function ProfileScreen() {
   }, [sessions]);
 
   const breakOptions = [5, 10, 15, 20];
-  const sessionTargetOptions = [2, 3, 4, 5, 6, 8];
 
   const handleDeleteAllData = () => {
     Alert.alert(
@@ -222,40 +223,13 @@ export default function ProfileScreen() {
             </View>
           </View>
 
-          {/* Daily Session Target */}
-          <View className="p-4">
-            <View className="flex-row items-center gap-3 mb-3">
-              <View className="w-8 h-8 rounded-full bg-blue-500/10 items-center justify-center">
-                <Feather name="target" size={16} color="#3B82F6" />
-              </View>
-              <Text className="text-base font-semibold text-gray-900 dark:text-white">Daily Session Target</Text>
-            </View>
-            <View className="flex-row gap-2">
-              {sessionTargetOptions.map(count => (
-                <Pressable
-                  key={count}
-                  onPress={() => updateSettings({ dailySessionTarget: count })}
-                  className={`flex-1 py-2.5 rounded-xl items-center ${
-                    dailySessionTarget === count
-                      ? 'bg-blue-500'
-                      : 'bg-gray-100 dark:bg-gray-800'
-                  }`}
-                >
-                  <Text className={`text-sm font-bold ${
-                    dailySessionTarget === count
-                      ? 'text-white'
-                      : 'text-gray-600 dark:text-gray-400'
-                  }`}>{count}</Text>
-                </Pressable>
-              ))}
-            </View>
-          </View>
+
 
           {/* Daily Focus Target (Hours) */}
           <View className="p-4 border-t border-gray-100 dark:border-gray-800">
             <View className="flex-row items-center gap-3 mb-3">
               <View className="w-8 h-8 rounded-full bg-red-500/10 items-center justify-center">
-                <Feather name="flame" size={16} color="#EF4444" />
+                <Feather name="zap" size={16} color="#EF4444" />
               </View>
               <Text className="text-base font-semibold text-gray-900 dark:text-white">Daily Focus Target (Streak)</Text>
             </View>
@@ -277,6 +251,55 @@ export default function ProfileScreen() {
                   }`}>{hours}h</Text>
                 </Pressable>
               ))}
+            </View>
+          </View>
+
+          {/* Lifetime Settings */}
+          <View className="p-4 border-t border-gray-100 dark:border-gray-800">
+            <View className="flex-row items-center gap-3 mb-4">
+              <View className="w-8 h-8 rounded-full bg-emerald-500/10 items-center justify-center">
+                <Feather name="clock" size={16} color="#10B981" />
+              </View>
+              <Text className="text-base font-semibold text-gray-900 dark:text-white">Lifetime Analytics</Text>
+            </View>
+            
+            <View className="flex-row gap-4">
+              <View className="flex-1">
+                <Text className="text-xs font-bold text-gray-500 mb-2">Birth Year</Text>
+                <TextInput
+                  value={localBirthYear}
+                  onChangeText={setLocalBirthYear}
+                  onEndEditing={() => {
+                    const year = parseInt(localBirthYear);
+                    if (!isNaN(year) && year > 1900 && year < 2100) {
+                      updateSettings({ birthYear: year });
+                    } else {
+                      setLocalBirthYear(birthYear.toString());
+                    }
+                  }}
+                  keyboardType="number-pad"
+                  maxLength={4}
+                  className="bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white px-4 py-3 rounded-xl font-bold text-center"
+                />
+              </View>
+              <View className="flex-1">
+                <Text className="text-xs font-bold text-gray-500 mb-2">Retirement Age</Text>
+                <TextInput
+                  value={localRetirementAge}
+                  onChangeText={setLocalRetirementAge}
+                  onEndEditing={() => {
+                    const age = parseInt(localRetirementAge);
+                    if (!isNaN(age) && age > 0 && age < 150) {
+                      updateSettings({ retirementAge: age });
+                    } else {
+                      setLocalRetirementAge(retirementAge.toString());
+                    }
+                  }}
+                  keyboardType="number-pad"
+                  maxLength={3}
+                  className="bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white px-4 py-3 rounded-xl font-bold text-center"
+                />
+              </View>
             </View>
           </View>
         </View>

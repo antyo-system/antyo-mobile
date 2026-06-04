@@ -9,8 +9,9 @@ export interface Settings {
   defaultBreakMinutes: number;
   hapticsEnabled: boolean;
   appearance: 'system' | 'light' | 'dark';
-  dailySessionTarget: number;
   dailyFocusTargetHours: number;
+  birthYear: number;
+  retirementAge: number;
 }
 
 export interface SettingsState extends Settings {
@@ -26,8 +27,9 @@ export const useSettingsStore = create<SettingsState>()(
       defaultBreakMinutes: 5,
       hapticsEnabled: true,
       appearance: 'system',
-      dailySessionTarget: 4,
       dailyFocusTargetHours: 3,
+      birthYear: 2000,
+      retirementAge: 65,
       updateSettings: (updates) => set((state) => ({ ...state, ...updates })),
     }),
     {

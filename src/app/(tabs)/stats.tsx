@@ -12,6 +12,7 @@ import { images } from '@/constants/images';
 import { calculateStreak } from '@/utils/streak';
 import { WeeklyBarChart } from '@/components/stats/WeeklyBarChart';
 import { ContributionHeatmap } from '@/components/stats/ContributionHeatmap';
+import { LifetimeCountdown } from '@/components/stats/LifetimeCountdown';
 
 export default function StatsScreen() {
   const sessions = useSessionStore(s => s.sessions);
@@ -122,83 +123,64 @@ export default function StatsScreen() {
             Statistics
           </Text>
           <View className="flex-row items-center gap-3">
+            {currentStreak > 0 && (
+              <View className="flex-row items-center bg-orange-50 dark:bg-orange-900/30 px-3 py-1.5 rounded-full border border-orange-200 dark:border-orange-800">
+                <Text className="text-orange-600 dark:text-orange-400 font-black text-sm mr-1">{currentStreak}</Text>
+                <Text className="text-sm">🔥</Text>
+              </View>
+            )}
             <Pressable onPress={() => router.push('/profile')} className="w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-800 items-center justify-center overflow-hidden">
               <Feather name="settings" size={18} color="#6B7280" />
             </Pressable>
           </View>
         </View>
 
-        {/* STREAK WIDGET */}
-        <View className="bg-white dark:bg-gray-900 rounded-3xl p-6 shadow-sm border border-gray-100 dark:border-gray-800 mb-6 flex-row items-center justify-between">
-          <View>
-            <Text className="text-[10px] font-black uppercase tracking-widest text-orange-500 mb-1">
-              {dailyFocusTargetHours}h Target
-            </Text>
-            <Text className="text-xl font-black text-gray-900 dark:text-white">Day Streak</Text>
-          </View>
-          <View className="flex-row items-baseline gap-1">
-            <Text className="text-4xl font-black tabular-nums text-orange-500">{currentStreak}</Text>
-            <Text className="text-base font-bold text-gray-400">🔥</Text>
-          </View>
-        </View>
-
-        {/* TIME LEFT WIDGET */}
-        <View className={`rounded-3xl p-6 shadow-sm mb-6 relative overflow-hidden border ${
-          timeLeft.sleeping 
-            ? 'bg-red-50 dark:bg-red-950/40 border-red-200 dark:border-red-900' 
-            : 'bg-orange-50 dark:bg-orange-950/40 border-orange-200 dark:border-orange-900'
-        }`}>
-          <Text className={`font-black tracking-widest uppercase text-[10px] mb-2 ${
-            timeLeft.sleeping ? 'text-red-600 dark:text-red-500' : 'text-orange-600 dark:text-orange-500'
-          }`}>
-            {timeLeft.sleeping ? 'Sleep Debt (Borrowed from tomorrow) 🌙' : 'Time Left Today'}
-          </Text>
+        {/* TIME WIDGETS ROW */}
+        <View className="flex-row gap-4 mb-6">
           
-          <View className="flex-row items-baseline gap-1">
-            {timeLeft.sleeping && <Text className="text-4xl font-black tabular-nums text-red-600 dark:text-red-500 mr-2">-</Text>}
-            
-            <Text className={`text-5xl font-black tabular-nums ${timeLeft.sleeping ? 'text-red-600 dark:text-red-500' : 'text-orange-600 dark:text-orange-500'}`}>
-              {timeLeft.hours.toString().padStart(2, '0')}
+          {/* TIME LEFT WIDGET (2/3 width) */}
+          <View className={`flex-[2] rounded-3xl p-6 shadow-sm relative overflow-hidden border ${
+            timeLeft.sleeping 
+              ? 'bg-red-50 dark:bg-red-950/20 border-red-100 dark:border-red-900/30' 
+              : 'bg-white dark:bg-gray-900 border-gray-100 dark:border-gray-800'
+          }`}>
+            <View className="absolute top-0 right-0 p-4 opacity-10">
+              <Feather name={timeLeft.sleeping ? 'moon' : 'clock'} size={80} color={timeLeft.sleeping ? '#EF4444' : '#F97316'} />
+            </View>
+
+            <Text className={`font-black tracking-widest uppercase text-[10px] mb-2 ${
+              timeLeft.sleeping ? 'text-red-600 dark:text-red-500' : 'text-orange-600 dark:text-orange-500'
+            }`}>
+              {timeLeft.sleeping ? 'Sleep Debt (Borrowed) 🌙' : 'Time Left Today'}
             </Text>
-            <Text className={`text-xl font-bold mr-2 ${timeLeft.sleeping ? 'text-red-400' : 'text-orange-400'}`}>h</Text>
             
-            <Text className={`text-5xl font-black tabular-nums ${timeLeft.sleeping ? 'text-red-600 dark:text-red-500' : 'text-orange-600 dark:text-orange-500'}`}>
-              {timeLeft.minutes.toString().padStart(2, '0')}
-            </Text>
-            <Text className={`text-xl font-bold mr-2 ${timeLeft.sleeping ? 'text-red-400' : 'text-orange-400'}`}>m</Text>
-            
-            <Text className={`text-5xl font-black tabular-nums ${timeLeft.sleeping ? 'text-red-600/80 dark:text-red-500/80' : 'text-orange-600/80 dark:text-orange-500/80'}`}>
-              {timeLeft.seconds.toString().padStart(2, '0')}
-            </Text>
-            <Text className={`text-xl font-bold ${timeLeft.sleeping ? 'text-red-400' : 'text-orange-400'}`}>s</Text>
+            <View className="flex-row items-baseline gap-1 mt-1">
+              {timeLeft.sleeping && <Text className="text-3xl font-black tabular-nums text-red-600 dark:text-red-500 mr-1">-</Text>}
+              
+              <Text className={`text-4xl font-black tabular-nums ${timeLeft.sleeping ? 'text-red-600 dark:text-red-500' : 'text-orange-600 dark:text-orange-500'}`}>
+                {timeLeft.hours.toString().padStart(2, '0')}
+              </Text>
+              <Text className={`text-lg font-bold mr-1 ${timeLeft.sleeping ? 'text-red-400' : 'text-orange-400'}`}>h</Text>
+              
+              <Text className={`text-4xl font-black tabular-nums ${timeLeft.sleeping ? 'text-red-600 dark:text-red-500' : 'text-orange-600 dark:text-orange-500'}`}>
+                {timeLeft.minutes.toString().padStart(2, '0')}
+              </Text>
+              <Text className={`text-lg font-bold mr-1 ${timeLeft.sleeping ? 'text-red-400' : 'text-orange-400'}`}>m</Text>
+              
+              <Text className={`text-4xl font-black tabular-nums ${timeLeft.sleeping ? 'text-red-600/80 dark:text-red-500/80' : 'text-orange-600/80 dark:text-orange-500/80'}`}>
+                {timeLeft.seconds.toString().padStart(2, '0')}
+              </Text>
+              <Text className={`text-lg font-bold ${timeLeft.sleeping ? 'text-red-400' : 'text-orange-400'}`}>s</Text>
+            </View>
           </View>
+
+          {/* LIFETIME COUNTDOWN (1/3 width) */}
+          <LifetimeCountdown />
         </View>
 
         {/* WEEKLY BAR CHART */}
         <WeeklyBarChart sessions={sessions} />
 
-        {/* TODAY / THIS WEEK */}
-        <View className="flex-row gap-4 mb-6">
-          <View className="flex-1 bg-white dark:bg-gray-900 rounded-3xl p-5 shadow-sm border border-gray-100 dark:border-gray-800">
-            <Text className="text-gray-500 dark:text-gray-400 font-bold tracking-wider uppercase text-[10px] mb-2">
-              Today
-            </Text>
-            <Text className="text-3xl font-black tabular-nums text-blue-600 dark:text-blue-400">
-              {formatLongTime(totalSecondsToday)}
-            </Text>
-            <Text className="text-xs text-gray-400 font-medium mt-1">{todaysSessions.length} sessions</Text>
-          </View>
-
-          <View className="flex-1 bg-white dark:bg-gray-900 rounded-3xl p-5 shadow-sm border border-gray-100 dark:border-gray-800">
-            <Text className="text-gray-500 dark:text-gray-400 font-bold tracking-wider uppercase text-[10px] mb-2">
-              This Week
-            </Text>
-            <Text className="text-3xl font-black tabular-nums text-purple-600 dark:text-purple-400">
-              {formatLongTime(totalSecondsThisWeek)}
-            </Text>
-            <Text className="text-xs text-gray-400 font-medium mt-1">{thisWeekSessions.length} sessions</Text>
-          </View>
-        </View>
 
         {/* MASTERY HEATMAP (ALL TIME) */}
         <ContributionHeatmap sessions={sessions} />
