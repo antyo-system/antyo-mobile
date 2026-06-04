@@ -42,7 +42,7 @@ export function TimerControls({ onSaveAndStop }: TimerControlsProps) {
   const colorScheme = useColorScheme();
   const iconColor = colorScheme === 'dark' ? '#FFFFFF' : '#000000';
 
-  const [modalVisible, setModalVisible] = useState(false);
+  const [stopConfirmVisible, setStopConfirmVisible] = useState(false);
 
   const handleStart = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
@@ -56,9 +56,7 @@ export function TimerControls({ onSaveAndStop }: TimerControlsProps) {
 
   const handleStopPress = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Rigid);
-    // Directly finish and save when they hit stop
-    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    onSaveAndStop();
+    setStopConfirmVisible(true);
   };
 
   return (
@@ -106,6 +104,41 @@ export function TimerControls({ onSaveAndStop }: TimerControlsProps) {
           </AnimatedButton>
         </View>
       )}
+
+      {/* Confirmation Modal */}
+      <Modal visible={stopConfirmVisible} animationType="fade" transparent>
+        <View className="flex-1 bg-black/60 justify-center px-6">
+          <View className="bg-white dark:bg-gray-900 rounded-3xl p-6 shadow-xl items-center border border-gray-100 dark:border-gray-800">
+            <View className="w-16 h-16 bg-red-100 dark:bg-red-900/30 rounded-full items-center justify-center mb-4">
+              <Text className="text-3xl">⚠️</Text>
+            </View>
+            <Text className="text-xl font-black text-gray-900 dark:text-white mb-2 text-center">Akhiri Sesi?</Text>
+            <Text className="text-gray-500 dark:text-gray-400 text-center font-medium mb-8">
+              Yakin ingin menghentikan sesi fokus ini sekarang? Progress Anda saat ini akan disimpan.
+            </Text>
+            
+            <View className="flex-row gap-3 w-full">
+              <Pressable 
+                onPress={() => setStopConfirmVisible(false)}
+                className="flex-1 py-4 bg-gray-100 dark:bg-gray-800 rounded-2xl items-center"
+              >
+                <Text className="font-bold text-gray-600 dark:text-gray-300">Lanjutkan Fokus</Text>
+              </Pressable>
+              
+              <Pressable 
+                onPress={() => {
+                  setStopConfirmVisible(false);
+                  Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+                  onSaveAndStop();
+                }}
+                className="flex-1 py-4 bg-red-600 rounded-2xl items-center shadow-lg shadow-red-500/30"
+              >
+                <Text className="font-bold text-white">Ya, Akhiri</Text>
+              </Pressable>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }

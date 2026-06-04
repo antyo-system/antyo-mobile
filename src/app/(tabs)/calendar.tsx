@@ -11,6 +11,7 @@ import { TimelineBlock } from '@/components/calendar/TimelineBlock';
 import { InteractivePlanBlock } from '@/components/calendar/InteractivePlanBlock';
 import { PlanEditorModal } from '@/components/calendar/PlanEditorModal';
 import { RealSessionEditorModal } from '@/components/calendar/RealSessionEditorModal';
+import { QuickSleepEditorModal } from '@/components/calendar/QuickSleepEditorModal';
 import { useMasteryStore } from '@/store/useMasteryStore';
 import { SleepBlock } from '@/components/calendar/SleepBlock';
 import { TimelineNowIndicator } from '@/components/calendar/TimelineNowIndicator';
@@ -45,6 +46,7 @@ export default function CalendarScreen() {
   const [editorVisible, setEditorVisible] = useState(false);
   const [editingPlan, setEditingPlan] = useState<Plan | null>(null);
   const [realEditorVisible, setRealEditorVisible] = useState(false);
+  const [quickSleepVisible, setQuickSleepVisible] = useState(false);
   const [editingRealSession, setEditingRealSession] = useState<Session | null>(null);
   
   const verticalScrollRef = useRef<ScrollView>(null);
@@ -216,6 +218,7 @@ export default function CalendarScreen() {
             startMinutes={block.start}
             durationMinutes={block.duration}
             pixelsPerMinute={PIXELS_PER_MINUTE}
+            onPress={() => setQuickSleepVisible(true)}
           />
         ))}
 
@@ -314,8 +317,10 @@ export default function CalendarScreen() {
         }}
       />
 
-
-
+      <QuickSleepEditorModal 
+        visible={quickSleepVisible}
+        onClose={() => setQuickSleepVisible(false)}
+      />
 
     </SafeAreaView>
   );

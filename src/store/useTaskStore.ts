@@ -2,27 +2,50 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { zustandStorage } from './mmkv';
 
+export interface Project {
+  id: string;
+  name: string;
+  color: string;
+}
+
 export interface Task {
   id: string;
   title: string;
   completed: boolean;
   baseDate: string; // ISO date string matching the selected date
   createdAt: number;
+  projectId?: string;
 }
 
 interface TaskState {
   tasks: Task[];
+  projects: Project[];
   addTask: (task: Omit<Task, 'id' | 'completed' | 'createdAt'>) => void;
   toggleTask: (id: string) => void;
   updateTask: (id: string, title: string) => void;
   deleteTask: (id: string) => void;
+  addProject: (name: string, color: string) => void;
+  deleteProject: (id: string) => void;
 }
 
 export const useTaskStore = create<TaskState>()(
   persist(
     (set) => ({
       tasks: [],
+      projects: [],
       
+      addProject: (name, color) => set((state) => ({
+        projects: [
+          ...state.projects,
+          { id: Date.now().toString(), name, color }
+        ]
+      })),
+
+      deleteProject: (id) => set((state) => ({
+        projects: state.projects.filter(p => p.id !== id),
+        tasks: state.tasks.map(t => t.projectId === id ? { ...t, projectId: undefined } : t)
+      })),
+
       addTask: (taskData) => set((state) => ({
         tasks: [
           ...state.tasks,

@@ -6,6 +6,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
 import { useSettingsStore } from '@/store/useSettingsStore';
+import { GlobalReminderOverlay } from '@/components/GlobalReminderOverlay';
 
 // Ignore harmless strict-mode warnings from Reanimated triggered by NativeWind's internal Pressable CSS interop.
 LogBox.ignoreLogs([
@@ -39,6 +40,7 @@ export default function RootLayout() {
         <Stack.Screen name="profile" options={{ presentation: 'modal', headerShown: false }} />
         <Stack.Screen name="+not-found" options={{ title: 'Oops!' }} />
       </Stack>
+      <GlobalReminderOverlay />
     </GestureHandlerRootView>
   );
 }

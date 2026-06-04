@@ -1,4 +1,4 @@
-import { View, Text, Pressable, ScrollView, Linking, Alert, TextInput } from 'react-native';
+import { View, Text, Pressable, ScrollView, Linking, Alert, TextInput, KeyboardAvoidingView, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Feather } from '@expo/vector-icons';
 import { router } from 'expo-router';
@@ -38,6 +38,15 @@ export default function ProfileScreen() {
   const saveSleep = () => {
     updateSettings({ sleepStart: localSleepStart, sleepEnd: localSleepEnd });
     setSleepExpanded(false);
+  };
+
+  const formatTimeInput = (text: string, setter: (val: string) => void) => {
+    const cleaned = text.replace(/[^0-9]/g, '');
+    if (cleaned.length >= 3) {
+      setter(`${cleaned.slice(0, 2)}:${cleaned.slice(2, 4)}`);
+    } else {
+      setter(cleaned);
+    }
   };
 
   const stats = useMemo(() => {
@@ -102,9 +111,13 @@ export default function ProfileScreen() {
   );
 
   return (
-    <SafeAreaView className="flex-1 bg-gray-50 dark:bg-gray-950" edges={['top']}>
-      {/* Header */}
-      <View className="flex-row items-center justify-between px-6 py-4">
+    <SafeAreaView className="flex-1 bg-gray-50 dark:bg-gray-950" edges={['top', 'bottom']}>
+      <KeyboardAvoidingView 
+        style={{ flex: 1 }} 
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      >
+        {/* Header */}
+        <View className="flex-row items-center justify-between px-6 py-4">
         <Pressable onPress={() => router.back()} className="w-10 h-10 items-center justify-center rounded-full bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800">
           <Feather name="x" size={20} color={isDark ? 'white' : 'black'} />
         </Pressable>
@@ -169,8 +182,9 @@ export default function ProfileScreen() {
                   <Text className="text-[10px] font-bold text-gray-500 dark:text-gray-400 mb-1.5 uppercase tracking-wider">Bedtime</Text>
                   <TextInput
                     value={localSleepStart}
-                    onChangeText={setLocalSleepStart}
+                    onChangeText={(val) => formatTimeInput(val, setLocalSleepStart)}
                     keyboardType="numeric"
+                    maxLength={5}
                     className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-3 rounded-xl text-gray-900 dark:text-white font-bold text-center"
                     placeholder="23:00"
                     placeholderTextColor="#9CA3AF"
@@ -180,8 +194,9 @@ export default function ProfileScreen() {
                   <Text className="text-[10px] font-bold text-gray-500 dark:text-gray-400 mb-1.5 uppercase tracking-wider">Wake Up</Text>
                   <TextInput
                     value={localSleepEnd}
-                    onChangeText={setLocalSleepEnd}
+                    onChangeText={(val) => formatTimeInput(val, setLocalSleepEnd)}
                     keyboardType="numeric"
+                    maxLength={5}
                     className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-3 rounded-xl text-gray-900 dark:text-white font-bold text-center"
                     placeholder="06:00"
                     placeholderTextColor="#9CA3AF"
@@ -438,7 +453,8 @@ export default function ProfileScreen() {
           <Text className="text-[10px] text-gray-400 font-bold">ANTYO Focus v1.0.1</Text>
           <Text className="text-[10px] text-gray-300 dark:text-gray-700 mt-1">Made with ❤️ by Antonius Prasetyo</Text>
         </View>
-      </ScrollView>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }

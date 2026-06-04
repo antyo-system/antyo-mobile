@@ -12,7 +12,7 @@ interface Props {
   onDelete: (id: string) => void;
 }
 
-const formatTimeInput = (mins: number) => {
+const formatMinsToTimeStr = (mins: number) => {
   const h = Math.floor(mins / 60).toString().padStart(2, '0');
   const m = (mins % 60).toString().padStart(2, '0');
   return `${h}:${m}`;
@@ -37,6 +37,7 @@ export function PlanEditorModal({ visible, plan, onClose, onSave, onDelete }: Pr
   const [notes, setNotes] = useState('');
   const [startTimeStr, setStartTimeStr] = useState('');
   const [endTimeStr, setEndTimeStr] = useState('');
+  const [isReminderEnabled, setIsReminderEnabled] = useState(true);
 
   useEffect(() => {
     setTitle(plan?.title || '');
@@ -44,15 +45,25 @@ export function PlanEditorModal({ visible, plan, onClose, onSave, onDelete }: Pr
     setRecurrenceDays(plan?.recurrenceDays || []);
     setIsAllDay(plan?.isAllDay || false);
     setNotes(plan?.notes || '');
+    setIsReminderEnabled(plan?.isReminderEnabled ?? true);
     
     if (plan && !isNaN(plan.startMinutes) && !plan?.isAllDay) {
-      setStartTimeStr(formatTimeInput(plan.startMinutes));
-      setEndTimeStr(formatTimeInput(plan.startMinutes + plan.durationMinutes));
+      setStartTimeStr(formatMinsToTimeStr(plan.startMinutes));
+      setEndTimeStr(formatMinsToTimeStr(plan.startMinutes + plan.durationMinutes));
     } else {
       setStartTimeStr('');
       setEndTimeStr('');
     }
   }, [plan, visible]);
+
+  const handleTimeInput = (text: string, setter: (val: string) => void) => {
+    const cleaned = text.replace(/[^0-9]/g, '');
+    if (cleaned.length >= 3) {
+      setter(`${cleaned.slice(0, 2)}:${cleaned.slice(2, 4)}`);
+    } else {
+      setter(cleaned);
+    }
+  };
 
   const handleSave = () => {
     if (!title.trim()) return;
@@ -82,7 +93,8 @@ export function PlanEditorModal({ visible, plan, onClose, onSave, onDelete }: Pr
       startMinutes,
       durationMinutes,
       isAllDay,
-      notes
+      notes,
+      isReminderEnabled
     });
   };
 
@@ -121,13 +133,31 @@ export function PlanEditorModal({ visible, plan, onClose, onSave, onDelete }: Pr
             </View>
 
             {!isAllDay && (
+              <View className="flex-row items-center justify-between mb-6 bg-blue-50 dark:bg-blue-900/20 p-4 rounded-2xl border border-blue-100 dark:border-blue-900/50">
+                <View className="flex-row items-center gap-2">
+                  <Text className="text-lg">🔔</Text>
+                  <View>
+                    <Text className="text-sm font-bold text-blue-900 dark:text-blue-100">Remind Me</Text>
+                    <Text className="text-xs text-blue-700 dark:text-blue-300 mt-0.5">Auto-start focus timer at start time</Text>
+                  </View>
+                </View>
+                <Switch 
+                  value={isReminderEnabled} 
+                  onValueChange={setIsReminderEnabled} 
+                  trackColor={{ true: '#2563EB', false: '#D1D5DB' }}
+                />
+              </View>
+            )}
+
+            {!isAllDay && (
               <View className="flex-row gap-4 mb-6">
                 <View className="flex-1">
                   <Text className="text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Start Time</Text>
                   <TextInput
                     value={startTimeStr}
-                    onChangeText={setStartTimeStr}
+                    onChangeText={(val) => handleTimeInput(val, setStartTimeStr)}
                     keyboardType="numeric"
+                    maxLength={5}
                     placeholder="09:00"
                     placeholderTextColor="#9ca3af"
                     className="bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-4 rounded-2xl text-gray-900 dark:text-white font-bold text-lg text-center shadow-sm"
@@ -137,8 +167,9 @@ export function PlanEditorModal({ visible, plan, onClose, onSave, onDelete }: Pr
                   <Text className="text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">End Time</Text>
                   <TextInput
                     value={endTimeStr}
-                    onChangeText={setEndTimeStr}
+                    onChangeText={(val) => handleTimeInput(val, setEndTimeStr)}
                     keyboardType="numeric"
+                    maxLength={5}
                     placeholder="09:30"
                     placeholderTextColor="#9ca3af"
                     className="bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-4 rounded-2xl text-gray-900 dark:text-white font-bold text-lg text-center shadow-sm"

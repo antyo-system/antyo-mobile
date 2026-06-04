@@ -14,6 +14,7 @@ export interface Plan {
   recurrenceDays?: number[]; // 0 = Sunday, 1 = Monday, etc.
   isAllDay?: boolean;
   notes?: string;
+  isReminderEnabled?: boolean;
 }
 
 interface PlanState {
