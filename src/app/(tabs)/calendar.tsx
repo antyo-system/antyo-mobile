@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { ScrollView, View, PanResponder, Pressable, Text, Image } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Tabs } from 'expo-router';
@@ -15,6 +15,8 @@ import { SettingsModal } from '@/components/stats/SettingsModal';
 import { SleepBlock } from '@/components/calendar/SleepBlock';
 import { TimelineNowIndicator } from '@/components/calendar/TimelineNowIndicator';
 import { DateSelector } from '@/components/calendar/DateSelector';
+import { ScheduleFeedView } from '@/components/calendar/ScheduleFeedView';
+import { TaskListView } from '@/components/calendar/TaskListView';
 import { getMinutesFromMidnight } from '@/utils/time';
 import { isSameDay, isToday, addDays, subDays } from 'date-fns';
 import { images } from '@/constants/images';
@@ -37,12 +39,14 @@ export default function CalendarScreen() {
   const updatePlan = usePlanStore(s => s.updatePlan);
   const deletePlan = usePlanStore(s => s.deletePlan);
 
-  const [activeTab, setActiveTab] = useState<'plan' | 'real'>('plan');
+  const [activeTab, setActiveTab] = useState<'plan' | 'schedule' | 'real' | 'task'>('plan');
   const [isScrollEnabled, setIsScrollEnabled] = useState(true);
   const [editorVisible, setEditorVisible] = useState(false);
   const [editingPlan, setEditingPlan] = useState<Plan | null>(null);
   const [realEditorVisible, setRealEditorVisible] = useState(false);
   const [editingRealSession, setEditingRealSession] = useState<Session | null>(null);
+  
+  const verticalScrollRef = useRef<ScrollView>(null);
   
   const { sleepStart, sleepEnd } = useSettingsStore();
   const [settingsVisible, setSettingsVisible] = useState(false);
@@ -89,6 +93,18 @@ export default function CalendarScreen() {
       },
     })
   ).current;
+
+  // Auto-scroll to current time when Today is selected
+  useEffect(() => {
+    if (isSelectedToday) {
+      setTimeout(() => {
+        const currentMins = getMinutesFromMidnight(new Date());
+        // Calculate Y position of current time, subtract ~300px to center it on screen
+        const yPos = Math.max(0, currentMins * PIXELS_PER_MINUTE - 300);
+        verticalScrollRef.current?.scrollTo({ y: yPos, animated: true });
+      }, 100);
+    }
+  }, [selectedDate, isSelectedToday]);
 
   const handleCreateNew = () => {
     setEditingPlan(null);
@@ -141,35 +157,43 @@ export default function CalendarScreen() {
       {/* Force hide the duplicate Expo Router header */}
       <Tabs.Screen options={{ headerShown: false }} />
       
-      <DateSelector selectedDate={selectedDate} onSelectDate={setSelectedDate} />
+      <DateSelector 
+        selectedDate={selectedDate} 
+        onSelectDate={setSelectedDate} 
+      />
       
       {/* PLAN vs REAL Minimalist Toggle */}
       <View className="flex-row bg-white dark:bg-gray-950 py-2.5 z-10 border-b border-gray-100 dark:border-gray-900 justify-center gap-12 shadow-sm">
         <Pressable 
-          onPress={() => setActiveTab('plan')}
+          onPress={() => setActiveTab(activeTab === 'plan' ? 'schedule' : 'plan')}
           className="items-center justify-center py-1 px-4"
         >
           <Text className={`text-[10px] font-black tracking-[0.2em] uppercase ${
-            activeTab === 'plan' ? 'text-yellow-600 dark:text-yellow-500' : 'text-gray-400 dark:text-gray-600'
+            (activeTab === 'plan' || activeTab === 'schedule') ? 'text-yellow-600 dark:text-yellow-500' : 'text-gray-400 dark:text-gray-600'
           }`}>
-            Plan
+            {activeTab === 'schedule' ? 'Schedule' : 'Plan'}
           </Text>
         </Pressable>
 
         <Pressable 
-          onPress={() => setActiveTab('real')}
+          onPress={() => setActiveTab(activeTab === 'real' ? 'task' : 'real')}
           className="items-center justify-center py-1 px-4"
         >
           <Text className={`text-[10px] font-black tracking-[0.2em] uppercase ${
-            activeTab === 'real' ? 'text-blue-600 dark:text-blue-500' : 'text-gray-400 dark:text-gray-600'
+            (activeTab === 'real' || activeTab === 'task') ? 'text-blue-600 dark:text-blue-500' : 'text-gray-400 dark:text-gray-600'
           }`}>
-            Real
+            {activeTab === 'task' ? 'Task' : 'Real'}
           </Text>
         </Pressable>
       </View>
 
-      <View className="flex-1" {...panResponder.panHandlers}>
+      {activeTab === 'schedule' && <ScheduleFeedView selectedDate={selectedDate} />}
+      {activeTab === 'task' && <TaskListView selectedDate={selectedDate} />}
+
+      {(activeTab === 'plan' || activeTab === 'real') && (
+        <View className="flex-1" {...panResponder.panHandlers}>
         <ScrollView 
+          ref={verticalScrollRef}
           className="flex-1"
           scrollEnabled={isScrollEnabled}
           contentContainerStyle={{ paddingTop: 20, paddingBottom: 150 }}
@@ -240,6 +264,7 @@ export default function CalendarScreen() {
           </Pressable>
         </ScrollView>
       </View>
+      )}
 
       {/* Floating Action Button (FAB) */}
       <Pressable 
@@ -273,6 +298,8 @@ export default function CalendarScreen() {
           setRealEditorVisible(false);
         }}
       />
+
+
 
       <SettingsModal visible={settingsVisible} onClose={() => setSettingsVisible(false)} />
     </SafeAreaView>

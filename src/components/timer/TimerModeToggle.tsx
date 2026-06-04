@@ -29,7 +29,7 @@ export function TimerModeToggle() {
           Timer
         </Text>
       </Pressable>
-      <View className="w-8" /> {/* Spacer instead of Switch */}
+      <View className="w-8" />{/* Spacer instead of Switch */}
       <Pressable
         onPress={() => handlePress('stopwatch')}
         className="active:opacity-60 py-2"

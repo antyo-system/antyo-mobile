@@ -18,11 +18,12 @@ export function DateSelector({ selectedDate, onSelectDate }: Props) {
 
   useEffect(() => {
     // Auto-scroll to center (rough estimate based on 56px width + 12px gap per item)
-    // 14 items * 68 = 952. Center is around 800.
+    // The selected date is always at index 14. 14 * 68 = 952.
+    // Center of screen is roughly 150-200px offset, so scrolling to 780-800 centers it.
     setTimeout(() => {
-      scrollViewRef.current?.scrollTo({ x: 750, animated: false });
-    }, 50);
-  }, []);
+      scrollViewRef.current?.scrollTo({ x: 780, animated: true });
+    }, 100);
+  }, [selectedDate]);
 
   return (
     <View className="bg-white dark:bg-gray-950 border-b border-gray-100 dark:border-gray-900 pb-3 pt-2">

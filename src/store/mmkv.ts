@@ -6,33 +6,17 @@ let storage: {
   remove: (key: string) => void;
 };
 
-import { Platform } from 'react-native';
-
-if (Platform.OS === 'web') {
+try {
+  const { createMMKV } = require('react-native-mmkv');
+  storage = createMMKV({ id: 'antyo-storage' });
+} catch (e) {
+  console.warn('[mmkv] Native module unavailable, using in-memory fallback:', e);
+  const memStore = new Map<string, string>();
   storage = {
-    set: (key: string, value: string | boolean | number) => { 
-      try { localStorage.setItem(key, String(value)); } catch(e) {}
-    },
-    getString: (key: string) => { 
-      try { return localStorage.getItem(key) || undefined; } catch(e) { return undefined; }
-    },
-    remove: (key: string) => { 
-      try { localStorage.removeItem(key); } catch(e) {}
-    },
+    set: (key: string, value: string | boolean | number) => { memStore.set(key, String(value)); },
+    getString: (key: string) => memStore.get(key),
+    remove: (key: string) => { memStore.delete(key); },
   };
-} else {
-  try {
-    const { createMMKV } = require('react-native-mmkv');
-    storage = createMMKV({ id: 'antyo-storage' });
-  } catch (e) {
-    console.warn('[mmkv] Native module unavailable, using in-memory fallback:', e);
-    const memStore = new Map<string, string>();
-    storage = {
-      set: (key: string, value: string | boolean | number) => { memStore.set(key, String(value)); },
-      getString: (key: string) => memStore.get(key),
-      remove: (key: string) => { memStore.delete(key); },
-    };
-  }
 }
 
 export { storage };

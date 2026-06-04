@@ -62,7 +62,7 @@ export function TimerControls({ onSaveAndStop }: TimerControlsProps) {
   };
 
   return (
-    <View className="items-center justify-center w-full px-8 mt-4 h-24">
+    <View className="items-center justify-center w-full px-8 mt-4 min-h-[120px]">
       {status === 'idle' && (
         <AnimatedButton 
           onPress={handleStart} 

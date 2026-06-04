@@ -1,5 +1,4 @@
 import { create } from 'zustand';
-import { MMKV, createMMKV } from 'react-native-mmkv';
 
 // In-memory fallback when NitroModules/MMKV native module is unavailable (e.g. certain emulator configs)
 const memoryStore = new Map<string, string | boolean | number>();
@@ -54,6 +53,7 @@ if (Platform.OS === 'web') {
   };
 } else {
   try {
+    const { createMMKV } = require('react-native-mmkv');
     storage = createMMKV();
   } catch (e) {
     console.warn('[useAppStore] MMKV native module unavailable, using in-memory fallback:', e);
