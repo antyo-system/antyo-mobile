@@ -48,7 +48,6 @@ Most productivity apps only know what users planned to do. Pomodoro apps know ti
   /assets        # Images, fonts, icons
 ```
 
-## Roadmap
-- **Phase 1 (MVP):** Timer, Stopwatch, Calendar (PLAN vs REAL), Basic Statistics, Local Storage.
-- **Phase 2:** Advanced Statistics, settings customization.
-- **Phase 3 (Future):** Smart Mode (computer vision face detection for distraction tracking).
+## Roadmap & Monetization Strategy
+To see our detailed path from MVP to 100M downloads, including our B2C Freemium model and Go-To-Market strategy, please read:
+👉 **[ROADMAP_100M.md](./docs/ROADMAP_100M.md)**

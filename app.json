@@ -9,15 +9,9 @@
     "userInterfaceStyle": "automatic",
     "ios": {
       "icon": "./assets/expo.icon",
-      "bundleIdentifier": "com.antyo.focus",
-      "infoPlist": {
-        "NSCameraUsageDescription": "Allow ANTYO Focus to access your camera for Smart Mode face detection."
-      }
+      "bundleIdentifier": "com.antyo.focus"
     },
     "android": {
-      "permissions": [
-        "android.permission.CAMERA"
-      ],
       "softwareKeyboardLayoutMode": "pan",
       "adaptiveIcon": {
         "backgroundColor": "#ffffff",
@@ -42,15 +36,7 @@
           }
         }
       ],
-      "expo-localization",
-      [
-        "expo-build-properties",
-        {
-          "android": {
-            "enableProguardInReleaseBuilds": false
-          }
-        }
-      ]
+      "expo-localization"
     ],
     "experiments": {
       "typedRoutes": true,

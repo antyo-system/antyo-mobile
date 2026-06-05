@@ -39,6 +39,10 @@ Build feature by feature with these additional steps:
 We are building **ANTYO Focus**, a focus timer and time-blocking app that bridges the gap between planning and reality. 
 The app tracks planned sessions versus actual focus time, displaying them side-by-side in a calendar interface.
 
+**Product Identity & North Star:**
+ANTYO Focus is NOT just a timer; it is a "Mastery Tracking System" built around the 10,000 Hours rule.
+Always refer to the **[ROADMAP_100M.md](./docs/ROADMAP_100M.md)** file for the overarching product strategy, monetization plans (Freemium), and growth loops to scale the app to 100M+ downloads.
+
 ---
 
 ## Tech Stack
