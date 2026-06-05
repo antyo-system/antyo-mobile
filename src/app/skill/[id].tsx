@@ -195,7 +195,7 @@ export default function SkillDetailScreen() {
 
       {/* Add Pillar Modal */}
       <Modal visible={modalVisible} transparent animationType="fade">
-        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} className="flex-1 justify-center bg-black/50 p-6">
+        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} className="flex-1 justify-center bg-black/50 p-6">
           <View className="bg-white dark:bg-gray-900 rounded-3xl p-6 border border-gray-200 dark:border-gray-800">
             <View className="flex-row justify-between items-center mb-4">
               <Text className="text-lg font-black text-gray-900 dark:text-white">New Pillar</Text>
@@ -208,8 +208,7 @@ export default function SkillDetailScreen() {
               onChangeText={setNewPillarName}
               placeholder="e.g., React Native, Typography..."
               placeholderTextColor="#9CA3AF"
-              className="bg-gray-100 dark:bg-gray-800 rounded-xl p-4 text-gray-900 dark:text-white font-semibold mb-6"
-              autoFocus
+              style={{ backgroundColor: isDark ? '#1F2937' : '#F3F4F6', borderRadius: 12, padding: 16, color: isDark ? 'white' : '#111827', fontWeight: '600', marginBottom: 24 }}
             />
             <Pressable 
               onPress={handleAddPillar}
@@ -223,7 +222,7 @@ export default function SkillDetailScreen() {
 
       {/* Edit Skill Modal */}
       <Modal visible={editSkillVisible} transparent animationType="fade">
-        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} className="flex-1 justify-center bg-black/50 p-6">
+        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} className="flex-1 justify-center bg-black/50 p-6">
           <View className="bg-white dark:bg-gray-900 rounded-3xl p-6 border border-gray-200 dark:border-gray-800">
             <View className="flex-row justify-between items-center mb-6">
               <Text className="text-lg font-black text-gray-900 dark:text-white">Edit Skill</Text>
@@ -235,14 +234,14 @@ export default function SkillDetailScreen() {
             <TextInput
               value={editSkillName}
               onChangeText={setEditSkillName}
-              className="bg-gray-100 dark:bg-gray-800 rounded-xl p-4 text-gray-900 dark:text-white font-semibold mb-4"
+              style={{ backgroundColor: isDark ? '#1F2937' : '#F3F4F6', borderRadius: 12, padding: 16, color: isDark ? 'white' : '#111827', fontWeight: '600', marginBottom: 16 }}
             />
             <Text className="text-sm font-bold text-gray-500 dark:text-gray-400 mb-2">Total Hours (Progress)</Text>
             <TextInput
               value={editSkillHours}
               onChangeText={setEditSkillHours}
               keyboardType="decimal-pad"
-              className="bg-gray-100 dark:bg-gray-800 rounded-xl p-4 text-gray-900 dark:text-white font-semibold mb-6"
+              style={{ backgroundColor: isDark ? '#1F2937' : '#F3F4F6', borderRadius: 12, padding: 16, color: isDark ? 'white' : '#111827', fontWeight: '600', marginBottom: 24 }}
             />
             <Pressable onPress={handleSaveEditSkill} className="bg-blue-600 py-4 rounded-xl items-center">
               <Text className="text-white font-black">Save Changes</Text>
@@ -253,7 +252,7 @@ export default function SkillDetailScreen() {
 
       {/* Edit Pillar Modal */}
       <Modal visible={editPillarVisible} transparent animationType="fade">
-        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} className="flex-1 justify-center bg-black/50 p-6">
+        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} className="flex-1 justify-center bg-black/50 p-6">
           <View className="bg-white dark:bg-gray-900 rounded-3xl p-6 border border-gray-200 dark:border-gray-800">
             <View className="flex-row justify-between items-center mb-6">
               <Text className="text-lg font-black text-gray-900 dark:text-white">Edit Pillar</Text>
@@ -265,14 +264,14 @@ export default function SkillDetailScreen() {
             <TextInput
               value={editPillarName}
               onChangeText={setEditPillarName}
-              className="bg-gray-100 dark:bg-gray-800 rounded-xl p-4 text-gray-900 dark:text-white font-semibold mb-4"
+              style={{ backgroundColor: isDark ? '#1F2937' : '#F3F4F6', borderRadius: 12, padding: 16, color: isDark ? 'white' : '#111827', fontWeight: '600', marginBottom: 16 }}
             />
             <Text className="text-sm font-bold text-gray-500 dark:text-gray-400 mb-2">Total Hours</Text>
             <TextInput
               value={editPillarHours}
               onChangeText={setEditPillarHours}
               keyboardType="decimal-pad"
-              className="bg-gray-100 dark:bg-gray-800 rounded-xl p-4 text-gray-900 dark:text-white font-semibold mb-6"
+              style={{ backgroundColor: isDark ? '#1F2937' : '#F3F4F6', borderRadius: 12, padding: 16, color: isDark ? 'white' : '#111827', fontWeight: '600', marginBottom: 24 }}
             />
             <Pressable onPress={handleSaveEditPillar} className="bg-blue-600 py-4 rounded-xl items-center">
               <Text className="text-white font-black">Save Changes</Text>

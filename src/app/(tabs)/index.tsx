@@ -7,7 +7,6 @@ import { TimerDisplay } from '@/components/timer/TimerDisplay';
 import { TimerControls } from '@/components/timer/TimerControls';
 import { TimerTitleInput } from '@/components/timer/TimerTitleInput';
 import { TimerModeToggle } from '@/components/timer/TimerModeToggle';
-import { CircularTimer } from '@/components/timer/CircularTimer';
 import { TimerDurationModal } from '@/components/timer/TimerDurationModal';
 import { useShallow } from 'zustand/react/shallow';
 import { useSessionStore } from '@/store/useSessionStore';
@@ -113,18 +112,16 @@ export default function TimerScreen() {
             <TimerModeToggle />
           </View>
 
-          {/* Middle: Circular Timer (Shifted lower) */}
+          {/* Middle: Timer Display (Shifted lower) */}
           <View className="flex-1 items-center justify-center z-0 mt-4" pointerEvents="box-none">
-            <CircularTimer>
-              <View className="items-center justify-center -mt-2">
-                <TimerTitleInput />
-                <SkillSelector />
-                
-                <View className="mt-1">
-                  <TimerDisplay onOpenModal={() => setDurationModalVisible(true)} />
-                </View>
+            <View className="items-center justify-center -mt-2">
+              <TimerTitleInput />
+              <SkillSelector />
+              
+              <View className="mt-8">
+                <TimerDisplay onOpenModal={() => setDurationModalVisible(true)} />
               </View>
-            </CircularTimer>
+            </View>
           </View>
 
           {/* Bottom 1/3: Controls */}

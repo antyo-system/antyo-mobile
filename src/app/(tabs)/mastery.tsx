@@ -131,7 +131,7 @@ export default function MasteryScreen() {
 
       {/* Add Skill Modal */}
       <Modal visible={modalVisible} transparent animationType="slide">
-        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} className="flex-1 justify-end bg-black/50">
+        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} className="flex-1 justify-end bg-black/50">
           <View className="bg-white dark:bg-gray-900 rounded-t-3xl p-6 h-[80%] border-t border-gray-200 dark:border-gray-800 pb-12">
             <View className="flex-row justify-between items-center mb-6">
               <Text className="text-2xl font-black text-gray-900 dark:text-white">New Skill</Text>
@@ -147,8 +147,7 @@ export default function MasteryScreen() {
                 onChangeText={setNewSkillName}
                 placeholder="e.g. Coding, Guitar, Writing..."
                 placeholderTextColor={isDark ? "#6B7280" : "#9CA3AF"}
-                className="text-gray-900 dark:text-white font-bold text-lg"
-                autoFocus
+                style={{ fontSize: 18, fontWeight: 'bold', color: isDark ? 'white' : '#111827', padding: 0 }}
               />
             </View>
 
