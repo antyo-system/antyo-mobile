@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "antyomobile",
+    "name": "ANTYO Focus",
     "slug": "antyomobile",
     "version": "1.0.2",
     "orientation": "portrait",
@@ -9,6 +9,7 @@
     "userInterfaceStyle": "automatic",
     "ios": {
       "icon": "./assets/expo.icon",
+      "bundleIdentifier": "com.antyo.focus",
       "infoPlist": {
         "NSCameraUsageDescription": "Allow ANTYO Focus to access your camera for Smart Mode face detection."
       }
@@ -19,11 +20,11 @@
       ],
       "softwareKeyboardLayoutMode": "pan",
       "adaptiveIcon": {
-        "backgroundColor": "#0f172a",
+        "backgroundColor": "#ffffff",
         "foregroundImage": "./assets/images/android-icon-foreground.png"
       },
       "predictiveBackGestureEnabled": false,
-      "package": "com.anonymous.antyomobile"
+      "package": "com.antyo.focus"
     },
     "web": {
       "output": "static",
@@ -34,14 +35,22 @@
       [
         "expo-splash-screen",
         {
-          "backgroundColor": "#0f172a",
+          "backgroundColor": "#ffffff",
           "android": {
             "image": "./assets/images/splash-icon.png",
             "imageWidth": 200
           }
         }
       ],
-      "expo-localization"
+      "expo-localization",
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "enableProguardInReleaseBuilds": true
+          }
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,

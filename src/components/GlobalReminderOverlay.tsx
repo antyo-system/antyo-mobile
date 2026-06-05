@@ -62,7 +62,7 @@ export function GlobalReminderOverlay() {
     timerStore.setDuration(activeAlert.durationMinutes * 60);
     
     // Route to timer tab and start
-    router.push('/(tabs)/timer');
+    router.push('/(tabs)');
     
     // Give it a tiny delay to allow navigation to mount
     setTimeout(() => {

@@ -9,3 +9,6 @@
   - Requires requesting notification permissions on Android/iOS.
   - Requires a global notification listener in `_layout.tsx`.
 - **Reason for Postponing**: Postponed in v1.0.x MVP to keep the app size minimal, avoid permission friction, and maintain the "Avoid overengineering at all costs" philosophy (`AGENTS.md`). Replaced with a simpler in-app window popup MVP.
+
+
+
