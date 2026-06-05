@@ -2,7 +2,7 @@
   "expo": {
     "name": "ANTYO Focus",
     "slug": "antyomobile",
-    "version": "1.0.3",
+    "version": "1.0.4",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "antyomobile",
@@ -47,7 +47,7 @@
         "expo-build-properties",
         {
           "android": {
-            "enableProguardInReleaseBuilds": true
+            "enableProguardInReleaseBuilds": false
           }
         }
       ]
