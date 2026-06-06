@@ -11,6 +11,8 @@ import { isToday } from 'date-fns';
 import { SkillTargetModal } from '@/components/mastery/SkillTargetModal';
 import { PlanEditorModal } from '@/components/calendar/PlanEditorModal';
 import { usePlanStore, Plan } from '@/store/usePlanStore';
+import { useTimerStore } from '@/store/useTimerStore';
+import { useAppStore } from '@/store/useAppStore';
 
 const { width } = Dimensions.get('window');
 
@@ -29,6 +31,53 @@ function SkillCard({ skill, onSetTarget, onCreateRoutine }: { skill: Skill, onSe
 
   const targetMinutes = skill.dailyTargetMinutes || 0;
   const isTargetMet = targetMinutes > 0 && todayProgressMinutes >= targetMinutes;
+
+  const { hasCompletedTutorial } = useAppStore();
+  const pulseAnim = useRef(new Animated.Value(1)).current;
+
+  useEffect(() => {
+    if (!hasCompletedTutorial) {
+      Animated.loop(
+        Animated.sequence([
+          Animated.timing(pulseAnim, { toValue: 0.4, duration: 1000, useNativeDriver: true }),
+          Animated.timing(pulseAnim, { toValue: 1, duration: 1000, useNativeDriver: true })
+        ])
+      ).start();
+    } else {
+      pulseAnim.setValue(1);
+    }
+  }, [hasCompletedTutorial]);
+
+  const plans = usePlanStore(s => s.plans);
+  const skillRoutines = plans.filter(p => p.skillId === skill.id && p.recurrence !== 'none');
+  const visibleRoutines = skillRoutines.slice(0, 2);
+  const extraCount = Math.max(0, skillRoutines.length - 2);
+
+  const formatRoutineTime = (plan: Plan) => {
+    const startH = Math.floor(plan.startMinutes / 60).toString().padStart(2, '0');
+    const startM = (plan.startMinutes % 60).toString().padStart(2, '0');
+    const endMinutes = plan.startMinutes + plan.durationMinutes;
+    const endH = Math.floor(endMinutes / 60).toString().padStart(2, '0');
+    const endM = (endMinutes % 60).toString().padStart(2, '0');
+    
+    let recStr = 'Custom';
+    if (plan.recurrence === 'weekdays') recStr = 'Mon-Fri';
+    else if (plan.recurrence === 'daily') recStr = 'Daily';
+    else if (plan.recurrence === 'weekly') recStr = 'Weekly';
+    
+    return `${recStr} ${startH}.${startM}-${endH}.${endM}`;
+  };
+
+  const handleRoutinePress = (plan: Plan) => {
+    const timerStore = useTimerStore.getState();
+    timerStore.setSelectedSkillId(plan.skillId || null);
+    if (plan.pillarId) timerStore.setSelectedPillarId(plan.pillarId);
+    timerStore.setDuration(plan.durationMinutes * 60);
+    // Use the exact title of the plan if it's available, otherwise it falls back inside the store
+    if (plan.title) timerStore.setTitle(plan.title);
+    
+    router.push('/(tabs)');
+  };
 
   useEffect(() => {
     Animated.timing(animWidth, {
@@ -117,19 +166,42 @@ function SkillCard({ skill, onSetTarget, onCreateRoutine }: { skill: Skill, onSe
           ) : (
             <View className="flex-row items-center justify-between">
               <Text className="text-xs font-bold text-gray-500 dark:text-gray-400">No Daily Target Set</Text>
-              <View className="bg-gray-100 dark:bg-gray-800 px-3 py-1.5 rounded-full">
-                <Text className="text-[10px] font-bold text-gray-600 dark:text-gray-300 uppercase tracking-widest">Set Target</Text>
-              </View>
+              <Animated.View style={{ opacity: (!hasCompletedTutorial && targetMinutes === 0) ? pulseAnim : 1 }} className={`px-3 py-1.5 rounded-full ${(!hasCompletedTutorial && targetMinutes === 0) ? 'bg-orange-500' : 'bg-gray-100 dark:bg-gray-800'}`}>
+                <Text className={`text-[10px] font-bold uppercase tracking-widest ${(!hasCompletedTutorial && targetMinutes === 0) ? 'text-white' : 'text-gray-600 dark:text-gray-300'}`}>Set Target</Text>
+              </Animated.View>
             </View>
           )}
         </Pressable>
 
+        {skillRoutines.length > 0 && (
+          <View className="mt-3 flex-row flex-wrap gap-2">
+            {visibleRoutines.map(routine => (
+              <Pressable
+                key={routine.id}
+                onPress={(e) => { e.stopPropagation(); handleRoutinePress(routine); }}
+                className="flex-row items-center bg-blue-50 dark:bg-blue-900/20 px-3 py-1.5 rounded-full border border-blue-100 dark:border-blue-900/50"
+              >
+                <Feather name="play-circle" size={12} color="#3B82F6" />
+                <Text className="ml-1.5 text-[10px] font-bold text-blue-700 dark:text-blue-400">
+                  {formatRoutineTime(routine)}
+                </Text>
+              </Pressable>
+            ))}
+            {extraCount > 0 && (
+              <View className="items-center justify-center bg-gray-100 dark:bg-gray-800 px-3 py-1.5 rounded-full">
+                <Text className="text-[10px] font-bold text-gray-500 dark:text-gray-400">+{extraCount}</Text>
+              </View>
+            )}
+          </View>
+        )}
+
         <Pressable 
           onPress={(e) => { e.stopPropagation(); onCreateRoutine(skill); }}
-          className="mt-3 flex-row items-center justify-center py-3 bg-gray-50 dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700"
         >
-          <Feather name="calendar" size={14} color="#6B7280" />
-          <Text className="ml-2 text-xs font-bold text-gray-600 dark:text-gray-300">Create Routine</Text>
+          <Animated.View style={{ opacity: (!hasCompletedTutorial && targetMinutes > 0 && skillRoutines.length === 0) ? pulseAnim : 1 }} className={`mt-3 flex-row items-center justify-center py-3 rounded-2xl border ${(!hasCompletedTutorial && targetMinutes > 0 && skillRoutines.length === 0) ? 'bg-blue-600 border-blue-600' : 'bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700'}`}>
+            <Feather name="calendar" size={14} color={(!hasCompletedTutorial && targetMinutes > 0 && skillRoutines.length === 0) ? "#fff" : "#6B7280"} />
+            <Text className={`ml-2 text-xs font-bold ${(!hasCompletedTutorial && targetMinutes > 0 && skillRoutines.length === 0) ? 'text-white' : 'text-gray-600 dark:text-gray-300'}`}>Create Routine</Text>
+          </Animated.View>
         </Pressable>
       </View>
     </Pressable>
@@ -141,6 +213,7 @@ export default function MasteryScreen() {
   const skills = useMasteryStore(s => s.skills);
   const addSkill = useMasteryStore(s => s.addSkill);
   const updateSkill = useMasteryStore(s => s.updateSkill);
+  const { hasCompletedTutorial, completeTutorial } = useAppStore();
   
   const [modalVisible, setModalVisible] = useState(false);
   const [newSkillName, setNewSkillName] = useState('');
@@ -199,6 +272,11 @@ export default function MasteryScreen() {
       skillId: data.skillId,
     });
     setRoutineEditorVisible(false);
+    
+    // Auto-complete tutorial if they successfully create their first routine
+    if (!hasCompletedTutorial) {
+      completeTutorial();
+    }
   };
 
   return (

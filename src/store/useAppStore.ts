@@ -66,6 +66,8 @@ export { storage };
 interface AppState {
   hasSeenOnboarding: boolean;
   setHasSeenOnboarding: (value: boolean) => void;
+  hasCompletedTutorial: boolean;
+  completeTutorial: () => void;
 }
 
 export const useAppStore = create<AppState>((set) => ({
@@ -73,5 +75,10 @@ export const useAppStore = create<AppState>((set) => ({
   setHasSeenOnboarding: (value) => {
     storage.set('hasSeenOnboarding', value);
     set({ hasSeenOnboarding: value });
+  },
+  hasCompletedTutorial: storage.getBoolean('hasCompletedTutorial') ?? false,
+  completeTutorial: () => {
+    storage.set('hasCompletedTutorial', true);
+    set({ hasCompletedTutorial: true });
   },
 }));

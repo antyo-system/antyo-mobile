@@ -70,7 +70,10 @@ Always refer to the **[ROADMAP_100M.md](./docs/ROADMAP_100M.md)** file for the o
 - **Code Quality:** Use Prettier/ESLint for code formatting and linting.
 - **Testing:** Unit tests are MANDATORY for the `/src/utils` folder (e.g., `date-fns` logic). UI testing can wait for the MVP, but core time calculation must be bulletproof.
 - **Version Updates & Changelog (CRITICAL):** 
-  - Whenever you add a feature, fix a bug, or make structural changes, you MUST update the `APP_VERSION` and `CHANGELOG` array inside `src/constants/changelog.ts`.
+  - Whenever you add a major feature, fix a bug, or make structural changes, you MUST update the version number across **ALL 3 FILES**:
+    1. `package.json`
+    2. `app.json`
+    3. `src/constants/changelog.ts` (Update `APP_VERSION` and add to the `CHANGELOG` array).
   - The settings screen dynamically reads from `changelog.ts` to show users the update notes popup. Keep it accurate.
 
 ---
@@ -158,6 +161,12 @@ Use `StyleSheet.create` or inline styles ONLY for the following where NativeWind
 - **Architecture:** Ask for permission before making significant modifications to the core architecture.
 - **Proactive suggestions:** Proactively suggest better approaches if something is unclear.
 - **CRITICAL:** Do NOT install new libraries without explicit user approval.
+
+---
+
+## Documentation & Idea Bank Rules
+- **Idea Bank Location:** All future ideas, brainstorms, or postponed features MUST be saved and appended to the existing `docs/upcoming_idea.md` file. 
+- **CRITICAL RULE:** Do NOT create a new `upcoming_idea.md` file in the root directory. Always verify the existence of `docs/upcoming_idea.md` and append to it.
 
 ---
 

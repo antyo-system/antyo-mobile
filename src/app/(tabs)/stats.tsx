@@ -5,6 +5,7 @@ import { Tabs, router } from 'expo-router';
 import { useState, useEffect, useMemo } from 'react';
 import { useSessionStore } from '@/store/useSessionStore';
 import { useSettingsStore } from '@/store/useSettingsStore';
+import { usePlanStore } from '@/store/usePlanStore';
 
 import { isToday, isThisWeek, format } from 'date-fns';
 import { formatLongTime } from '@/utils/time';
@@ -13,6 +14,7 @@ import { calculateStreak } from '@/utils/streak';
 import { WeeklyBarChart } from '@/components/stats/WeeklyBarChart';
 import { ContributionHeatmap } from '@/components/stats/ContributionHeatmap';
 import { LifetimeCountdown } from '@/components/stats/LifetimeCountdown';
+import { getWeeklyPlannedMinutes } from '@/utils/calendar';
 
 export default function StatsScreen() {
   const sessions = useSessionStore(s => s.sessions);
@@ -25,6 +27,28 @@ export default function StatsScreen() {
   // This Week Stats (Week starting on Monday)
   const thisWeekSessions = sessions.filter(s => isThisWeek(new Date(s.startTime), { weekStartsOn: 1 }));
   const totalSecondsThisWeek = thisWeekSessions.reduce((acc, curr) => acc + curr.durationSeconds, 0);
+  const executedMinutesThisWeek = Math.floor(totalSecondsThisWeek / 60);
+
+  // Plan vs Reality
+  const plans = usePlanStore(s => s.plans);
+  const plannedMinutesThisWeek = useMemo(() => getWeeklyPlannedMinutes(plans), [plans]);
+  
+  const adherenceScoreRaw = plannedMinutesThisWeek > 0 
+    ? Math.round((executedMinutesThisWeek / plannedMinutesThisWeek) * 100)
+    : (executedMinutesThisWeek > 0 ? 100 : 0);
+  
+  const adherenceScore = Math.min(100, adherenceScoreRaw); // Cap at 100% for display
+
+  let coachFeedback = '';
+  if (plannedMinutesThisWeek === 0) {
+    coachFeedback = "You haven't scheduled any Mastery Skills this week. Use the calendar to set your targets!";
+  } else if (adherenceScore >= 90) {
+    coachFeedback = "Outstanding! You stuck to your plan perfectly. Keep this momentum.";
+  } else if (adherenceScore >= 70) {
+    coachFeedback = "Good effort! You missed a few planned blocks, but you're largely on track.";
+  } else {
+    coachFeedback = `You planned ${(plannedMinutesThisWeek/60).toFixed(1)} hours but only executed ${(executedMinutesThisWeek/60).toFixed(1)} hours. Let's set more realistic goals next week.`;
+  }
 
   // All-Time Stats
   const totalSecondsAllTime = sessions.reduce((acc, curr) => acc + curr.durationSeconds, 0);
@@ -180,6 +204,48 @@ export default function StatsScreen() {
 
         {/* WEEKLY BAR CHART */}
         <WeeklyBarChart sessions={sessions} />
+
+        {/* PLAN VS REALITY SCORECARD */}
+        <View className="bg-white dark:bg-gray-900 rounded-3xl p-6 shadow-sm border border-gray-100 dark:border-gray-800 mb-8 mt-2">
+          <View className="flex-row items-center gap-2 mb-4">
+            <Feather name="target" size={20} color="#3B82F6" />
+            <Text className="text-gray-900 dark:text-white font-black text-xl">Plan vs. Reality</Text>
+          </View>
+
+          <View className="flex-row items-end justify-between mb-2">
+            <View>
+              <Text className="text-gray-500 dark:text-gray-400 font-bold text-xs uppercase tracking-widest mb-1">Discipline Score</Text>
+              <View className="flex-row items-baseline gap-1">
+                <Text className={`text-4xl font-black ${adherenceScore >= 70 ? 'text-blue-600 dark:text-blue-500' : 'text-orange-500'}`}>
+                  {plannedMinutesThisWeek === 0 && executedMinutesThisWeek === 0 ? '--' : adherenceScore}
+                </Text>
+                {plannedMinutesThisWeek > 0 || executedMinutesThisWeek > 0 ? (
+                  <Text className="text-xl font-bold text-gray-400">%</Text>
+                ) : null}
+              </View>
+            </View>
+            
+            <View className="items-end">
+              <Text className="text-gray-500 dark:text-gray-400 text-[10px] font-bold uppercase tracking-wider mb-1">Executed / Planned</Text>
+              <Text className="text-gray-900 dark:text-white font-black text-lg">
+                {(executedMinutesThisWeek / 60).toFixed(1)} <Text className="text-gray-400 text-sm">/ {(plannedMinutesThisWeek / 60).toFixed(1)} h</Text>
+              </Text>
+            </View>
+          </View>
+
+          {/* Progress Bar */}
+          <View className="w-full h-3 bg-gray-100 dark:bg-gray-800 rounded-full flex-row overflow-hidden my-3">
+            <View style={{ width: `${adherenceScore}%` }} className={`h-full ${adherenceScore >= 70 ? 'bg-blue-500' : 'bg-orange-500'}`} />
+          </View>
+
+          {/* Coach Feedback Banner */}
+          <View className="mt-2 bg-blue-50 dark:bg-blue-900/20 p-3 rounded-2xl flex-row items-center">
+            <Text className="text-lg mr-2">💬</Text>
+            <Text className="flex-1 text-blue-800 dark:text-blue-300 font-medium text-xs leading-relaxed">
+              {coachFeedback}
+            </Text>
+          </View>
+        </View>
 
 
         {/* MASTERY HEATMAP (ALL TIME) */}

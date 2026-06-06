@@ -17,6 +17,7 @@ export interface Plan {
   isReminderEnabled?: boolean;
   color?: string;
   skillId?: string | null;
+  pillarId?: string | null;
 }
 
 interface PlanState {

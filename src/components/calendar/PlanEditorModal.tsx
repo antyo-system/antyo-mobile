@@ -46,6 +46,7 @@ export function PlanEditorModal({ visible, plan, onClose, onSave, onDelete }: Pr
   const [color, setColor] = useState(PLAN_COLORS[2]);
   const [planDate, setPlanDate] = useState(new Date());
   const [skillId, setSkillId] = useState<string | null>(null);
+  const [pillarId, setPillarId] = useState<string | null>(null);
 
   const skills = useMasteryStore(s => s.skills);
 
@@ -58,6 +59,7 @@ export function PlanEditorModal({ visible, plan, onClose, onSave, onDelete }: Pr
     setIsReminderEnabled(plan?.isReminderEnabled ?? true);
     setColor(plan?.color || PLAN_COLORS[2]);
     setSkillId(plan?.skillId || null);
+    setPillarId(plan?.pillarId || null);
     
     // Set date from plan's baseDate or default to today
     if (plan?.baseDate) {
@@ -119,7 +121,8 @@ export function PlanEditorModal({ visible, plan, onClose, onSave, onDelete }: Pr
       isReminderEnabled,
       color,
       baseDate,
-      skillId
+      skillId,
+      pillarId
     });
   };
 
@@ -271,6 +274,45 @@ export function PlanEditorModal({ visible, plan, onClose, onSave, onDelete }: Pr
                 })}
               </View>
             </ScrollView>
+
+            {skillId && skills.find(s => s.id === skillId)?.pillars.length ? (
+              <>
+                <Text className="text-xs font-bold text-gray-500 dark:text-gray-400 mb-1.5 uppercase tracking-wider">Link to Subskill (Pillar)</Text>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} className="mb-6 -mx-6 px-6">
+                  <View className="flex-row gap-2 pr-6">
+                    <Pressable
+                      onPress={() => setPillarId(null)}
+                      className={`px-4 py-2 rounded-2xl border flex-row items-center ${
+                        pillarId === null 
+                          ? 'bg-gray-800 border-gray-800 dark:bg-white dark:border-white' 
+                          : 'bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-800'
+                      }`}
+                    >
+                      <Text className={`text-xs font-bold ${pillarId === null ? 'text-white dark:text-gray-900' : 'text-gray-500'}`}>None</Text>
+                    </Pressable>
+                    
+                    {skills.find(s => s.id === skillId)?.pillars.map(pillar => {
+                      const isSelected = pillarId === pillar.id;
+                      return (
+                        <Pressable
+                          key={pillar.id}
+                          onPress={() => setPillarId(pillar.id)}
+                          className={`px-4 py-2 rounded-2xl border flex-row items-center ${
+                            isSelected 
+                              ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-900/50' 
+                              : 'bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-800'
+                          }`}
+                        >
+                          <Text className={`text-xs font-bold ${isSelected ? 'text-blue-600 dark:text-blue-400' : 'text-gray-600 dark:text-gray-300'}`}>
+                            {pillar.name}
+                          </Text>
+                        </Pressable>
+                      );
+                    })}
+                  </View>
+                </ScrollView>
+              </>
+            ) : null}
 
             <Text className="text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Recurrence</Text>
             <View className="flex-row flex-wrap gap-2 mb-4">
