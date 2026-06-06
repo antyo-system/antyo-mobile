@@ -35,6 +35,7 @@ export default function ProfileScreen() {
   const [localRetirementAge, setLocalRetirementAge] = useState(retirementAge.toString());
   
   const [developerExpanded, setDeveloperExpanded] = useState(false);
+  const [exportExpanded, setExportExpanded] = useState(false);
   const [changelogVisible, setChangelogVisible] = useState(false);
 
   useEffect(() => {
@@ -105,7 +106,8 @@ export default function ProfileScreen() {
       };
       
       const jsonStr = JSON.stringify(data, null, 2);
-      const filename = `antyofocus-backup-${new Date().toISOString().split('T')[0]}.json`;
+      // Menggunakan .txt agar mudah dibuka dan di-share di semua HP (Android/iOS)
+      const filename = `antyofocus-backup-${new Date().toISOString().split('T')[0]}.txt`;
       const fileUri = `${FileSystem.documentDirectory}${filename}`;
       
       await FileSystem.writeAsStringAsync(fileUri, jsonStr, {
@@ -119,13 +121,52 @@ export default function ProfileScreen() {
       }
       
       await Sharing.shareAsync(fileUri, {
-        mimeType: 'application/json',
+        mimeType: 'text/plain',
         dialogTitle: 'Export ANTYO Focus Data',
-        UTI: 'public.json'
+        UTI: 'public.plain-text'
       });
     } catch (err) {
       console.error('Export failed:', err);
       Alert.alert('Error', 'Failed to export data.');
+    }
+  };
+
+  const handleExportCSV = async () => {
+    try {
+      const headers = ['ID', 'Start Time', 'Duration (Minutes)', 'Focus Duration (Minutes)', 'Smart Mode', 'Notes'];
+      const rows = sessions.map(s => {
+        return [
+          s.id,
+          s.startTime,
+          Math.round(s.durationSeconds / 60),
+          s.focusDurationSeconds ? Math.round(s.focusDurationSeconds / 60) : 0,
+          s.isSmartMode ? 'Yes' : 'No',
+          `"${(s.notes || '').replace(/"/g, '""')}"` // Escape quotes for CSV
+        ].join(',');
+      });
+      const csvStr = [headers.join(','), ...rows].join('\n');
+      
+      const filename = `antyofocus-sessions-${new Date().toISOString().split('T')[0]}.csv`;
+      const fileUri = `${FileSystem.documentDirectory}${filename}`;
+      
+      await FileSystem.writeAsStringAsync(fileUri, csvStr, {
+        encoding: FileSystem.EncodingType.UTF8
+      });
+      
+      const isSharingAvailable = await Sharing.isAvailableAsync();
+      if (!isSharingAvailable) {
+        Alert.alert('Error', 'Sharing is not available on your device.');
+        return;
+      }
+      
+      await Sharing.shareAsync(fileUri, {
+        mimeType: 'text/csv',
+        dialogTitle: 'Export ANTYO Focus Data (CSV)',
+        UTI: 'public.comma-separated-values-text'
+      });
+    } catch (err) {
+      console.error('CSV Export failed:', err);
+      Alert.alert('Error', 'Failed to export CSV data.');
     }
   };
 
@@ -478,12 +519,38 @@ export default function ProfileScreen() {
         {/* ── 6. Data (Danger Zone) ── */}
         <Text className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 ml-2">Data</Text>
         <View className="bg-white dark:bg-gray-900 rounded-2xl overflow-hidden border border-gray-100 dark:border-gray-800 mb-6">
-          <SettingRow
-            icon="download"
-            iconBg="bg-orange-500/10"
-            label="Export Data"
-            onPress={handleExportData}
-          />
+          <Pressable 
+            onPress={() => setExportExpanded(!exportExpanded)}
+            className="flex-row items-center justify-between p-4 border-b border-gray-100 dark:border-gray-800 active:bg-gray-100 dark:active:bg-gray-800"
+          >
+            <View className="flex-row items-center gap-3">
+              <View className="w-8 h-8 rounded-full bg-orange-500/10 items-center justify-center">
+                <Feather name="download" size={16} color="#F97316" />
+              </View>
+              <Text className="text-base font-semibold text-gray-900 dark:text-white">Export Data</Text>
+            </View>
+            <View className="flex-row items-center gap-2">
+              <Feather name={exportExpanded ? "chevron-up" : "chevron-down"} size={16} color="#9CA3AF" />
+            </View>
+          </Pressable>
+
+          {exportExpanded && (
+            <View className="bg-gray-50 dark:bg-gray-800/50">
+              <SettingRow
+                icon="file-text"
+                iconBg="bg-gray-500/10"
+                label="Backup Data (TXT)"
+                onPress={handleExportData}
+              />
+              <SettingRow
+                icon="grid"
+                iconBg="bg-green-500/10"
+                label="Export to Excel (CSV)"
+                isLast
+                onPress={handleExportCSV}
+              />
+            </View>
+          )}
           <SettingRow
             icon="monitor"
             iconBg="bg-blue-500/10"

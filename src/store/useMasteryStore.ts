@@ -17,6 +17,11 @@ export interface Skill {
   totalSeconds: number;
   createdAt: string;
   pillars: Pillar[];
+  
+  // Daily Target Tracking
+  dailyTargetMinutes?: number | null;
+  streakCount?: number;
+  lastActiveDate?: string | null;
 }
 
 interface MasteryState {

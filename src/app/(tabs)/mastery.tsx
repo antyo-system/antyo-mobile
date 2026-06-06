@@ -3,16 +3,32 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Tabs, router } from 'expo-router';
 import { Feather } from '@expo/vector-icons';
 import { useMasteryStore, Skill } from '@/store/useMasteryStore';
+import { useSessionStore } from '@/store/useSessionStore';
 import { getMasteryProgress, MILESTONES } from '@/utils/mastery';
 import { formatLongTime } from '@/utils/time';
 import { useEffect, useRef, useState } from 'react';
+import { isToday } from 'date-fns';
+import { SkillTargetModal } from '@/components/mastery/SkillTargetModal';
+import { PlanEditorModal } from '@/components/calendar/PlanEditorModal';
+import { usePlanStore, Plan } from '@/store/usePlanStore';
 
 const { width } = Dimensions.get('window');
 
-function SkillCard({ skill }: { skill: Skill }) {
+function SkillCard({ skill, onSetTarget, onCreateRoutine }: { skill: Skill, onSetTarget: (skill: Skill) => void, onCreateRoutine: (skill: Skill) => void }) {
   const isDark = useColorScheme() === 'dark';
   const progress = getMasteryProgress(skill.totalSeconds);
   const animWidth = useRef(new Animated.Value(0)).current;
+
+  // Calculate today's progress
+  const sessions = useSessionStore(s => s.sessions);
+  const todaySessions = sessions.filter(
+    s => s.skillId === skill.id && isToday(new Date(s.startTime))
+  );
+  const todayProgressSeconds = todaySessions.reduce((acc, curr) => acc + curr.durationSeconds, 0);
+  const todayProgressMinutes = Math.floor(todayProgressSeconds / 60);
+
+  const targetMinutes = skill.dailyTargetMinutes || 0;
+  const isTargetMet = targetMinutes > 0 && todayProgressMinutes >= targetMinutes;
 
   useEffect(() => {
     Animated.timing(animWidth, {
@@ -25,12 +41,16 @@ function SkillCard({ skill }: { skill: Skill }) {
   return (
     <Pressable 
       onPress={() => router.push(`/skill/${skill.id}` as any)}
-      className="bg-white dark:bg-gray-900 rounded-3xl p-5 mb-4 shadow-sm border border-gray-100 dark:border-gray-800"
+      className={`rounded-3xl p-5 mb-4 shadow-sm border ${
+        isTargetMet 
+          ? 'bg-orange-50 dark:bg-orange-950/30 border-orange-200 dark:border-orange-900/50 shadow-orange-500/10' 
+          : 'bg-white dark:bg-gray-900 border-gray-100 dark:border-gray-800'
+      }`}
     >
       <View className="flex-row justify-between items-start mb-4">
         <View className="flex-row items-center gap-3">
-          <View className="w-12 h-12 rounded-2xl items-center justify-center" style={{ backgroundColor: isDark ? '#1e3a8a' : '#dbeafe' }}>
-            <Feather name={skill.icon as any} size={20} color="#3B82F6" />
+          <View className={`w-12 h-12 rounded-2xl items-center justify-center ${isTargetMet ? 'bg-orange-100 dark:bg-orange-900/50' : (isDark ? 'bg-blue-900/50' : 'bg-blue-100')}`}>
+            <Feather name={skill.icon as any} size={20} color={isTargetMet ? "#F97316" : "#3B82F6"} />
           </View>
           <View>
             <Text className="text-xl font-black text-gray-900 dark:text-white">{skill.name}</Text>
@@ -40,7 +60,7 @@ function SkillCard({ skill }: { skill: Skill }) {
           </View>
         </View>
         <View className="items-end">
-          <Text className="text-sm font-black text-blue-600 dark:text-blue-400">
+          <Text className={`text-sm font-black ${isTargetMet ? 'text-orange-600 dark:text-orange-400' : 'text-blue-600 dark:text-blue-400'}`}>
             {Math.floor(progress.totalHours).toLocaleString()} / 10K
           </Text>
           <Text className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-0.5">Hours</Text>
@@ -60,9 +80,9 @@ function SkillCard({ skill }: { skill: Skill }) {
         </View>
         
         {/* Progress Bar Container */}
-        <View className="w-full h-3 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
+        <View className={`w-full h-3 rounded-full overflow-hidden ${isTargetMet ? 'bg-orange-200 dark:bg-orange-900/30' : 'bg-gray-100 dark:bg-gray-800'}`}>
           <Animated.View 
-            className="h-full rounded-full bg-blue-500" 
+            className={`h-full rounded-full ${isTargetMet ? 'bg-orange-500' : 'bg-blue-500'}`} 
             style={{ 
               width: animWidth.interpolate({
                 inputRange: [0, 100],
@@ -72,6 +92,46 @@ function SkillCard({ skill }: { skill: Skill }) {
           />
         </View>
       </View>
+
+      {/* Footer Actions */}
+      <View className={`mt-4 pt-4 border-t ${isTargetMet ? 'border-orange-200 dark:border-orange-900/30' : 'border-gray-100 dark:border-gray-800'}`}>
+        <Pressable onPress={() => onSetTarget(skill)}>
+          {targetMinutes > 0 ? (
+            <View>
+              <View className="flex-row justify-between mb-2">
+                <View className="flex-row items-center gap-1.5">
+                  <Text className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Daily Target</Text>
+                  {isTargetMet && <Text className="text-sm">🔥</Text>}
+                </View>
+                <Text className={`text-xs font-black ${isTargetMet ? 'text-orange-500' : 'text-gray-900 dark:text-gray-300'}`}>
+                  {todayProgressMinutes} / {targetMinutes} min
+                </Text>
+              </View>
+              <View className={`w-full h-2 rounded-full overflow-hidden ${isTargetMet ? 'bg-orange-200 dark:bg-orange-900/30' : 'bg-gray-100 dark:bg-gray-800'}`}>
+                <View 
+                  className={`h-full rounded-full ${isTargetMet ? 'bg-orange-500' : 'bg-blue-500'}`} 
+                  style={{ width: `${Math.min(100, (todayProgressMinutes / targetMinutes) * 100)}%` }} 
+                />
+              </View>
+            </View>
+          ) : (
+            <View className="flex-row items-center justify-between">
+              <Text className="text-xs font-bold text-gray-500 dark:text-gray-400">No Daily Target Set</Text>
+              <View className="bg-gray-100 dark:bg-gray-800 px-3 py-1.5 rounded-full">
+                <Text className="text-[10px] font-bold text-gray-600 dark:text-gray-300 uppercase tracking-widest">Set Target</Text>
+              </View>
+            </View>
+          )}
+        </Pressable>
+
+        <Pressable 
+          onPress={(e) => { e.stopPropagation(); onCreateRoutine(skill); }}
+          className="mt-3 flex-row items-center justify-center py-3 bg-gray-50 dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700"
+        >
+          <Feather name="calendar" size={14} color="#6B7280" />
+          <Text className="ml-2 text-xs font-bold text-gray-600 dark:text-gray-300">Create Routine</Text>
+        </Pressable>
+      </View>
     </Pressable>
   );
 }
@@ -80,9 +140,66 @@ export default function MasteryScreen() {
   const isDark = useColorScheme() === 'dark';
   const skills = useMasteryStore(s => s.skills);
   const addSkill = useMasteryStore(s => s.addSkill);
+  const updateSkill = useMasteryStore(s => s.updateSkill);
   
   const [modalVisible, setModalVisible] = useState(false);
   const [newSkillName, setNewSkillName] = useState('');
+
+  const [targetModalVisible, setTargetModalVisible] = useState(false);
+  const [selectedSkillForTarget, setSelectedSkillForTarget] = useState<Skill | null>(null);
+
+  const handleOpenTargetModal = (skill: Skill) => {
+    setSelectedSkillForTarget(skill);
+    setTargetModalVisible(true);
+  };
+
+  const handleSaveTarget = (minutes: number) => {
+    if (selectedSkillForTarget) {
+      updateSkill(selectedSkillForTarget.id, { dailyTargetMinutes: minutes > 0 ? minutes : null });
+    }
+  };
+
+  const addPlan = usePlanStore(s => s.addPlan);
+  const [routineEditorVisible, setRoutineEditorVisible] = useState(false);
+  const [routinePlanTemplate, setRoutinePlanTemplate] = useState<Partial<Plan> | null>(null);
+
+  const handleCreateRoutine = (skill: Skill) => {
+    const colorMap: Record<string, string> = {
+      'blue': '#3B82F6',
+      'green': '#10B981',
+      'yellow': '#F59E0B',
+      'red': '#EF4444',
+      'purple': '#8B5CF6',
+      'pink': '#EC4899',
+    };
+    
+    setRoutinePlanTemplate({
+      id: '', // Dummy ID to trigger edit mode and pre-fills
+      title: `${skill.name} Routine`,
+      skillId: skill.id,
+      color: colorMap[skill.color] || '#3B82F6',
+      recurrence: 'weekdays',
+      durationMinutes: skill.dailyTargetMinutes || 30,
+      startMinutes: 9 * 60, // 09:00 default
+      baseDate: new Date().toISOString()
+    });
+    setRoutineEditorVisible(true);
+  };
+
+  const handleSaveRoutine = (data: Partial<Plan>) => {
+    addPlan({
+      id: Date.now().toString(),
+      title: data.title || 'New Routine',
+      startMinutes: data.startMinutes ?? 9 * 60,
+      durationMinutes: data.durationMinutes ?? 30,
+      recurrence: data.recurrence || 'none',
+      recurrenceDays: data.recurrenceDays,
+      baseDate: data.baseDate || new Date().toISOString(),
+      color: data.color,
+      skillId: data.skillId,
+    });
+    setRoutineEditorVisible(false);
+  };
 
   return (
     <SafeAreaView className="flex-1 bg-gray-50 dark:bg-gray-950" edges={['top']}>
@@ -109,7 +226,12 @@ export default function MasteryScreen() {
 
         <View className="gap-2">
           {skills.map(skill => (
-            <SkillCard key={skill.id} skill={skill} />
+            <SkillCard 
+              key={skill.id} 
+              skill={skill} 
+              onSetTarget={handleOpenTargetModal} 
+              onCreateRoutine={handleCreateRoutine}
+            />
           ))}
           
           {skills.length === 0 && (
@@ -173,6 +295,26 @@ export default function MasteryScreen() {
           </View>
         </KeyboardAvoidingView>
       </Modal>
+
+      {/* Target Modal */}
+      {selectedSkillForTarget && (
+        <SkillTargetModal
+          visible={targetModalVisible}
+          onClose={() => setTargetModalVisible(false)}
+          onSave={handleSaveTarget}
+          skillName={selectedSkillForTarget.name}
+          initialMinutes={selectedSkillForTarget.dailyTargetMinutes}
+        />
+      )}
+
+      {/* Routine Editor Modal */}
+      <PlanEditorModal
+        visible={routineEditorVisible}
+        plan={routinePlanTemplate as Plan | null}
+        onClose={() => setRoutineEditorVisible(false)}
+        onSave={handleSaveRoutine}
+        onDelete={() => {}} // No delete functionality in creation mode
+      />
     </SafeAreaView>
   );
 }

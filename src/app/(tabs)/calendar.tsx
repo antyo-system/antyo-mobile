@@ -160,7 +160,16 @@ export default function CalendarScreen() {
   // Recurrence logic parsing for the current selected date
   const dailyPlansRaw = plans.filter(p => {
     if (p.recurrence === 'daily') return true;
+    if (p.recurrence === 'weekdays') {
+      const day = selectedDate.getDay();
+      return day >= 1 && day <= 5; // Monday=1 to Friday=5
+    }
     if (p.recurrence === 'weekly' && new Date(p.baseDate).getDay() === selectedDate.getDay()) return true;
+    if (p.recurrence === 'monthly' && new Date(p.baseDate).getDate() === selectedDate.getDate()) return true;
+    if (p.recurrence === 'annually') {
+      const base = new Date(p.baseDate);
+      return base.getMonth() === selectedDate.getMonth() && base.getDate() === selectedDate.getDate();
+    }
     if (p.recurrence === 'specific_days' && p.recurrenceDays?.includes(selectedDate.getDay())) return true;
     return isSameDay(new Date(p.baseDate), selectedDate);
   });
@@ -229,8 +238,9 @@ export default function CalendarScreen() {
         durationMinutes: data.durationMinutes ?? (editingPlan ? editingPlan.durationMinutes : 30),
         recurrence: data.recurrence || 'none',
         recurrenceDays: data.recurrenceDays,
-        baseDate: selectedDate.toISOString(),
+        baseDate: data.baseDate || selectedDate.toISOString(),
         color: data.color,
+        skillId: data.skillId,
       });
     }
     setEditorVisible(false);

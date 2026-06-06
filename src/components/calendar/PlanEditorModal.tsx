@@ -3,6 +3,9 @@ import { Modal, View, Text, TextInput, Pressable, ScrollView, KeyboardAvoidingVi
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Plan, Recurrence } from '@/store/usePlanStore';
 import { useSettingsStore } from '@/store/useSettingsStore';
+import { useMasteryStore } from '@/store/useMasteryStore';
+import { Feather } from '@expo/vector-icons';
+import { CalendarPicker } from './CalendarPicker';
 
 interface Props {
   visible: boolean;
@@ -40,7 +43,11 @@ export function PlanEditorModal({ visible, plan, onClose, onSave, onDelete }: Pr
   const [startTimeStr, setStartTimeStr] = useState('');
   const [endTimeStr, setEndTimeStr] = useState('');
   const [isReminderEnabled, setIsReminderEnabled] = useState(true);
-  const [color, setColor] = useState(PLAN_COLORS[2]); // Default yellow-ish
+  const [color, setColor] = useState(PLAN_COLORS[2]);
+  const [planDate, setPlanDate] = useState(new Date());
+  const [skillId, setSkillId] = useState<string | null>(null);
+
+  const skills = useMasteryStore(s => s.skills);
 
   useEffect(() => {
     setTitle(plan?.title || '');
@@ -50,6 +57,14 @@ export function PlanEditorModal({ visible, plan, onClose, onSave, onDelete }: Pr
     setNotes(plan?.notes || '');
     setIsReminderEnabled(plan?.isReminderEnabled ?? true);
     setColor(plan?.color || PLAN_COLORS[2]);
+    setSkillId(plan?.skillId || null);
+    
+    // Set date from plan's baseDate or default to today
+    if (plan?.baseDate) {
+      setPlanDate(new Date(plan.baseDate));
+    } else {
+      setPlanDate(new Date());
+    }
     
     if (plan && !isNaN(plan.startMinutes) && !plan?.isAllDay) {
       setStartTimeStr(formatMinsToTimeStr(plan.startMinutes));
@@ -90,6 +105,9 @@ export function PlanEditorModal({ visible, plan, onClose, onSave, onDelete }: Pr
         : (24 * 60 - wakeUpMins) + goSleepMins;
     }
 
+    // Use planDate directly for baseDate
+    const baseDate = planDate.toISOString();
+
     onSave({ 
       title, 
       recurrence,
@@ -99,7 +117,9 @@ export function PlanEditorModal({ visible, plan, onClose, onSave, onDelete }: Pr
       isAllDay,
       notes,
       isReminderEnabled,
-      color
+      color,
+      baseDate,
+      skillId
     });
   };
 
@@ -132,32 +152,39 @@ export function PlanEditorModal({ visible, plan, onClose, onSave, onDelete }: Pr
               autoFocus={!plan?.title}
             />
 
-            <View className="flex-row items-center justify-between mb-4 bg-gray-50 dark:bg-gray-900 p-4 rounded-2xl border border-gray-200 dark:border-gray-800">
-              <Text className="text-sm font-bold text-gray-700 dark:text-gray-300">All Day Plan</Text>
-              <Switch value={isAllDay} onValueChange={setIsAllDay} />
+            {/* Date + All Day + Remind Me row */}
+            <View className="flex-row gap-3 mb-4">
+              <View style={{ flex: 2 }}>
+                <Text className="text-xs font-bold text-gray-500 dark:text-gray-400 mb-1.5 uppercase tracking-wider">Date</Text>
+                <CalendarPicker selectedDate={planDate} onSelectDate={setPlanDate} />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text className="text-[10px] font-bold text-gray-500 dark:text-gray-400 mb-1.5 uppercase tracking-wider text-center">All Day</Text>
+                <View className="items-center justify-center bg-gray-50 dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 h-[56px]">
+                  <Switch value={isAllDay} onValueChange={setIsAllDay} />
+                </View>
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text className="text-[10px] font-bold text-gray-500 dark:text-gray-400 mb-1.5 uppercase tracking-wider text-center">Remind</Text>
+                <Pressable 
+                  onPress={() => setIsReminderEnabled(!isReminderEnabled)}
+                  className={`items-center justify-center rounded-2xl border h-[56px] ${
+                    isReminderEnabled 
+                      ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-900/50' 
+                      : 'bg-gray-50 dark:bg-gray-900 border-gray-200 dark:border-gray-800'
+                  }`}
+                >
+                  <Text className={isReminderEnabled ? 'text-blue-500 text-xl' : 'text-gray-400 dark:text-gray-500 text-xl opacity-40 grayscale'}>
+                    🔔
+                  </Text>
+                </Pressable>
+              </View>
             </View>
 
             {!isAllDay && (
-              <View className="flex-row items-center justify-between mb-6 bg-blue-50 dark:bg-blue-900/20 p-4 rounded-2xl border border-blue-100 dark:border-blue-900/50">
-                <View className="flex-row items-center gap-2">
-                  <Text className="text-lg">🔔</Text>
-                  <View>
-                    <Text className="text-sm font-bold text-blue-900 dark:text-blue-100">Remind Me</Text>
-                    <Text className="text-xs text-blue-700 dark:text-blue-300 mt-0.5">Auto-start focus timer at start time</Text>
-                  </View>
-                </View>
-                <Switch 
-                  value={isReminderEnabled} 
-                  onValueChange={setIsReminderEnabled} 
-                  trackColor={{ true: '#2563EB', false: '#D1D5DB' }}
-                />
-              </View>
-            )}
-
-            {!isAllDay && (
-              <View className="flex-row gap-4 mb-6">
-                <View className="flex-1">
-                  <Text className="text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Start Time</Text>
+              <View className="flex-row gap-3 mb-4">
+                <View style={{ flex: 1 }}>
+                  <Text className="text-xs font-bold text-gray-500 dark:text-gray-400 mb-1.5 uppercase tracking-wider">Start</Text>
                   <TextInput
                     value={startTimeStr}
                     onChangeText={(val) => handleTimeInput(val, setStartTimeStr)}
@@ -165,11 +192,11 @@ export function PlanEditorModal({ visible, plan, onClose, onSave, onDelete }: Pr
                     maxLength={5}
                     placeholder="09:00"
                     placeholderTextColor="#9ca3af"
-                    className="bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-4 rounded-2xl text-gray-900 dark:text-white font-bold text-lg text-center shadow-sm"
+                    className="bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-4 rounded-2xl text-gray-900 dark:text-white font-bold text-lg text-center"
                   />
                 </View>
-                <View className="flex-1">
-                  <Text className="text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">End Time</Text>
+                <View style={{ flex: 1 }}>
+                  <Text className="text-xs font-bold text-gray-500 dark:text-gray-400 mb-1.5 uppercase tracking-wider">End</Text>
                   <TextInput
                     value={endTimeStr}
                     onChangeText={(val) => handleTimeInput(val, setEndTimeStr)}
@@ -177,42 +204,100 @@ export function PlanEditorModal({ visible, plan, onClose, onSave, onDelete }: Pr
                     maxLength={5}
                     placeholder="09:30"
                     placeholderTextColor="#9ca3af"
-                    className="bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-4 rounded-2xl text-gray-900 dark:text-white font-bold text-lg text-center shadow-sm"
+                    className="bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-4 rounded-2xl text-gray-900 dark:text-white font-bold text-lg text-center"
                   />
                 </View>
               </View>
             )}
 
-            <Text className="text-sm font-bold text-gray-700 dark:text-gray-300 mb-2 mt-4">Card Color</Text>
-            <View className="flex-row justify-between mb-6 bg-gray-50 dark:bg-gray-900 p-4 rounded-2xl border border-gray-200 dark:border-gray-800">
+            <Text className="text-xs font-bold text-gray-500 dark:text-gray-400 mb-1.5 uppercase tracking-wider">Color</Text>
+            <View className="flex-row justify-between mb-6 bg-gray-50 dark:bg-gray-900 p-3 rounded-2xl border border-gray-200 dark:border-gray-800">
               {PLAN_COLORS.map(c => (
                 <Pressable
                   key={c}
                   onPress={() => setColor(c)}
-                  className={`w-10 h-10 rounded-full items-center justify-center border-2 ${color === c ? 'border-gray-900 dark:border-white' : 'border-transparent'}`}
+                  className={`w-9 h-9 rounded-full items-center justify-center border-2 ${color === c ? 'border-gray-900 dark:border-white' : 'border-transparent'}`}
                   style={{ backgroundColor: c }}
                 >
-                  {color === c && <Text className="text-white font-bold">✓</Text>}
+                  {color === c && <Text className="text-white font-bold text-xs">✓</Text>}
                 </Pressable>
               ))}
             </View>
 
-            <Text className="text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Recurrence</Text>
-            <View className="flex-row flex-wrap gap-2 mb-4">
-              {(['none', 'daily', 'weekly', 'specific_days'] as Recurrence[]).map((r) => (
+            <Text className="text-xs font-bold text-gray-500 dark:text-gray-400 mb-1.5 uppercase tracking-wider">Link to Skill (Mastery)</Text>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} className="mb-6 -mx-6 px-6">
+              <View className="flex-row gap-2 pr-6">
                 <Pressable
-                  key={r}
-                  onPress={() => setRecurrence(r)}
-                  className={`px-4 py-2.5 rounded-full border ${
-                    recurrence === r 
-                      ? 'bg-blue-600 border-blue-600 shadow-md shadow-blue-500/30' 
-                      : 'bg-transparent border-gray-300 dark:border-gray-700'
+                  onPress={() => setSkillId(null)}
+                  className={`px-4 py-3 rounded-2xl border flex-row items-center gap-2 ${
+                    skillId === null 
+                      ? 'bg-gray-800 border-gray-800 dark:bg-white dark:border-white' 
+                      : 'bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-800'
                   }`}
                 >
-                  <Text className={`font-bold capitalize ${
-                    recurrence === r ? 'text-white' : 'text-gray-600 dark:text-gray-400'
-                  }`}>
-                    {r === 'specific_days' ? 'Custom Days' : r}
+                  <Text className={`font-bold ${skillId === null ? 'text-white dark:text-gray-900' : 'text-gray-500'}`}>None</Text>
+                </Pressable>
+                
+                {skills.map(skill => {
+                  const isSelected = skillId === skill.id;
+                  return (
+                    <Pressable
+                      key={skill.id}
+                      onPress={() => {
+                        setSkillId(skill.id);
+                        const colorMap: Record<string, string> = {
+                          'blue': '#3B82F6',
+                          'green': '#10B981',
+                          'yellow': '#F59E0B',
+                          'red': '#EF4444',
+                          'purple': '#8B5CF6',
+                          'pink': '#EC4899',
+                        };
+                        const hex = colorMap[skill.color] || PLAN_COLORS[0];
+                        setColor(hex);
+                      }}
+                      className={`px-4 py-3 rounded-2xl border flex-row items-center gap-2 ${
+                        isSelected 
+                          ? 'bg-orange-50 dark:bg-orange-900/20 border-orange-200 dark:border-orange-900/50' 
+                          : 'bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-800'
+                      }`}
+                    >
+                      <Feather name={skill.icon as any} size={14} color={isSelected ? "#F97316" : "#6B7280"} />
+                      <Text className={`font-bold ${isSelected ? 'text-orange-600 dark:text-orange-400' : 'text-gray-600 dark:text-gray-300'}`}>
+                        {skill.name}
+                      </Text>
+                    </Pressable>
+                  );
+                })}
+              </View>
+            </ScrollView>
+
+            <Text className="text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Recurrence</Text>
+            <View className="flex-row flex-wrap gap-2 mb-4">
+              {([
+                { id: 'none', label: 'Once' },
+                { id: 'daily', label: 'Daily' },
+                { id: 'weekdays', label: 'Weekdays' },
+                { id: 'weekly', label: 'Weekly' },
+                { id: 'monthly', label: 'Monthly' },
+                { id: 'annually', label: 'Annually' },
+                { id: 'specific_days', label: 'Custom Days' },
+              ] as { id: Recurrence; label: string }[]).map((r) => (
+                <Pressable
+                  key={r.id}
+                  onPress={() => setRecurrence(r.id)}
+                  className={[
+                    'px-4 py-2.5 rounded-full border',
+                    recurrence === r.id 
+                      ? 'bg-blue-600 border-blue-600' 
+                      : 'bg-transparent border-gray-300 dark:border-gray-700'
+                  ].join(' ')}
+                >
+                  <Text className={[
+                    'font-bold',
+                    recurrence === r.id ? 'text-white' : 'text-gray-600 dark:text-gray-400'
+                  ].join(' ')}>
+                    {r.label}
                   </Text>
                 </Pressable>
               ))}

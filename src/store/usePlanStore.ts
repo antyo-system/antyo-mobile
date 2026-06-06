@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 import { zustandStorage } from './mmkv';
 
-export type Recurrence = 'none' | 'daily' | 'weekly' | 'monthly' | 'specific_days';
+export type Recurrence = 'none' | 'daily' | 'weekdays' | 'weekly' | 'monthly' | 'annually' | 'specific_days';
 
 export interface Plan {
   id: string;
@@ -16,6 +16,7 @@ export interface Plan {
   notes?: string;
   isReminderEnabled?: boolean;
   color?: string;
+  skillId?: string | null;
 }
 
 interface PlanState {

@@ -5,9 +5,22 @@ export interface ChangelogRelease {
   fixes: string[];
 }
 
-export const APP_VERSION = "1.0.4";
+export const APP_VERSION = "1.1.0";
 
 export const CHANGELOG: ChangelogRelease[] = [
+  {
+    version: "1.1.0",
+    date: new Date().toISOString().split('T')[0],
+    features: [
+      "The Automated Routine Engine: Create recurring schedule blocks directly from the Mastery tab.",
+      "Daily Target Tracking: Set and track daily minutes goal per skill.",
+      "Skill-Plan Linking: Your calendar plans can now be dynamically linked to specific mastery skills.",
+      "Auto-Sync Colors: Plan colors automatically sync with the assigned skill."
+    ],
+    fixes: [
+      "Fixed issue where skillId was not properly saved to plans."
+    ]
+  },
   {
     version: "1.0.4",
     date: "2026-06-06",
