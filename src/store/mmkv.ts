@@ -1,35 +1,40 @@
+import { documentDirectory, writeAsStringAsync, getInfoAsync, readAsStringAsync, deleteAsync } from 'expo-file-system/legacy';
 import { StateStorage } from 'zustand/middleware';
 
-let storage: {
-  set: (key: string, value: string | boolean | number) => void;
-  getString: (key: string) => string | undefined;
-  remove: (key: string) => void;
+const getFilePath = (name: string) => {
+  return `${documentDirectory}${name}.json`;
 };
 
-try {
-  const { createMMKV } = require('react-native-mmkv');
-  storage = createMMKV({ id: 'antyo-storage' });
-} catch (e) {
-  console.warn('[mmkv] Native module unavailable, using in-memory fallback:', e);
-  const memStore = new Map<string, string>();
-  storage = {
-    set: (key: string, value: string | boolean | number) => { memStore.set(key, String(value)); },
-    getString: (key: string) => memStore.get(key),
-    remove: (key: string) => { memStore.delete(key); },
-  };
-}
-
-export { storage };
-
 export const zustandStorage: StateStorage = {
-  setItem: (name, value) => {
-    return storage.set(name, value);
+  setItem: async (name, value) => {
+    try {
+      await writeAsStringAsync(getFilePath(name), value);
+    } catch (e) {
+      console.error('File storage setItem error:', e);
+    }
   },
-  getItem: (name) => {
-    const value = storage.getString(name);
-    return value ?? null;
+  getItem: async (name) => {
+    try {
+      const path = getFilePath(name);
+      const info = await getInfoAsync(path);
+      if (!info.exists) {
+        return null;
+      }
+      return await readAsStringAsync(path);
+    } catch (e) {
+      console.error('File storage getItem error:', e);
+      return null;
+    }
   },
-  removeItem: (name) => {
-    storage.remove(name);
+  removeItem: async (name) => {
+    try {
+      const path = getFilePath(name);
+      const info = await getInfoAsync(path);
+      if (info.exists) {
+        await deleteAsync(path);
+      }
+    } catch (e) {
+      console.error('FileSystem removeItem error:', e);
+    }
   },
 };

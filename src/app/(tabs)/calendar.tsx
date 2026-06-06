@@ -23,6 +23,8 @@ import { getMinutesFromMidnight } from '@/utils/time';
 import { getPlansForDate } from '@/utils/calendar';
 import { isSameDay, isToday, addDays, subDays } from 'date-fns';
 import { images } from '@/constants/images';
+import { useAppStore } from '@/store/useAppStore';
+import { SpotlightOverlay, SpotlightStep, SpotlightCoords } from '@/components/tutorial/SpotlightOverlay';
 
 const PIXELS_PER_MINUTE = 1.5;
 
@@ -115,6 +117,52 @@ export default function CalendarScreen() {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const insets = useSafeAreaInsets();
   
+  // Tutorial State
+  const { hasSeenCalendarTutorial, setTutorialSeen } = useAppStore();
+  const [tutorialVisible, setTutorialVisible] = useState(false);
+  const [tutorialSteps, setTutorialSteps] = useState<SpotlightStep[]>([]);
+  
+  const dateRef = useRef<View>(null);
+  const toggleRef = useRef<View>(null);
+  const fabRef = useRef<View>(null);
+
+  useEffect(() => {
+    if (!hasSeenCalendarTutorial) {
+      const timeout = setTimeout(async () => {
+        const measureAsync = (ref: any): Promise<SpotlightCoords> => {
+          return new Promise((resolve) => {
+            if (!ref.current) {
+              return resolve({ x: 0, y: 0, width: 0, height: 0 });
+            }
+            let resolved = false;
+            const fallback = setTimeout(() => {
+              if (!resolved) { resolved = true; resolve({ x: 0, y: 0, width: 0, height: 0 }); }
+            }, 400);
+            ref.current.measureInWindow((x: number, y: number, width: number, height: number) => {
+              if (!resolved) {
+                resolved = true;
+                clearTimeout(fallback);
+                resolve({ x, y, width, height });
+              }
+            });
+          });
+        };
+
+        const dateCoords = await measureAsync(dateRef);
+        const toggleCoords = await measureAsync(toggleRef);
+        const fabCoords = await measureAsync(fabRef);
+
+        setTutorialSteps([
+          { coords: dateCoords, text: "Step 1: Time Travel. Swipe or tap to view your past execution and future plans.", holeType: 'rect', holePadding: 4 },
+          { coords: toggleCoords, text: "Step 2: The Reality Check. Compare your 'Plan' against your 'Real' tracked sessions.", holeType: 'rect', holePadding: 8 },
+          { coords: fabCoords, text: "Step 3: Block your time. Tap here to structure your day intentionally.", holeType: 'circle', holePadding: 16 },
+        ]);
+        setTutorialVisible(true);
+      }, 500);
+      return () => clearTimeout(timeout);
+    }
+  }, [hasSeenCalendarTutorial]);
+
   // Real Sessions
   const sessions = useSessionStore(s => s.sessions);
   const updateSession = useSessionStore(s => s.updateSession);
@@ -256,14 +304,20 @@ export default function CalendarScreen() {
       {/* Force hide the duplicate Expo Router header */}
       <Tabs.Screen options={{ headerShown: false }} />
       
-      <DateSelector 
-        selectedDate={selectedDate} 
-        onSelectDate={setSelectedDate} 
-        achievedDates={achievedDates}
-      />
+      <View ref={dateRef} collapsable={false}>
+        <DateSelector 
+          selectedDate={selectedDate} 
+          onSelectDate={setSelectedDate} 
+          achievedDates={achievedDates}
+        />
+      </View>
       
       {/* PLAN vs REAL Minimalist Toggle */}
-      <View className="flex-row bg-white dark:bg-gray-950 py-2.5 z-10 border-b border-gray-100 dark:border-gray-900 justify-center gap-12 shadow-sm">
+      <View 
+        ref={toggleRef} 
+        collapsable={false}
+        className="flex-row bg-white dark:bg-gray-950 py-2.5 z-10 border-b border-gray-100 dark:border-gray-900 justify-center gap-12 shadow-sm"
+      >
         <Pressable 
           onPress={() => setActiveTab(activeTab === 'plan' ? 'schedule' : 'plan')}
           className="items-center justify-center py-1 px-4"
@@ -399,13 +453,14 @@ export default function CalendarScreen() {
       )}
 
       {/* Floating Action Button (FAB) */}
-      <Pressable 
-        onPress={handleCreateNew}
-        className="absolute right-6 w-14 h-14 bg-blue-600 rounded-full items-center justify-center shadow-lg shadow-blue-500/50 z-50"
-        style={{ bottom: Math.max(insets.bottom + 84, 112) }}
-      >
-        <Text className="text-white text-3xl leading-none mt-[-2px]">+</Text>
-      </Pressable>
+      <View ref={fabRef} collapsable={false} style={{ position: 'absolute', right: 24, bottom: Math.max(insets.bottom + 84, 112), zIndex: 50 }}>
+        <Pressable 
+          onPress={handleCreateNew}
+          className="w-14 h-14 bg-blue-600 rounded-full items-center justify-center shadow-lg shadow-blue-500/50"
+        >
+          <Text className="text-white text-3xl leading-none mt-[-2px]">+</Text>
+        </Pressable>
+      </View>
 
       <PlanEditorModal 
         visible={editorVisible}
@@ -436,6 +491,15 @@ export default function CalendarScreen() {
         onClose={() => setQuickSleepVisible(false)}
       />
 
+      {/* Custom Tutorial Overlay */}
+      <SpotlightOverlay
+        visible={tutorialVisible}
+        steps={tutorialSteps}
+        onFinish={() => {
+          setTutorialVisible(false);
+          setTutorialSeen('calendar');
+        }}
+      />
     </SafeAreaView>
   );
 }

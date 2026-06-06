@@ -51,7 +51,7 @@ Always refer to the **[ROADMAP_100M.md](./docs/ROADMAP_100M.md)** file for the o
 - **Language:** TypeScript
 - **Styling:** NativeWind (Tailwind CSS for React Native)
 - **State Management:** Zustand
-- **Local Storage:** `react-native-mmkv` (Strictly preferred over AsyncStorage for timer performance)
+- **Local Storage:** `expo-file-system` (Custom Zustand storage adapter built to avoid AsyncStorage/MMKV issues on Expo Go, ensuring 100% data safety)
 - **Authentication:** Clerk
 - **Analytics:** PostHog
 - **Dates/Time:** date-fns
@@ -161,6 +161,7 @@ Use `StyleSheet.create` or inline styles ONLY for the following where NativeWind
 - **Architecture:** Ask for permission before making significant modifications to the core architecture.
 - **Proactive suggestions:** Proactively suggest better approaches if something is unclear.
 - **CRITICAL:** Do NOT install new libraries without explicit user approval.
+- **Language Policy (CRITICAL):** ALWAYS use **English** for the UI language of the application being built (buttons, text, tooltips, placeholders, error messages), regardless of the language used to communicate in the prompt. Do not use Indonesian in the UI.
 
 ---
 

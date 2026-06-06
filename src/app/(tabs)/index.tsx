@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { View, Text, Pressable, Switch, KeyboardAvoidingView, Platform, Animated } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -14,6 +14,7 @@ import { useMasteryStore } from '@/store/useMasteryStore';
 import { usePlanStore, Plan } from '@/store/usePlanStore';
 import { useAppStore } from '@/store/useAppStore';
 import { SkillSelector } from '@/components/timer/SkillSelector';
+import { SpotlightOverlay, SpotlightStep, SpotlightCoords } from '@/components/tutorial/SpotlightOverlay';
 
 export default function TimerScreen() {
   const { status, mode, timeLeft, timeElapsed, tick, currentTitle, duration, stopTimer, sessionStartTime, selectedSkillId, selectedPillarId } = useTimerStore(
@@ -32,9 +33,57 @@ export default function TimerScreen() {
     }))
   );
   const addSession = useSessionStore((s: any) => s.addSession);
-  const { hasCompletedTutorial } = useAppStore();
   const [durationModalVisible, setDurationModalVisible] = useState(false);
   const [activeRoutine, setActiveRoutine] = useState<Plan | null>(null);
+
+  // Tutorial State
+  const { hasSeenTimerTutorial, setTutorialSeen } = useAppStore();
+  const [tutorialVisible, setTutorialVisible] = useState(false);
+  const [tutorialSteps, setTutorialSteps] = useState<SpotlightStep[]>([]);
+  
+  const taskRef = useRef<View>(null);
+  const skillRef = useRef<View>(null);
+  const durationRef = useRef<View>(null);
+  const playRef = useRef<View>(null);
+
+  useEffect(() => {
+    if (!hasSeenTimerTutorial) {
+      const timeout = setTimeout(async () => {
+        const measureAsync = (ref: any): Promise<SpotlightCoords> => {
+          return new Promise((resolve) => {
+            if (!ref.current) {
+              return resolve({ x: 0, y: 0, width: 0, height: 0 });
+            }
+            let resolved = false;
+            const fallback = setTimeout(() => {
+              if (!resolved) { resolved = true; resolve({ x: 0, y: 0, width: 0, height: 0 }); }
+            }, 400);
+            ref.current.measureInWindow((x: number, y: number, width: number, height: number) => {
+              if (!resolved) {
+                resolved = true;
+                clearTimeout(fallback);
+                resolve({ x, y, width, height });
+              }
+            });
+          });
+        };
+
+        const taskCoords = await measureAsync(taskRef);
+        const skillCoords = await measureAsync(skillRef);
+        const durationCoords = await measureAsync(durationRef);
+        const playCoords = await measureAsync(playRef);
+
+        setTutorialSteps([
+          { coords: taskCoords, text: "Step 1: Define your mission. Type the specific task you want to conquer today.", holeType: 'rect', holePadding: 8 },
+          { coords: skillCoords, text: "Step 2: Link your effort to a Skill. This is crucial to track your 10,000 hours journey.", holeType: 'rect', holePadding: 8 },
+          { coords: durationCoords, text: "Step 3: Set your boundaries. Use Timer for strict blocks, or Stopwatch for open-ended flow.", holeType: 'rect', holePadding: 16 },
+          { coords: playCoords, text: "Step 4: Ignite your engine. No distractions. Just pure execution.", holeType: 'circle', holePadding: 20 },
+        ]);
+        setTutorialVisible(true);
+      }, 500);
+      return () => clearTimeout(timeout);
+    }
+  }, [hasSeenTimerTutorial]);
 
   // Smart Routine Detection
   useEffect(() => {
@@ -155,18 +204,6 @@ export default function TimerScreen() {
             <TimerModeToggle />
           </View>
 
-          {/* Minimalist First-Time Tutorial */}
-          {!hasCompletedTutorial && status === 'idle' && !activeRoutine && (
-            <Animated.View className="absolute top-20 left-6 right-6 z-40 bg-blue-50 dark:bg-blue-900/40 rounded-2xl p-4 border border-blue-200 dark:border-blue-800/60 shadow-sm flex-row items-center">
-              <View className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-800 items-center justify-center mr-3">
-                <Text className="text-base">💡</Text>
-              </View>
-              <Text className="flex-1 text-blue-800 dark:text-blue-200 font-bold text-[13px] leading-tight">
-                Step 1: Go to the <Text className="font-black text-orange-500">Mastery</Text> tab to set up your first Skill Target and Routine.
-              </Text>
-            </Animated.View>
-          )}
-
           {/* Smart Routine Banner */}
           {activeRoutine && status === 'idle' && (
             <Animated.View className="absolute top-20 left-6 right-6 z-50">
@@ -202,10 +239,15 @@ export default function TimerScreen() {
           {/* Middle: Timer Display (Shifted lower) */}
           <View className="flex-1 items-center justify-center z-0 mt-4" pointerEvents="box-none">
             <View className="items-center justify-center -mt-2">
-              <TimerTitleInput />
-              <SkillSelector />
+              <View ref={taskRef} collapsable={false}>
+                <TimerTitleInput />
+              </View>
               
-              <View className="mt-8">
+              <View ref={skillRef} collapsable={false}>
+                <SkillSelector />
+              </View>
+              
+              <View className="mt-8" ref={durationRef} collapsable={false}>
                 <TimerDisplay onOpenModal={() => setDurationModalVisible(true)} />
               </View>
             </View>
@@ -213,11 +255,23 @@ export default function TimerScreen() {
 
           {/* Bottom 1/3: Controls */}
           <View className="items-center justify-center h-[20%] z-10 mb-20">
-            <TimerControls onSaveAndStop={handleSaveAndStop} />
+            <View ref={playRef} collapsable={false}>
+              <TimerControls onSaveAndStop={handleSaveAndStop} />
+            </View>
           </View>
           
         </View>
       </KeyboardAvoidingView>
+
+      {/* Custom Tutorial Overlay */}
+      <SpotlightOverlay
+        visible={tutorialVisible}
+        steps={tutorialSteps}
+        onFinish={() => {
+          setTutorialVisible(false);
+          setTutorialSeen('timer');
+        }}
+      />
       <TimerDurationModal visible={durationModalVisible} onClose={() => setDurationModalVisible(false)} />
     </SafeAreaView>
   );

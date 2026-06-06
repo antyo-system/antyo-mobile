@@ -18,7 +18,23 @@ Current productivity tools are fragmented. Traditional calendar apps excel at pl
 
 **Value Proposition:** Stop guessing where your time went. ANTYO Focus lets you see your plans side-by-side with your reality, enabling data-driven adjustments to your productivity habits without manual logging.
 
-## 4. User Personas
+## 4. Market Strategy & Personas
+
+### 4.1 STP (Segmentation, Targeting, Positioning)
+
+**1. Segmentation:**
+- **Demographic:** Students (13-24), Creators/Freelancers (20-35), Knowledge Workers (25-45).
+- **Psychographic:** Ambitious, driven by the "10,000 Hours Rule", frustrated by procrastination, appreciates minimalist and premium design.
+- **Behavioral:** Productivity tool switchers, visual learners who rely on calendars, tech-savvy.
+
+**2. Targeting:**
+- **Primary Target:** High school/university students, and independent creators aged **13-35**. These users have a high intrinsic motivation to track their "flight hours" to achieve mastery in their specific fields.
+
+**3. Positioning:**
+- **Tagline:** "A Mastery Tracking System, Not Just a Timer."
+- **Differentiation:** Unlike basic Pomodoro timers or static calendars, ANTYO Focus is positioned as a **Reality Check tool**. It visually juxtaposes PLAN vs REAL chronologically on a daily timeline, giving users an immediate, data-driven reality check on their productivity without complex setups.
+
+### 4.2 User Personas
 ### Primary Personas
 - **The Dedicated Student / University Student:** Needs to track study hours to ensure they meet their academic goals. Often struggles with distractions.
 - **The Independent Creator / Developer:** Relies on deep work blocks to make progress on projects. Needs to know exactly how much "real" work they accomplished in a day.

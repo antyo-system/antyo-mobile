@@ -5,9 +5,21 @@ export interface ChangelogRelease {
   fixes: string[];
 }
 
-export const APP_VERSION = "1.1.0";
+export const APP_VERSION = "1.2.0";
 
 export const CHANGELOG: ChangelogRelease[] = [
+  {
+    version: "1.2.0",
+    date: new Date().toISOString().split('T')[0],
+    features: [
+      "Interactive Multi-Step Tutorial: Brand new onboarding experience across all tabs to guide first-time users.",
+      "100% Data Safety: Migrated to a custom expo-file-system storage adapter for bulletproof local persistence."
+    ],
+    fixes: [
+      "Fixed warning 'Native module is null' caused by AsyncStorage on Expo Go.",
+      "Fixed tutorial circle overlay sizing issues on smaller screens."
+    ]
+  },
   {
     version: "1.1.0",
     date: new Date().toISOString().split('T')[0],

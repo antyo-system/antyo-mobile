@@ -2,7 +2,7 @@ import { ScrollView, View, Text, Pressable, Image } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Tabs, router } from 'expo-router';
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { useSessionStore } from '@/store/useSessionStore';
 import { useSettingsStore } from '@/store/useSettingsStore';
 import { usePlanStore } from '@/store/usePlanStore';
@@ -15,11 +15,59 @@ import { WeeklyBarChart } from '@/components/stats/WeeklyBarChart';
 import { ContributionHeatmap } from '@/components/stats/ContributionHeatmap';
 import { LifetimeCountdown } from '@/components/stats/LifetimeCountdown';
 import { getWeeklyPlannedMinutes } from '@/utils/calendar';
+import { useAppStore } from '@/store/useAppStore';
+import { SpotlightOverlay, SpotlightStep, SpotlightCoords } from '@/components/tutorial/SpotlightOverlay';
 
 export default function StatsScreen() {
   const sessions = useSessionStore(s => s.sessions);
   const removeSession = useSessionStore(s => s.removeSession);
   
+  // Tutorial State
+  const { hasSeenStatsTutorial, setTutorialSeen } = useAppStore();
+  const [tutorialVisible, setTutorialVisible] = useState(false);
+  const [tutorialSteps, setTutorialSteps] = useState<SpotlightStep[]>([]);
+  
+  const timeWidgetsRef = useRef<View>(null);
+  const chartRef = useRef<View>(null);
+  const heatmapRef = useRef<View>(null);
+
+  useEffect(() => {
+    if (!hasSeenStatsTutorial) {
+      const timeout = setTimeout(async () => {
+        const measureAsync = (ref: any): Promise<SpotlightCoords> => {
+          return new Promise((resolve) => {
+            if (!ref.current) {
+              return resolve({ x: 0, y: 0, width: 0, height: 0 });
+            }
+            let resolved = false;
+            const fallback = setTimeout(() => {
+              if (!resolved) { resolved = true; resolve({ x: 0, y: 0, width: 0, height: 0 }); }
+            }, 400);
+            ref.current.measureInWindow((x: number, y: number, width: number, height: number) => {
+              if (!resolved) {
+                resolved = true;
+                clearTimeout(fallback);
+                resolve({ x, y, width, height });
+              }
+            });
+          });
+        };
+
+        const timeCoords = await measureAsync(timeWidgetsRef);
+        const chartCoords = await measureAsync(chartRef);
+        const heatmapCoords = await measureAsync(heatmapRef);
+
+        setTutorialSteps([
+          { coords: timeCoords, text: "Step 1: Your Life on a Clock. See exactly how much time you have left today and in your lifetime.", holeType: 'rect', holePadding: 8 },
+          { coords: chartCoords, text: "Step 2: Weekly Progress. Track your 10,000 hours flight time week by week.", holeType: 'rect', holePadding: 8 },
+          { coords: heatmapCoords, text: "Step 3: Consistency is everything. Fill this board every single day to build unbreakable momentum.", holeType: 'rect', holePadding: 8 },
+        ]);
+        setTutorialVisible(true);
+      }, 500);
+      return () => clearTimeout(timeout);
+    }
+  }, [hasSeenStatsTutorial]);
+
   // Today Stats
   const todaysSessions = sessions.filter(s => isToday(new Date(s.startTime)));
   const totalSecondsToday = todaysSessions.reduce((acc, curr) => acc + curr.durationSeconds, 0);
@@ -160,7 +208,7 @@ export default function StatsScreen() {
         </View>
 
         {/* TIME WIDGETS ROW */}
-        <View className="flex-row gap-4 mb-6">
+        <View className="flex-row gap-4 mb-6" ref={timeWidgetsRef} collapsable={false}>
           
           {/* TIME LEFT WIDGET (2/3 width) */}
           <View className={`flex-[2] rounded-3xl p-6 shadow-sm relative overflow-hidden border ${
@@ -199,11 +247,15 @@ export default function StatsScreen() {
           </View>
 
           {/* LIFETIME COUNTDOWN (1/3 width) */}
-          <LifetimeCountdown />
+          <View>
+            <LifetimeCountdown />
+          </View>
         </View>
 
         {/* WEEKLY BAR CHART */}
-        <WeeklyBarChart sessions={sessions} />
+        <View ref={chartRef} collapsable={false}>
+          <WeeklyBarChart sessions={sessions} />
+        </View>
 
         {/* PLAN VS REALITY SCORECARD */}
         <View className="bg-white dark:bg-gray-900 rounded-3xl p-6 shadow-sm border border-gray-100 dark:border-gray-800 mb-8 mt-2">
@@ -249,7 +301,9 @@ export default function StatsScreen() {
 
 
         {/* MASTERY HEATMAP (ALL TIME) */}
-        <ContributionHeatmap sessions={sessions} />
+        <View ref={heatmapRef} collapsable={false}>
+          <ContributionHeatmap sessions={sessions} />
+        </View>
 
 
         {/* Global Smart Mode Analytics */}
@@ -326,6 +380,15 @@ export default function StatsScreen() {
         </View>
       </ScrollView>
 
+      {/* Custom Tutorial Overlay */}
+      <SpotlightOverlay
+        visible={tutorialVisible}
+        steps={tutorialSteps}
+        onFinish={() => {
+          setTutorialVisible(false);
+          setTutorialSeen('stats');
+        }}
+      />
     </SafeAreaView>
   );
 }

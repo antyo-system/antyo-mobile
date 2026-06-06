@@ -12,7 +12,7 @@ Di bawah ini adalah rancangan strategis untuk ANTYO Focus, terbagi menjadi Roadm
 *Fokus: Retensi D-1 & D-7. Pengguna harus jatuh cinta pada pandangan pertama.*
 * **Polish UI/UX:** Animasi *micro-interaction* yang sangat memuaskan saat *timer* selesai atau naik level.
 * **Widgets & Live Activities:** Mendukung iOS Live Activities & Android Widgets agar *timer* selalu terlihat tanpa membuka aplikasi.
-* **Data Robustness:** Memastikan *local-first storage* (Zustand + MMKV) sangat stabil dan tidak pernah kehilangan data sesi pengguna.
+* **Data Robustness:** Memastikan *local-first storage* (Zustand + expo-file-system) sangat stabil dan tidak pernah kehilangan data sesi pengguna.
 
 ### Phase 2: The Hook & Gamification (Bulan 3-5)
 *Fokus: Psikologi Habit 10.000 Jam.*

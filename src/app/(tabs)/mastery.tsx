@@ -13,6 +13,7 @@ import { PlanEditorModal } from '@/components/calendar/PlanEditorModal';
 import { usePlanStore, Plan } from '@/store/usePlanStore';
 import { useTimerStore } from '@/store/useTimerStore';
 import { useAppStore } from '@/store/useAppStore';
+import { SpotlightOverlay, SpotlightStep, SpotlightCoords } from '@/components/tutorial/SpotlightOverlay';
 
 const { width } = Dimensions.get('window');
 
@@ -218,6 +219,52 @@ export default function MasteryScreen() {
   const [modalVisible, setModalVisible] = useState(false);
   const [newSkillName, setNewSkillName] = useState('');
 
+  // Tutorial State
+  const { hasSeenMasteryTutorial, setTutorialSeen } = useAppStore();
+  const [tutorialVisible, setTutorialVisible] = useState(false);
+  const [tutorialSteps, setTutorialSteps] = useState<SpotlightStep[]>([]);
+  
+  const addRef = useRef<View>(null);
+  const listRef = useRef<View>(null);
+  const infoRef = useRef<View>(null);
+
+  useEffect(() => {
+    if (!hasSeenMasteryTutorial) {
+      const timeout = setTimeout(async () => {
+        const measureAsync = (ref: any): Promise<SpotlightCoords> => {
+          return new Promise((resolve) => {
+            if (!ref.current) {
+              return resolve({ x: 0, y: 0, width: 0, height: 0 });
+            }
+            let resolved = false;
+            const fallback = setTimeout(() => {
+              if (!resolved) { resolved = true; resolve({ x: 0, y: 0, width: 0, height: 0 }); }
+            }, 400);
+            ref.current.measureInWindow((x: number, y: number, width: number, height: number) => {
+              if (!resolved) {
+                resolved = true;
+                clearTimeout(fallback);
+                resolve({ x, y, width, height });
+              }
+            });
+          });
+        };
+
+        const addCoords = await measureAsync(addRef);
+        const listCoords = await measureAsync(listRef);
+        const infoCoords = await measureAsync(infoRef);
+
+        setTutorialSteps([
+          { coords: addCoords, text: "Step 1: Your Focus Areas. Tap here to create a Skill you want to master.", holeType: 'circle', holePadding: 12 },
+          { coords: listCoords, text: "Step 2: The 10,000 Hours Journey. Watch your level grow here as you record focused time.", holeType: 'rect', holePadding: 8 },
+          { coords: infoCoords, text: "Step 3: Keep going. Every session brings you closer to world-class mastery.", holeType: 'rect', holePadding: 8 },
+        ]);
+        setTutorialVisible(true);
+      }, 500);
+      return () => clearTimeout(timeout);
+    }
+  }, [hasSeenMasteryTutorial]);
+
   const [targetModalVisible, setTargetModalVisible] = useState(false);
   const [selectedSkillForTarget, setSelectedSkillForTarget] = useState<Skill | null>(null);
 
@@ -289,12 +336,14 @@ export default function MasteryScreen() {
             Mastery
           </Text>
           <View className="flex-row items-center gap-3">
-            <Pressable 
-              onPress={() => setModalVisible(true)}
-              className="w-10 h-10 items-center justify-center bg-gray-200 dark:bg-gray-800 rounded-full"
-            >
-              <Feather name="plus" size={20} color="#6B7280" />
-            </Pressable>
+            <View ref={addRef} collapsable={false}>
+              <Pressable 
+                onPress={() => setModalVisible(true)}
+                className="w-10 h-10 items-center justify-center bg-gray-200 dark:bg-gray-800 rounded-full"
+              >
+                <Feather name="plus" size={20} color="#6B7280" />
+              </Pressable>
+            </View>
           </View>
         </View>
         
@@ -302,7 +351,7 @@ export default function MasteryScreen() {
           The journey to 10,000 hours of deep work.
         </Text>
 
-        <View className="gap-2">
+        <View className="gap-2" ref={listRef} collapsable={false}>
           {skills.map(skill => (
             <SkillCard 
               key={skill.id} 
@@ -320,7 +369,7 @@ export default function MasteryScreen() {
           )}
         </View>
 
-        <View className="mt-8 bg-blue-50 dark:bg-blue-900/20 p-5 rounded-3xl border border-blue-100 dark:border-blue-900/50 mb-10">
+        <View className="mt-8 bg-blue-50 dark:bg-blue-900/20 p-5 rounded-3xl border border-blue-100 dark:border-blue-900/50 mb-10" ref={infoRef} collapsable={false}>
           <Text className="text-sm font-bold text-blue-800 dark:text-blue-300 mb-2">Why 10,000 Hours?</Text>
           <Text className="text-xs font-semibold text-blue-600 dark:text-blue-400 leading-relaxed">
             It takes approximately 10,000 hours of deliberate practice to achieve world-class mastery in any field. Every focus session brings you one step closer to greatness.
@@ -392,6 +441,16 @@ export default function MasteryScreen() {
         onClose={() => setRoutineEditorVisible(false)}
         onSave={handleSaveRoutine}
         onDelete={() => {}} // No delete functionality in creation mode
+      />
+
+      {/* Custom Tutorial Overlay */}
+      <SpotlightOverlay
+        visible={tutorialVisible}
+        steps={tutorialSteps}
+        onFinish={() => {
+          setTutorialVisible(false);
+          setTutorialSeen('mastery');
+        }}
       />
     </SafeAreaView>
   );
