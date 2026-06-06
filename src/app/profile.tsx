@@ -6,9 +6,15 @@ import { useSessionStore } from '@/store/useSessionStore';
 import { useSettingsStore } from '@/store/useSettingsStore';
 import { useColorScheme } from 'react-native';
 import { useMemo, useState, useEffect } from 'react';
+import { ChangelogModal } from '@/components/profile/ChangelogModal';
+import { APP_VERSION } from '@/constants/changelog';
+import * as FileSystem from 'expo-file-system';
+import * as Sharing from 'expo-sharing';
+import { usePlanStore } from '@/store/usePlanStore';
 
 export default function ProfileScreen() {
   const sessions = useSessionStore(s => s.sessions);
+  const plans = usePlanStore(s => s.plans);
   const colorScheme = useColorScheme();
   const isDark = colorScheme === 'dark';
 
@@ -29,6 +35,7 @@ export default function ProfileScreen() {
   const [localRetirementAge, setLocalRetirementAge] = useState(retirementAge.toString());
   
   const [developerExpanded, setDeveloperExpanded] = useState(false);
+  const [changelogVisible, setChangelogVisible] = useState(false);
 
   useEffect(() => {
     setLocalSleepStart(sleepStart);
@@ -82,6 +89,44 @@ export default function ProfileScreen() {
         },
       ]
     );
+  };
+
+  const handleExportData = async () => {
+    try {
+      const data = {
+        sessions,
+        plans,
+        settings: {
+          sleepStart, sleepEnd,
+          defaultBreakMinutes,
+          dailyFocusTargetHours,
+          birthYear, retirementAge,
+        }
+      };
+      
+      const jsonStr = JSON.stringify(data, null, 2);
+      const filename = `antyofocus-backup-${new Date().toISOString().split('T')[0]}.json`;
+      const fileUri = `${FileSystem.documentDirectory}${filename}`;
+      
+      await FileSystem.writeAsStringAsync(fileUri, jsonStr, {
+        encoding: FileSystem.EncodingType.UTF8
+      });
+      
+      const isSharingAvailable = await Sharing.isAvailableAsync();
+      if (!isSharingAvailable) {
+        Alert.alert('Error', 'Sharing is not available on your device.');
+        return;
+      }
+      
+      await Sharing.shareAsync(fileUri, {
+        mimeType: 'application/json',
+        dialogTitle: 'Export ANTYO Focus Data',
+        UTI: 'public.json'
+      });
+    } catch (err) {
+      console.error('Export failed:', err);
+      Alert.alert('Error', 'Failed to export data.');
+    }
   };
 
   // ── Reusable row component ──
@@ -358,15 +403,21 @@ export default function ProfileScreen() {
         <Text className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 ml-2">About</Text>
         <View className="bg-white dark:bg-gray-900 rounded-2xl overflow-hidden border border-gray-100 dark:border-gray-800 mb-6">
           
-          <View className="flex-row items-center justify-between p-4 border-b border-gray-100 dark:border-gray-800">
+          <Pressable 
+            onPress={() => setChangelogVisible(true)}
+            className="flex-row items-center justify-between p-4 border-b border-gray-100 dark:border-gray-800 active:bg-gray-100 dark:active:bg-gray-800"
+          >
             <View className="flex-row items-center gap-3">
-              <View className="w-8 h-8 rounded-full bg-gray-500/10 items-center justify-center">
-                <Feather name="info" size={16} color={isDark ? '#D1D5DB' : '#6B7280'} />
+              <View className="w-8 h-8 rounded-full bg-blue-500/10 items-center justify-center">
+                <Feather name="info" size={16} color="#3B82F6" />
               </View>
-              <Text className="text-base font-semibold text-gray-900 dark:text-white">Version</Text>
+              <Text className="text-base font-semibold text-gray-900 dark:text-white">Version Updates</Text>
             </View>
-            <Text className="text-sm font-bold text-gray-400">v1.0.1</Text>
-          </View>
+            <View className="flex-row items-center gap-2">
+              <Text className="text-sm font-bold text-gray-400">v{APP_VERSION}</Text>
+              <Feather name="chevron-right" size={16} color="#9CA3AF" />
+            </View>
+          </Pressable>
 
           <Pressable 
             onPress={() => setDeveloperExpanded(!developerExpanded)}
@@ -431,7 +482,7 @@ export default function ProfileScreen() {
             icon="download"
             iconBg="bg-orange-500/10"
             label="Export Data"
-            onPress={() => Alert.alert('Export', 'Coming soon!')}
+            onPress={handleExportData}
           />
           <SettingRow
             icon="monitor"
@@ -450,11 +501,12 @@ export default function ProfileScreen() {
         </View>
 
         <View className="items-center mb-8">
-          <Text className="text-[10px] text-gray-400 font-bold">ANTYO Focus v1.0.1</Text>
+          <Text className="text-[10px] text-gray-400 font-bold">ANTYO Focus v{APP_VERSION}</Text>
           <Text className="text-[10px] text-gray-300 dark:text-gray-700 mt-1">Made with ❤️ by Antonius Prasetyo</Text>
         </View>
         </ScrollView>
       </KeyboardAvoidingView>
+      <ChangelogModal visible={changelogVisible} onClose={() => setChangelogVisible(false)} />
     </SafeAreaView>
   );
 }

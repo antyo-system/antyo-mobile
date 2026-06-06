@@ -69,6 +69,9 @@ Always refer to the **[ROADMAP_100M.md](./docs/ROADMAP_100M.md)** file for the o
 - **Pull Requests:** Mandate small, focused PRs to keep Git history readable and automated reviews effective.
 - **Code Quality:** Use Prettier/ESLint for code formatting and linting.
 - **Testing:** Unit tests are MANDATORY for the `/src/utils` folder (e.g., `date-fns` logic). UI testing can wait for the MVP, but core time calculation must be bulletproof.
+- **Version Updates & Changelog (CRITICAL):** 
+  - Whenever you add a feature, fix a bug, or make structural changes, you MUST update the `APP_VERSION` and `CHANGELOG` array inside `src/constants/changelog.ts`.
+  - The settings screen dynamically reads from `changelog.ts` to show users the update notes popup. Keep it accurate.
 
 ---
 

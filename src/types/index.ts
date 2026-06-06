@@ -12,6 +12,7 @@ export interface Session {
   distractedDurationSeconds?: number;
   skillId?: string | null;
   pillarId?: string | null;
+  color?: string;
 }
 
 export interface Plan {

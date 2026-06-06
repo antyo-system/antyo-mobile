@@ -13,14 +13,18 @@ interface Props {
   onDelete: (id: string) => void;
 }
 
+const SESSION_COLORS = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899'];
+
 export function RealSessionEditorModal({ visible, session, onClose, onSave, onDelete }: Props) {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
+  const [color, setColor] = useState(SESSION_COLORS[0]);
 
   useEffect(() => {
     if (session) {
       setTitle(session.title);
       setDescription(session.description || '');
+      setColor(session.color || SESSION_COLORS[0]);
     }
   }, [session, visible]);
 
@@ -119,8 +123,22 @@ export function RealSessionEditorModal({ visible, session, onClose, onSave, onDe
               placeholderTextColor="#9ca3af"
               multiline
               textAlignVertical="top"
-              className="bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 p-4 rounded-2xl text-gray-900 dark:text-white font-medium min-h-[120px]"
+              className="bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 p-4 rounded-2xl text-gray-900 dark:text-white font-medium min-h-[120px] mb-6"
             />
+
+            <Text className="text-sm font-bold text-gray-700 dark:text-gray-300 mb-2 mt-2">Card Color</Text>
+            <View className="flex-row justify-between mb-8 bg-gray-50 dark:bg-gray-900 p-4 rounded-2xl border border-gray-200 dark:border-gray-800">
+              {SESSION_COLORS.map(c => (
+                <Pressable
+                  key={c}
+                  onPress={() => setColor(c)}
+                  className={`w-10 h-10 rounded-full items-center justify-center border-2 ${color === c ? 'border-gray-900 dark:border-white' : 'border-transparent'}`}
+                  style={{ backgroundColor: c }}
+                >
+                  {color === c && <Text className="text-white font-bold">✓</Text>}
+                </Pressable>
+              ))}
+            </View>
           </ScrollView>
 
           <View className="flex-row gap-4 mt-auto pt-4 border-t border-gray-100 dark:border-gray-900 pb-4">
@@ -134,7 +152,7 @@ export function RealSessionEditorModal({ visible, session, onClose, onSave, onDe
             <Pressable 
               onPress={() => {
                 if (title.trim()) {
-                  onSave({ title, description });
+                  onSave({ title, description, color });
                   onClose();
                 }
               }}

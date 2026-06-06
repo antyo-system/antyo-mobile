@@ -25,6 +25,91 @@ import { images } from '@/constants/images';
 
 const PIXELS_PER_MINUTE = 1.5;
 
+function calculateLayout<T extends { startMinutes: number; durationMinutes?: number; durationSeconds?: number }>(items: T[]) {
+  const sorted = [...items].sort((a, b) => {
+    const aStart = a.startMinutes;
+    const bStart = b.startMinutes;
+    if (aStart !== bStart) return aStart - bStart;
+    const aDur = a.durationMinutes ?? Math.round((a.durationSeconds || 0) / 60);
+    const bDur = b.durationMinutes ?? Math.round((b.durationSeconds || 0) / 60);
+    return bDur - aDur;
+  });
+
+  const layoutItems: (T & { _left: number; _width: number })[] = [];
+  let columns: T[][] = [];
+  let lastEventEnding: number | null = null;
+
+  for (const item of sorted) {
+    const start = item.startMinutes;
+    const duration = item.durationMinutes ?? Math.max(1, Math.round((item.durationSeconds || 0) / 60));
+    const end = start + duration;
+
+    if (lastEventEnding !== null && start >= lastEventEnding) {
+      packColumns(columns, layoutItems);
+      columns = [];
+      lastEventEnding = null;
+    }
+
+    let placed = false;
+    for (const col of columns) {
+      const lastEventInCol = col[col.length - 1];
+      const lastEnd = lastEventInCol.startMinutes + (lastEventInCol.durationMinutes ?? Math.max(1, Math.round((lastEventInCol.durationSeconds || 0) / 60)));
+      if (start >= lastEnd) {
+        col.push(item);
+        placed = true;
+        break;
+      }
+    }
+    
+    if (!placed) {
+      columns.push([item]);
+    }
+
+    if (lastEventEnding === null || end > lastEventEnding) {
+      lastEventEnding = end;
+    }
+  }
+
+  if (columns.length > 0) {
+    packColumns(columns, layoutItems);
+  }
+
+  function packColumns(cols: T[][], result: any[]) {
+    const numCols = cols.length;
+    for (let i = 0; i < numCols; i++) {
+      for (const item of cols[i]) {
+        const start = item.startMinutes;
+        const duration = item.durationMinutes ?? Math.max(1, Math.round((item.durationSeconds || 0) / 60));
+        const end = start + duration;
+        
+        let colSpan = 1;
+        for (let j = i + 1; j < numCols; j++) {
+           let overlaps = false;
+           for (const ev of cols[j]) {
+              const evStart = ev.startMinutes;
+              const evDur = ev.durationMinutes ?? Math.max(1, Math.round((ev.durationSeconds || 0) / 60));
+              const evEnd = evStart + evDur;
+              if (start < evEnd && end > evStart) {
+                 overlaps = true;
+                 break;
+              }
+           }
+           if (overlaps) break;
+           colSpan++;
+        }
+        
+        result.push({
+           ...item,
+           _left: (i / numCols) * 100,
+           _width: (colSpan / numCols) * 100
+        });
+      }
+    }
+  }
+
+  return layoutItems;
+}
+
 export default function CalendarScreen() {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const insets = useSafeAreaInsets();
@@ -73,12 +158,23 @@ export default function CalendarScreen() {
   }
 
   // Recurrence logic parsing for the current selected date
-  const dailyPlans = plans.filter(p => {
+  const dailyPlansRaw = plans.filter(p => {
     if (p.recurrence === 'daily') return true;
     if (p.recurrence === 'weekly' && new Date(p.baseDate).getDay() === selectedDate.getDay()) return true;
     if (p.recurrence === 'specific_days' && p.recurrenceDays?.includes(selectedDate.getDay())) return true;
     return isSameDay(new Date(p.baseDate), selectedDate);
   });
+  
+  const dailyPlans = useMemo(() => calculateLayout(dailyPlansRaw), [dailyPlansRaw]);
+  
+  const dailySessionsWithStartMins = useMemo(() => 
+    dailySessions.map(s => ({
+      ...s,
+      startMinutes: getMinutesFromMidnight(s.startTime)
+    })), 
+  [dailySessions]);
+  
+  const dailySessionsLayout = useMemo(() => calculateLayout(dailySessionsWithStartMins), [dailySessionsWithStartMins]);
   
   const isSelectedToday = isToday(selectedDate);
 
@@ -134,6 +230,7 @@ export default function CalendarScreen() {
         recurrence: data.recurrence || 'none',
         recurrenceDays: data.recurrenceDays,
         baseDate: selectedDate.toISOString(),
+        color: data.color,
       });
     }
     setEditorVisible(false);
@@ -223,54 +320,74 @@ export default function CalendarScreen() {
         ))}
 
         {/* Render Planned Blocks */}
-        {dailyPlans.map(plan => (
-          <View 
-            key={plan.id} 
-            style={{ opacity: activeTab === 'plan' ? 1 : 0.35, zIndex: activeTab === 'plan' ? 30 : 10 }}
-            pointerEvents={activeTab === 'plan' ? 'box-none' : 'none'}
-          >
-            <InteractivePlanBlock
-              plan={plan}
-              pixelsPerMinute={PIXELS_PER_MINUTE}
-              onUpdatePlan={updatePlan}
-              onEditPress={handleEditPress}
-              setScrollEnabled={setIsScrollEnabled}
-            />
-          </View>
-        ))}
-
-        {/* Render Real Sessions */}
-        {dailySessions.map(session => {
-          const startMins = getMinutesFromMidnight(session.startTime);
-          const durationMins = Math.max(1, Math.round(session.durationSeconds / 60));
-          
-          let skillIcon = undefined;
-          if (session.skillId) {
-            const s = skills.find(sk => sk.id === session.skillId);
-            if (s) skillIcon = s.icon;
-          }
-
-          return (
+        <View className="absolute top-0 bottom-0 left-16 right-4" pointerEvents="box-none">
+          {dailyPlans.map(plan => (
             <View 
-              key={session.id} 
-              style={{ opacity: activeTab === 'real' ? 1 : 0.35, zIndex: activeTab === 'real' ? 30 : 10 }}
-              pointerEvents={activeTab === 'real' ? 'box-none' : 'none'}
+              key={plan.id} 
+              style={{ 
+                position: 'absolute',
+                top: 0,
+                left: `${plan._left}%`, 
+                width: `${plan._width}%`,
+                opacity: activeTab === 'plan' ? 1 : 0.35, 
+                zIndex: activeTab === 'plan' ? 30 : 10 
+              }}
+              pointerEvents={activeTab === 'plan' ? 'box-none' : 'none'}
             >
-              <TimelineBlock
-                title={session.title}
-                startMinutes={startMins}
-                durationMinutes={durationMins}
+              <InteractivePlanBlock
+                plan={plan}
                 pixelsPerMinute={PIXELS_PER_MINUTE}
-                type="real"
-                skillIcon={skillIcon}
-                onPress={() => {
-                  setEditingRealSession(session);
-                  setRealEditorVisible(true);
-                }}
+                onUpdatePlan={updatePlan}
+                onEditPress={handleEditPress}
+                setScrollEnabled={setIsScrollEnabled}
+                width={plan._width}
               />
             </View>
-          );
-        })}
+          ))}
+        </View>
+
+        {/* Render Real Sessions */}
+        <View className="absolute top-0 bottom-0 left-16 right-4" pointerEvents="box-none">
+          {dailySessionsLayout.map(session => {
+            const startMins = getMinutesFromMidnight(session.startTime);
+            const durationMins = Math.max(1, Math.round(session.durationSeconds / 60));
+            
+            let skillIcon = undefined;
+            if (session.skillId) {
+              const s = skills.find(sk => sk.id === session.skillId);
+              if (s) skillIcon = s.icon;
+            }
+
+            return (
+              <View 
+                key={session.id} 
+                style={{ 
+                  position: 'absolute',
+                  top: 0,
+                  left: `${session._left}%`, 
+                  width: `${session._width}%`,
+                  opacity: activeTab === 'real' ? 1 : 0.35, 
+                  zIndex: activeTab === 'real' ? 30 : 10 
+                }}
+                pointerEvents={activeTab === 'real' ? 'box-none' : 'none'}
+              >
+                <TimelineBlock
+                  title={session.title}
+                  startMinutes={startMins}
+                  durationMinutes={durationMins}
+                  pixelsPerMinute={PIXELS_PER_MINUTE}
+                  type="real"
+                  skillIcon={skillIcon}
+                  color={session.color}
+                  onPress={() => {
+                    setEditingRealSession(session);
+                    setRealEditorVisible(true);
+                  }}
+                />
+              </View>
+            );
+          })}
+        </View>
         
         {/* Render the current time red line indicator if viewing today */}
         {isSelectedToday && <TimelineNowIndicator pixelsPerMinute={PIXELS_PER_MINUTE} />}

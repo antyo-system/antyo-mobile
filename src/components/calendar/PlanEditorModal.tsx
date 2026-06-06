@@ -18,6 +18,8 @@ const formatMinsToTimeStr = (mins: number) => {
   return `${h}:${m}`;
 };
 
+const PLAN_COLORS = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899'];
+
 const parseTimeInput = (str: string, defaultMins: number) => {
   const parts = str.split(':');
   if (parts.length === 2) {
@@ -38,6 +40,7 @@ export function PlanEditorModal({ visible, plan, onClose, onSave, onDelete }: Pr
   const [startTimeStr, setStartTimeStr] = useState('');
   const [endTimeStr, setEndTimeStr] = useState('');
   const [isReminderEnabled, setIsReminderEnabled] = useState(true);
+  const [color, setColor] = useState(PLAN_COLORS[2]); // Default yellow-ish
 
   useEffect(() => {
     setTitle(plan?.title || '');
@@ -46,6 +49,7 @@ export function PlanEditorModal({ visible, plan, onClose, onSave, onDelete }: Pr
     setIsAllDay(plan?.isAllDay || false);
     setNotes(plan?.notes || '');
     setIsReminderEnabled(plan?.isReminderEnabled ?? true);
+    setColor(plan?.color || PLAN_COLORS[2]);
     
     if (plan && !isNaN(plan.startMinutes) && !plan?.isAllDay) {
       setStartTimeStr(formatMinsToTimeStr(plan.startMinutes));
@@ -94,7 +98,8 @@ export function PlanEditorModal({ visible, plan, onClose, onSave, onDelete }: Pr
       durationMinutes,
       isAllDay,
       notes,
-      isReminderEnabled
+      isReminderEnabled,
+      color
     });
   };
 
@@ -177,6 +182,20 @@ export function PlanEditorModal({ visible, plan, onClose, onSave, onDelete }: Pr
                 </View>
               </View>
             )}
+
+            <Text className="text-sm font-bold text-gray-700 dark:text-gray-300 mb-2 mt-4">Card Color</Text>
+            <View className="flex-row justify-between mb-6 bg-gray-50 dark:bg-gray-900 p-4 rounded-2xl border border-gray-200 dark:border-gray-800">
+              {PLAN_COLORS.map(c => (
+                <Pressable
+                  key={c}
+                  onPress={() => setColor(c)}
+                  className={`w-10 h-10 rounded-full items-center justify-center border-2 ${color === c ? 'border-gray-900 dark:border-white' : 'border-transparent'}`}
+                  style={{ backgroundColor: c }}
+                >
+                  {color === c && <Text className="text-white font-bold">✓</Text>}
+                </Pressable>
+              ))}
+            </View>
 
             <Text className="text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Recurrence</Text>
             <View className="flex-row flex-wrap gap-2 mb-4">

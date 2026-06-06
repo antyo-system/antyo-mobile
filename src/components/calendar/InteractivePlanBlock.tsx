@@ -8,9 +8,10 @@ interface Props {
   onUpdatePlan: (id: string, updates: Partial<Plan>) => void;
   onEditPress: (plan: Plan) => void;
   setScrollEnabled: (enabled: boolean) => void;
+  width?: number;
 }
 
-export function InteractivePlanBlock({ plan, pixelsPerMinute, onUpdatePlan, onEditPress, setScrollEnabled }: Props) {
+export function InteractivePlanBlock({ plan, pixelsPerMinute, onUpdatePlan, onEditPress, setScrollEnabled, width }: Props) {
   const [tempStart, setTempStart] = useState(plan.startMinutes);
   const [tempDuration, setTempDuration] = useState(plan.durationMinutes);
 
@@ -68,19 +69,26 @@ export function InteractivePlanBlock({ plan, pixelsPerMinute, onUpdatePlan, onEd
 
   const top = tempStart * pixelsPerMinute;
   const height = tempDuration * pixelsPerMinute;
+  const color = plan.color || '#FBBF24'; // default yellow-400
 
   return (
     <View 
-      className="absolute right-4 bg-yellow-50 dark:bg-yellow-900/40 border-l-4 border-yellow-400 rounded-md shadow-sm left-16 z-10 flex-col"
-      style={{ top, height: Math.max(height, 30) }}
+      className="absolute bg-white dark:bg-gray-900 border-l-4 rounded-md shadow-sm z-10 flex-col"
+      style={{ 
+        top, 
+        height: Math.max(height, 30), 
+        width: '100%',
+        borderLeftColor: color,
+        backgroundColor: `${color}20` // 20% opacity for background
+      }}
     >
       <View {...moveResponder.panHandlers} className="flex-1">
         <Pressable onPress={() => onEditPress(plan)} className="flex-1 px-2 pt-1.5 pb-4">
-          <Text className="text-xs font-bold text-yellow-900 dark:text-yellow-100 pr-4" numberOfLines={1}>
+          <Text className="text-xs font-bold dark:text-gray-100 pr-4" style={{ color }} numberOfLines={1}>
             {plan.title}
           </Text>
-          {height > 30 && (
-            <Text className="text-[10px] text-yellow-800 dark:text-yellow-200 mt-0.5 font-medium">
+          {height > 30 && width !== undefined && width > 30 && (
+            <Text className="text-[10px] opacity-80 mt-0.5 font-medium" style={{ color }}>
               {tempDuration} min
             </Text>
           )}
@@ -90,9 +98,9 @@ export function InteractivePlanBlock({ plan, pixelsPerMinute, onUpdatePlan, onEd
       {/* Resize Handle (Bottom Center) */}
       <View 
         {...resizeResponder.panHandlers}
-        className="absolute bottom-0 w-full h-5 items-center justify-center bg-yellow-200/20 dark:bg-yellow-800/20 rounded-b-md z-20"
+        className="absolute bottom-0 w-full h-5 items-center justify-center rounded-b-md z-20"
       >
-        <View className="w-8 h-1 bg-yellow-500 rounded-full opacity-60" />
+        <View className="w-8 h-1 rounded-full opacity-60" style={{ backgroundColor: color }} />
       </View>
     </View>
   );

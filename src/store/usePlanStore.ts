@@ -15,6 +15,7 @@ export interface Plan {
   isAllDay?: boolean;
   notes?: string;
   isReminderEnabled?: boolean;
+  color?: string;
 }
 
 interface PlanState {

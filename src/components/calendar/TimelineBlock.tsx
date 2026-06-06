@@ -7,41 +7,45 @@ interface Props {
   pixelsPerMinute: number;
   type: 'plan' | 'real';
   skillIcon?: string;
+  color?: string;
   onPress?: () => void;
 }
 
 import { Feather } from '@expo/vector-icons';
 
-export function TimelineBlock({ title, startMinutes, durationMinutes, pixelsPerMinute, type, skillIcon, onPress }: Props) {
+export function TimelineBlock({ title, startMinutes, durationMinutes, pixelsPerMinute, type, skillIcon, color, onPress }: Props) {
   const top = startMinutes * pixelsPerMinute;
   const height = durationMinutes * pixelsPerMinute;
   const isReal = type === 'real';
+  
+  const blockColor = color || (isReal ? '#2563EB' : '#FBBF24');
 
   const Container = onPress ? Pressable : (View as any);
 
   return (
     <Container 
       onPress={onPress}
-      className={`absolute left-16 right-4 rounded-md px-2 py-1.5 border-l-4 shadow-sm z-10
-        ${isReal 
-          ? 'bg-blue-100 dark:bg-blue-900/50 border-blue-600' 
-          : 'bg-yellow-50 dark:bg-yellow-900/40 border-yellow-400'
-        }
-      `}
-      style={{ top, height: Math.max(height, 24) }}
+      className="absolute rounded-md px-2 py-1.5 border-l-4 shadow-sm z-10 bg-white dark:bg-gray-900"
+      style={{ 
+        top, 
+        height: Math.max(height, 24),
+        width: '100%',
+        borderLeftColor: blockColor,
+        backgroundColor: `${blockColor}20`
+      }}
     >
       <View className="flex-row justify-between items-start">
-        <Text className={`text-xs font-bold flex-1 ${isReal ? 'text-blue-900 dark:text-blue-100' : 'text-yellow-900 dark:text-yellow-100'}`} numberOfLines={1}>
+        <Text className="text-xs font-bold flex-1 dark:text-gray-100" style={{ color: blockColor }} numberOfLines={1}>
           {title}
         </Text>
         {skillIcon && isReal && (
           <View className="bg-white/40 dark:bg-black/20 rounded-full p-0.5 ml-1">
-            <Feather name={skillIcon as any} size={10} color="#1E3A8A" />
+            <Feather name={skillIcon as any} size={10} color={blockColor} />
           </View>
         )}
       </View>
       {height > 30 && (
-        <Text className={`text-[10px] font-medium mt-0.5 ${isReal ? 'text-blue-800 dark:text-blue-200' : 'text-yellow-800 dark:text-yellow-200'}`}>
+        <Text className="text-[10px] opacity-80 mt-0.5 font-medium" style={{ color: blockColor }}>
           {durationMinutes} min
         </Text>
       )}
