@@ -1,4 +1,4 @@
-# ANTYO Focus
+# ANTYO Focus `v1.5.1`
 
 ANTYO Focus is a focus timer and time-blocking app that automatically transforms real focus sessions into a personal productivity calendar. It bridges the gap between what you planned to do and what actually happened.
 
@@ -7,9 +7,10 @@ Most productivity apps only know what users planned to do. Pomodoro apps know ti
 
 ## Features
 - **Focus Timer:** Pomodoro mode, custom timer, session title, start/pause/stop.
+- **Pomodoro Chaining (Auto-Play):** Automatically transition between focus and break sessions.
 - **Stopwatch:** Open-ended focus tracking.
 - **Calendar (PLAN vs REAL):** Split layout showing user-scheduled blocks alongside actual sessions generated from timer data.
-- **Statistics:** Daily, weekly, monthly focus tracking and session counts.
+- **Statistics:** Daily, weekly, monthly focus tracking, heatmaps, and session counts.
 - **Session Detail:** Deep dive into specific focus blocks.
 
 ## Screens
@@ -23,10 +24,11 @@ Most productivity apps only know what users planned to do. Pomodoro apps know ti
 8. Profile (optional)
 
 ## Tech Stack
-- **Framework:** Expo (React Native)
+- **Framework:** Expo (React Native) v56
 - **Routing:** Expo Router
 - **State Management:** Zustand
-- **Storage:** react-native-mmkv
+- **Storage:** `expo-file-system` (Custom adapter for 100% data safety)
+- **Styling:** NativeWind (Tailwind CSS)
 - **Dates/Time:** date-fns
 
 ## Installation & Development Setup
