@@ -75,7 +75,7 @@ export function TimerDurationModal({ visible, onClose }: { visible: boolean, onC
           <Pressable className="absolute inset-0" onPress={onClose} />
           
           {/* Bottom Sheet Container */}
-          <View className="bg-gray-50 dark:bg-gray-950 rounded-t-3xl overflow-hidden max-h-[75%] pt-2 shadow-2xl">
+          <View className="bg-gray-50 dark:bg-gray-950 rounded-t-3xl overflow-hidden max-h-[95%] pt-2 shadow-2xl">
             {/* Header */}
             <View className="flex-row items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 shadow-sm z-10">
               <Text className="text-lg font-black text-gray-900 dark:text-white">Timer Settings</Text>

@@ -5,9 +5,17 @@ export interface ChangelogRelease {
   fixes: string[];
 }
 
-export const APP_VERSION = "1.5.0";
+export const APP_VERSION = "1.5.1";
 
 export const CHANGELOG: ChangelogRelease[] = [
+  {
+    version: "1.5.1",
+    date: new Date().toISOString().split('T')[0],
+    features: [
+      "Timer Settings UI Tweaks: Bottom sheet now expands naturally without scrolling, and scales perfectly on smaller devices."
+    ],
+    fixes: []
+  },
   {
     version: "1.5.0",
     date: new Date().toISOString().split('T')[0],
