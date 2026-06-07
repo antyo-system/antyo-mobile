@@ -1,10 +1,10 @@
-import { View, Text, ScrollView, Pressable, useColorScheme, TextInput, KeyboardAvoidingView, Platform, Modal, Alert } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { useLocalSearchParams, router } from 'expo-router';
-import { Feather } from '@expo/vector-icons';
-import { useMasteryStore, Pillar } from '@/store/useMasteryStore';
+import { useMasteryStore } from '@/store/useMasteryStore';
 import { getMasteryProgress } from '@/utils/mastery';
+import { Feather } from '@expo/vector-icons';
+import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
+import { Alert, KeyboardAvoidingView, Modal, Platform, Pressable, ScrollView, Text, TextInput, useColorScheme, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function SkillDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -14,10 +14,10 @@ export default function SkillDetailScreen() {
   const deletePillar = useMasteryStore(s => s.deletePillar);
   const deleteSkill = useMasteryStore(s => s.deleteSkill);
   const updatePillar = useMasteryStore(s => s.updatePillar);
-  
+
   const [modalVisible, setModalVisible] = useState(false);
   const [newPillarName, setNewPillarName] = useState('');
-  
+
   // Edit State
   const [editSkillVisible, setEditSkillVisible] = useState(false);
   const [editSkillName, setEditSkillName] = useState('');
@@ -27,7 +27,7 @@ export default function SkillDetailScreen() {
   const [editingPillarId, setEditingPillarId] = useState<string | null>(null);
   const [editPillarName, setEditPillarName] = useState('');
   const [editPillarHours, setEditPillarHours] = useState('');
-  
+
   const updateSkill = useMasteryStore(s => s.updateSkill);
 
   if (!skill) {
@@ -57,8 +57,8 @@ export default function SkillDetailScreen() {
       `Are you sure you want to delete "${skill.name}"? This action cannot be undone.`,
       [
         { text: "Cancel", style: "cancel" },
-        { 
-          text: "Delete", 
+        {
+          text: "Delete",
           style: "destructive",
           onPress: () => {
             deleteSkill(skill.id);
@@ -100,12 +100,12 @@ export default function SkillDetailScreen() {
         </Pressable>
         <Text className="text-lg font-black text-gray-900 dark:text-white">Skill Details</Text>
         <View className="flex-row items-center gap-2">
-          <Pressable 
+          <Pressable
             onPress={() => {
               setEditSkillName(skill.name);
               setEditSkillHours((skill.totalSeconds / 3600).toFixed(1));
               setEditSkillVisible(true);
-            }} 
+            }}
             className="w-10 h-10 items-center justify-center bg-blue-100 dark:bg-blue-900/30 rounded-full"
           >
             <Feather name="edit-2" size={16} color="#3B82F6" />
@@ -126,7 +126,7 @@ export default function SkillDetailScreen() {
           <Text className="text-sm font-bold text-gray-500 dark:text-gray-400 mb-6">
             {progress.currentLevel.icon} {progress.currentLevel.level} Level
           </Text>
-          
+
           <View className="w-full bg-gray-100 dark:bg-gray-800 h-4 rounded-full overflow-hidden mb-2">
             <View className="h-full bg-blue-500 rounded-full" style={{ width: `${progress.progressPercentage}%` }} />
           </View>
@@ -142,7 +142,7 @@ export default function SkillDetailScreen() {
             <Text className="text-xl font-black text-gray-900 dark:text-white">Pillars</Text>
             <Text className="text-xs font-bold text-gray-500 dark:text-gray-400">Your core sub-skills</Text>
           </View>
-          <Pressable 
+          <Pressable
             onPress={() => setModalVisible(true)}
             className="flex-row items-center gap-1.5 px-3 py-1.5 bg-blue-50 dark:bg-blue-900/30 rounded-full border border-blue-200 dark:border-blue-800"
           >
@@ -156,18 +156,18 @@ export default function SkillDetailScreen() {
             <View key={pillar.id} className="relative mb-6">
               {/* Connector dot */}
               <View className="absolute -left-[31px] top-4 w-3 h-3 rounded-full bg-gray-300 dark:bg-gray-700 border-2 border-white dark:border-gray-950" />
-              
+
               <View className="bg-white dark:bg-gray-900 p-4 rounded-2xl border border-gray-100 dark:border-gray-800">
                 <View className="flex-row justify-between items-center mb-2">
                   <Text className="text-base font-bold text-gray-900 dark:text-white flex-1">{pillar.name}</Text>
                   <View className="flex-row items-center gap-2">
-                    <Pressable 
+                    <Pressable
                       onPress={() => {
                         setEditingPillarId(pillar.id);
                         setEditPillarName(pillar.name);
                         setEditPillarHours((pillar.totalSeconds / 3600).toFixed(1));
                         setEditPillarVisible(true);
-                      }} 
+                      }}
                       className="p-1.5"
                     >
                       <Feather name="edit-2" size={14} color="#3B82F6" />
@@ -183,7 +183,7 @@ export default function SkillDetailScreen() {
               </View>
             </View>
           ))}
-          
+
           {(!skill.pillars || skill.pillars.length === 0) && (
             <View className="py-4">
               <Text className="text-gray-500 font-bold">No pillars created yet. Add one to start tracking sub-skills.</Text>
@@ -210,7 +210,7 @@ export default function SkillDetailScreen() {
               placeholderTextColor="#9CA3AF"
               style={{ backgroundColor: isDark ? '#1F2937' : '#F3F4F6', borderRadius: 12, padding: 16, color: isDark ? 'white' : '#111827', fontWeight: '600', marginBottom: 24 }}
             />
-            <Pressable 
+            <Pressable
               onPress={handleAddPillar}
               className="bg-blue-600 py-4 rounded-xl items-center"
             >

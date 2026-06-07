@@ -1,26 +1,27 @@
-import { View, Text, ScrollView, Pressable, useColorScheme, Animated, Dimensions, TextInput, Modal, KeyboardAvoidingView, Platform } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { Tabs, router } from 'expo-router';
-import { Feather } from '@expo/vector-icons';
-import { useMasteryStore, Skill } from '@/store/useMasteryStore';
-import { useSessionStore } from '@/store/useSessionStore';
-import { getMasteryProgress, MILESTONES } from '@/utils/mastery';
-import { formatLongTime } from '@/utils/time';
-import { useEffect, useRef, useState } from 'react';
-import { isToday } from 'date-fns';
-import { SkillTargetModal } from '@/components/mastery/SkillTargetModal';
 import { PlanEditorModal } from '@/components/calendar/PlanEditorModal';
-import { usePlanStore, Plan } from '@/store/usePlanStore';
-import { useTimerStore } from '@/store/useTimerStore';
+import { NewSkillModal } from '@/components/mastery/NewSkillModal';
+import { SkillTargetModal } from '@/components/mastery/SkillTargetModal';
+import { SpotlightOverlay, SpotlightStep } from '@/components/tutorial/SpotlightOverlay';
 import { useAppStore } from '@/store/useAppStore';
-import { SpotlightOverlay, SpotlightStep, SpotlightCoords } from '@/components/tutorial/SpotlightOverlay';
+import { Skill, useMasteryStore } from '@/store/useMasteryStore';
+import { Plan, usePlanStore } from '@/store/usePlanStore';
+import { useSessionStore } from '@/store/useSessionStore';
+import { useTimerStore } from '@/store/useTimerStore';
+import { getMasteryProgress } from '@/utils/mastery';
+import { Feather } from '@expo/vector-icons';
+import { useIsFocused } from '@react-navigation/native';
+import { isToday } from 'date-fns';
+import { router, Tabs } from 'expo-router';
+import { useEffect, useRef, useState } from 'react';
+import { Animated, Dimensions, Pressable, ScrollView, Text, useColorScheme, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const { width } = Dimensions.get('window');
 
 function SkillCard({ skill, onSetTarget, onCreateRoutine }: { skill: Skill, onSetTarget: (skill: Skill) => void, onCreateRoutine: (skill: Skill) => void }) {
   const isDark = useColorScheme() === 'dark';
   const progress = getMasteryProgress(skill.totalSeconds);
-  const animWidth = useRef(new Animated.Value(0)).current;
+
 
   // Calculate today's progress
   const sessions = useSessionStore(s => s.sessions);
@@ -60,12 +61,12 @@ function SkillCard({ skill, onSetTarget, onCreateRoutine }: { skill: Skill, onSe
     const endMinutes = plan.startMinutes + plan.durationMinutes;
     const endH = Math.floor(endMinutes / 60).toString().padStart(2, '0');
     const endM = (endMinutes % 60).toString().padStart(2, '0');
-    
+
     let recStr = 'Custom';
     if (plan.recurrence === 'weekdays') recStr = 'Mon-Fri';
     else if (plan.recurrence === 'daily') recStr = 'Daily';
     else if (plan.recurrence === 'weekly') recStr = 'Weekly';
-    
+
     return `${recStr} ${startH}.${startM}-${endH}.${endM}`;
   };
 
@@ -76,26 +77,19 @@ function SkillCard({ skill, onSetTarget, onCreateRoutine }: { skill: Skill, onSe
     timerStore.setDuration(plan.durationMinutes * 60);
     // Use the exact title of the plan if it's available, otherwise it falls back inside the store
     if (plan.title) timerStore.setTitle(plan.title);
-    
+
     router.push('/(tabs)');
   };
 
-  useEffect(() => {
-    Animated.timing(animWidth, {
-      toValue: progress.progressPercentage,
-      duration: 1000,
-      useNativeDriver: false, // width cannot use native driver
-    }).start();
-  }, [progress.progressPercentage]);
+
 
   return (
-    <Pressable 
+    <Pressable
       onPress={() => router.push(`/skill/${skill.id}` as any)}
-      className={`rounded-3xl p-5 mb-4 shadow-sm border ${
-        isTargetMet 
-          ? 'bg-orange-50 dark:bg-orange-950/30 border-orange-200 dark:border-orange-900/50 shadow-orange-500/10' 
+      className={`rounded-3xl p-5 mb-4 shadow-sm border ${isTargetMet
+          ? 'bg-orange-50 dark:bg-orange-950/30 border-orange-200 dark:border-orange-900/50 shadow-orange-500/10'
           : 'bg-white dark:bg-gray-900 border-gray-100 dark:border-gray-800'
-      }`}
+        }`}
     >
       <View className="flex-row justify-between items-start mb-4">
         <View className="flex-row items-center gap-3">
@@ -117,31 +111,7 @@ function SkillCard({ skill, onSetTarget, onCreateRoutine }: { skill: Skill, onSe
         </View>
       </View>
 
-      <View className="mb-2">
-        <View className="flex-row justify-between mb-2">
-          <Text className="text-xs font-bold text-gray-500 dark:text-gray-400">
-            {progress.nextLevel ? `To ${progress.nextLevel.level}` : 'Max Level Reached!'}
-          </Text>
-          {progress.nextLevel && (
-            <Text className="text-xs font-bold text-gray-900 dark:text-gray-300">
-              {Math.floor(progress.hoursToNextLevel - progress.currentLevelHours).toLocaleString()}h left
-            </Text>
-          )}
-        </View>
-        
-        {/* Progress Bar Container */}
-        <View className={`w-full h-3 rounded-full overflow-hidden ${isTargetMet ? 'bg-orange-200 dark:bg-orange-900/30' : 'bg-gray-100 dark:bg-gray-800'}`}>
-          <Animated.View 
-            className={`h-full rounded-full ${isTargetMet ? 'bg-orange-500' : 'bg-blue-500'}`} 
-            style={{ 
-              width: animWidth.interpolate({
-                inputRange: [0, 100],
-                outputRange: ['0%', '100%']
-              }) 
-            }} 
-          />
-        </View>
-      </View>
+
 
       {/* Footer Actions */}
       <View className={`mt-4 pt-4 border-t ${isTargetMet ? 'border-orange-200 dark:border-orange-900/30' : 'border-gray-100 dark:border-gray-800'}`}>
@@ -158,9 +128,9 @@ function SkillCard({ skill, onSetTarget, onCreateRoutine }: { skill: Skill, onSe
                 </Text>
               </View>
               <View className={`w-full h-2 rounded-full overflow-hidden ${isTargetMet ? 'bg-orange-200 dark:bg-orange-900/30' : 'bg-gray-100 dark:bg-gray-800'}`}>
-                <View 
-                  className={`h-full rounded-full ${isTargetMet ? 'bg-orange-500' : 'bg-blue-500'}`} 
-                  style={{ width: `${Math.min(100, (todayProgressMinutes / targetMinutes) * 100)}%` }} 
+                <View
+                  className={`h-full rounded-full ${isTargetMet ? 'bg-orange-500' : 'bg-blue-500'}`}
+                  style={{ width: `${Math.min(100, (todayProgressMinutes / targetMinutes) * 100)}%` }}
                 />
               </View>
             </View>
@@ -196,7 +166,7 @@ function SkillCard({ skill, onSetTarget, onCreateRoutine }: { skill: Skill, onSe
           </View>
         )}
 
-        <Pressable 
+        <Pressable
           onPress={(e) => { e.stopPropagation(); onCreateRoutine(skill); }}
         >
           <Animated.View style={{ opacity: (!hasCompletedTutorial && targetMinutes > 0 && skillRoutines.length === 0) ? pulseAnim : 1 }} className={`mt-3 flex-row items-center justify-center py-3 rounded-2xl border ${(!hasCompletedTutorial && targetMinutes > 0 && skillRoutines.length === 0) ? 'bg-blue-600 border-blue-600' : 'bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700'}`}>
@@ -215,55 +185,41 @@ export default function MasteryScreen() {
   const addSkill = useMasteryStore(s => s.addSkill);
   const updateSkill = useMasteryStore(s => s.updateSkill);
   const { hasCompletedTutorial, completeTutorial } = useAppStore();
-  
+
   const [modalVisible, setModalVisible] = useState(false);
-  const [newSkillName, setNewSkillName] = useState('');
+  const [showInfo, setShowInfo] = useState(false);
 
   // Tutorial State
   const { hasSeenMasteryTutorial, setTutorialSeen } = useAppStore();
   const [tutorialVisible, setTutorialVisible] = useState(false);
   const [tutorialSteps, setTutorialSteps] = useState<SpotlightStep[]>([]);
-  
+  const isFocused = useIsFocused();
+
   const addRef = useRef<View>(null);
   const listRef = useRef<View>(null);
   const infoRef = useRef<View>(null);
+  const rootRef = useRef<View>(null);
+  const scrollViewRef = useRef<ScrollView>(null);
+
+  const [stepLayouts, setStepLayouts] = useState<Record<number, { y: number, h: number }>>({});
+  const handleLayout = (index: number) => (e: any) => {
+    const { y, height } = e.nativeEvent.layout;
+    setStepLayouts(prev => ({ ...prev, [index]: { y, h: height } }));
+  };
 
   useEffect(() => {
-    if (!hasSeenMasteryTutorial) {
-      const timeout = setTimeout(async () => {
-        const measureAsync = (ref: any): Promise<SpotlightCoords> => {
-          return new Promise((resolve) => {
-            if (!ref.current) {
-              return resolve({ x: 0, y: 0, width: 0, height: 0 });
-            }
-            let resolved = false;
-            const fallback = setTimeout(() => {
-              if (!resolved) { resolved = true; resolve({ x: 0, y: 0, width: 0, height: 0 }); }
-            }, 400);
-            ref.current.measureInWindow((x: number, y: number, width: number, height: number) => {
-              if (!resolved) {
-                resolved = true;
-                clearTimeout(fallback);
-                resolve({ x, y, width, height });
-              }
-            });
-          });
-        };
-
-        const addCoords = await measureAsync(addRef);
-        const listCoords = await measureAsync(listRef);
-        const infoCoords = await measureAsync(infoRef);
-
-        setTutorialSteps([
-          { coords: addCoords, text: "Step 1: Your Focus Areas. Tap here to create a Skill you want to master.", holeType: 'circle', holePadding: 12 },
-          { coords: listCoords, text: "Step 2: The 10,000 Hours Journey. Watch your level grow here as you record focused time.", holeType: 'rect', holePadding: 8 },
-          { coords: infoCoords, text: "Step 3: Keep going. Every session brings you closer to world-class mastery.", holeType: 'rect', holePadding: 8 },
-        ]);
+    if (!hasSeenMasteryTutorial && isFocused) {
+      setTutorialSteps([
+        { targetRef: addRef, text: "Step 1: Your Focus Areas. Tap here to create a Skill you want to master.", holeType: 'circle', holePadding: 12 },
+        { targetRef: listRef, text: "Step 2: The 10,000 Hours Journey. Watch your level grow here as you record focused time.", holeType: 'rect', holePadding: 8 },
+        { targetRef: infoRef, text: "Step 3: Keep going. Every session brings you closer to world-class mastery.", holeType: 'rect', holePadding: 8 },
+      ]);
+      const timeout = setTimeout(() => {
         setTutorialVisible(true);
       }, 500);
       return () => clearTimeout(timeout);
     }
-  }, [hasSeenMasteryTutorial]);
+  }, [hasSeenMasteryTutorial, isFocused]);
 
   const [targetModalVisible, setTargetModalVisible] = useState(false);
   const [selectedSkillForTarget, setSelectedSkillForTarget] = useState<Skill | null>(null);
@@ -292,7 +248,7 @@ export default function MasteryScreen() {
       'purple': '#8B5CF6',
       'pink': '#EC4899',
     };
-    
+
     setRoutinePlanTemplate({
       id: '', // Dummy ID to trigger edit mode and pre-fills
       title: `${skill.name} Routine`,
@@ -319,7 +275,7 @@ export default function MasteryScreen() {
       skillId: data.skillId,
     });
     setRoutineEditorVisible(false);
-    
+
     // Auto-complete tutorial if they successfully create their first routine
     if (!hasCompletedTutorial) {
       completeTutorial();
@@ -328,130 +284,115 @@ export default function MasteryScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-gray-50 dark:bg-gray-950" edges={['top']}>
-      <Tabs.Screen options={{ headerShown: false }} />
-      
-      <ScrollView className="flex-1" contentContainerStyle={{ padding: 24, paddingBottom: 130 }}>
-        <View className="flex-row justify-between items-center mb-2 mt-4">
-          <Text className="text-3xl font-black tracking-tight text-gray-900 dark:text-white">
-            Mastery
-          </Text>
-          <View className="flex-row items-center gap-3">
-            <View ref={addRef} collapsable={false}>
-              <Pressable 
-                onPress={() => setModalVisible(true)}
-                className="w-10 h-10 items-center justify-center bg-gray-200 dark:bg-gray-800 rounded-full"
-              >
-                <Feather name="plus" size={20} color="#6B7280" />
-              </Pressable>
+      <View style={{ flex: 1 }} ref={rootRef} collapsable={false}>
+        <Tabs.Screen options={{
+          headerShown: false,
+          tabBarStyle: tutorialVisible ? { display: 'none' } : undefined
+        }} />
+
+        <ScrollView ref={scrollViewRef} className="flex-1" contentContainerStyle={{ padding: 24, paddingBottom: 130 }}>
+          <View className="flex-row justify-between items-center mb-2 mt-4">
+            <Text className="text-3xl font-black tracking-tight text-gray-900 dark:text-white">
+              Mastery
+            </Text>
+            <View className="flex-row items-center gap-3">
+              <View ref={addRef} collapsable={false}>
+                <Pressable
+                  onPress={() => setModalVisible(true)}
+                  className="w-10 h-10 items-center justify-center bg-gray-200 dark:bg-gray-800 rounded-full"
+                >
+                  <Feather name="plus" size={20} color="#6B7280" />
+                </Pressable>
+              </View>
             </View>
           </View>
-        </View>
-        
-        <Text className="text-sm font-bold text-gray-500 dark:text-gray-400 mb-8">
-          The journey to 10,000 hours of deep work.
-        </Text>
 
-        <View className="gap-2" ref={listRef} collapsable={false}>
-          {skills.map(skill => (
-            <SkillCard 
-              key={skill.id} 
-              skill={skill} 
-              onSetTarget={handleOpenTargetModal} 
-              onCreateRoutine={handleCreateRoutine}
-            />
-          ))}
-          
-          {skills.length === 0 && (
-            <View className="items-center justify-center py-10 opacity-50">
-              <Feather name="award" size={48} color={isDark ? '#9CA3AF' : '#6B7280'} />
-              <Text className="text-gray-500 font-bold mt-4">No skills added yet.</Text>
-            </View>
-          )}
-        </View>
-
-        <View className="mt-8 bg-blue-50 dark:bg-blue-900/20 p-5 rounded-3xl border border-blue-100 dark:border-blue-900/50 mb-10" ref={infoRef} collapsable={false}>
-          <Text className="text-sm font-bold text-blue-800 dark:text-blue-300 mb-2">Why 10,000 Hours?</Text>
-          <Text className="text-xs font-semibold text-blue-600 dark:text-blue-400 leading-relaxed">
-            It takes approximately 10,000 hours of deliberate practice to achieve world-class mastery in any field. Every focus session brings you one step closer to greatness.
+          <Text className="text-sm font-bold text-gray-500 dark:text-gray-400 mb-8">
+            The journey to 10,000 hours of deep work.
           </Text>
-        </View>
 
-      </ScrollView>
-
-      {/* Add Skill Modal */}
-      <Modal visible={modalVisible} transparent animationType="slide">
-        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} className="flex-1 justify-end bg-black/50">
-          <View className="bg-white dark:bg-gray-900 rounded-t-3xl p-6 h-[80%] border-t border-gray-200 dark:border-gray-800 pb-12">
-            <View className="flex-row justify-between items-center mb-6">
-              <Text className="text-2xl font-black text-gray-900 dark:text-white">New Skill</Text>
-              <Pressable onPress={() => setModalVisible(false)} className="w-8 h-8 items-center justify-center bg-gray-100 dark:bg-gray-800 rounded-full">
-                <Feather name="x" size={16} color={isDark ? "white" : "black"} />
-              </Pressable>
-            </View>
-
-            <Text className="text-sm font-bold text-gray-500 dark:text-gray-400 mb-2">Skill Name</Text>
-            <View className="bg-gray-100 dark:bg-gray-800 rounded-2xl px-4 py-4 mb-6 border border-gray-200 dark:border-gray-700">
-              <TextInput
-                value={newSkillName}
-                onChangeText={setNewSkillName}
-                placeholder="e.g. Coding, Guitar, Writing..."
-                placeholderTextColor={isDark ? "#6B7280" : "#9CA3AF"}
-                style={{ fontSize: 18, fontWeight: 'bold', color: isDark ? 'white' : '#111827', padding: 0 }}
+          <View className="gap-2" ref={listRef} collapsable={false} onLayout={handleLayout(1)}>
+            {skills.map(skill => (
+              <SkillCard
+                key={skill.id}
+                skill={skill}
+                onSetTarget={handleOpenTargetModal}
+                onCreateRoutine={handleCreateRoutine}
               />
-            </View>
+            ))}
 
-            <View className="flex-1" />
-
-            <Pressable 
-              onPress={() => {
-                if (newSkillName.trim()) {
-                  addSkill({
-                    name: newSkillName.trim(),
-                    icon: 'star', // default icon
-                    color: 'blue' // default color
-                  });
-                  setNewSkillName('');
-                  setModalVisible(false);
-                }
-              }}
-              className={`py-4 rounded-2xl items-center ${newSkillName.trim() ? 'bg-blue-600' : 'bg-gray-300 dark:bg-gray-700'}`}
-              disabled={!newSkillName.trim()}
-            >
-              <Text className="text-white font-black text-lg">Create Skill</Text>
-            </Pressable>
+            {skills.length === 0 && (
+              <View className="items-center justify-center py-10 opacity-50">
+                <Feather name="award" size={48} color={isDark ? '#9CA3AF' : '#6B7280'} />
+                <Text className="text-gray-500 font-bold mt-4">No skills added yet.</Text>
+              </View>
+            )}
           </View>
-        </KeyboardAvoidingView>
-      </Modal>
 
-      {/* Target Modal */}
-      {selectedSkillForTarget && (
-        <SkillTargetModal
-          visible={targetModalVisible}
-          onClose={() => setTargetModalVisible(false)}
-          onSave={handleSaveTarget}
-          skillName={selectedSkillForTarget.name}
-          initialMinutes={selectedSkillForTarget.dailyTargetMinutes}
+          <Pressable 
+            onPress={() => setShowInfo(!showInfo)}
+            className="mt-6 mb-8 p-6 bg-blue-50 dark:bg-blue-900/20 rounded-3xl border border-blue-100 dark:border-blue-900/30" 
+            ref={infoRef} 
+            collapsable={false} 
+            onLayout={handleLayout(2)}
+          >
+            <View className="flex-row items-center justify-between">
+              <Text className="text-sm font-bold text-blue-800 dark:text-blue-300">Why 10,000 Hours?</Text>
+              <Feather name={showInfo ? "chevron-up" : "chevron-down"} size={16} color={isDark ? "#93C5FD" : "#1E3A8A"} />
+            </View>
+            {showInfo && (
+              <Text className="text-xs font-semibold text-blue-600 dark:text-blue-400 leading-relaxed mt-3">
+                It takes approximately 10,000 hours of deliberate practice to achieve world-class mastery in any field. Every focus session brings you one step closer to greatness.
+              </Text>
+            )}
+          </Pressable>
+        </ScrollView>
+
+        {/* Add Skill Modal */}
+        <NewSkillModal
+          visible={modalVisible}
+          onClose={() => setModalVisible(false)}
         />
-      )}
 
-      {/* Routine Editor Modal */}
-      <PlanEditorModal
-        visible={routineEditorVisible}
-        plan={routinePlanTemplate as Plan | null}
-        onClose={() => setRoutineEditorVisible(false)}
-        onSave={handleSaveRoutine}
-        onDelete={() => {}} // No delete functionality in creation mode
-      />
+        {/* Target Modal */}
+        {selectedSkillForTarget && (
+          <SkillTargetModal
+            visible={targetModalVisible}
+            onClose={() => setTargetModalVisible(false)}
+            onSave={handleSaveTarget}
+            skillName={selectedSkillForTarget.name}
+            initialMinutes={selectedSkillForTarget.dailyTargetMinutes}
+          />
+        )}
 
-      {/* Custom Tutorial Overlay */}
-      <SpotlightOverlay
-        visible={tutorialVisible}
-        steps={tutorialSteps}
-        onFinish={() => {
-          setTutorialVisible(false);
-          setTutorialSeen('mastery');
-        }}
-      />
+        {/* Routine Editor Modal */}
+        <PlanEditorModal
+          visible={routineEditorVisible}
+          plan={routinePlanTemplate as Plan | null}
+          onClose={() => setRoutineEditorVisible(false)}
+          onSave={handleSaveRoutine}
+          onDelete={() => { }} // No delete functionality in creation mode
+        />
+
+        {/* Custom Tutorial Overlay */}
+        <SpotlightOverlay
+          visible={tutorialVisible}
+          steps={tutorialSteps}
+          rootRef={rootRef}
+          onStepChange={(index) => {
+            const layout = stepLayouts[index];
+            if (layout && scrollViewRef.current) {
+              const screenH = Dimensions.get('window').height;
+              const scrollY = Math.max(0, layout.y - (screenH / 2) + (layout.h / 2));
+              scrollViewRef.current?.scrollTo({ y: scrollY, animated: true });
+            }
+          }}
+          onFinish={() => {
+            setTutorialVisible(false);
+            setTutorialSeen('mastery');
+          }}
+        />
+      </View>
     </SafeAreaView>
   );
 }

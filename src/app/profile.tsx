@@ -11,6 +11,7 @@ import { APP_VERSION } from '@/constants/changelog';
 import * as FileSystem from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
 import { usePlanStore } from '@/store/usePlanStore';
+import { useAppStore } from '@/store/useAppStore';
 
 export default function ProfileScreen() {
   const sessions = useSessionStore(s => s.sessions);
@@ -56,22 +57,6 @@ export default function ProfileScreen() {
       setter(cleaned);
     }
   };
-
-  const stats = useMemo(() => {
-    let totalSeconds = 0;
-    let smartSeconds = 0;
-    sessions.forEach(s => {
-      totalSeconds += s.durationSeconds;
-      if (s.isSmartMode && s.focusDurationSeconds) {
-        smartSeconds += s.focusDurationSeconds;
-      }
-    });
-    return {
-      totalHours: (totalSeconds / 3600).toFixed(1),
-      smartHours: (smartSeconds / 3600).toFixed(1),
-      totalSessions: sessions.length,
-    };
-  }, [sessions]);
 
   const breakOptions = [5, 10, 15, 20];
 
@@ -213,32 +198,6 @@ export default function ProfileScreen() {
 
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 60 }}>
         
-        {/* ── 1. User Card ── */}
-        <View className="items-center mb-6 mt-2">
-          <View className="w-20 h-20 rounded-full bg-emerald-500/20 items-center justify-center mb-3 border-2 border-emerald-500">
-            <Feather name="user" size={36} color="#10B981" />
-          </View>
-          <Text className="text-2xl font-black text-gray-900 dark:text-white">Deep Worker</Text>
-          <View className="mt-2 bg-emerald-50 dark:bg-emerald-900/30 px-4 py-1.5 rounded-full border border-emerald-200 dark:border-emerald-800">
-            <Text className="text-xs font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider">Novice Level</Text>
-          </View>
-        </View>
-
-        {/* ── 2. Quick Stats ── */}
-        <View className="flex-row gap-3 mb-8">
-          <View className="flex-1 bg-white dark:bg-gray-900 p-4 rounded-2xl border border-gray-100 dark:border-gray-800 items-center">
-            <Text className="text-2xl font-black text-gray-900 dark:text-white">{stats.totalHours}</Text>
-            <Text className="text-[10px] text-gray-500 dark:text-gray-400 font-bold uppercase tracking-wider mt-1">Total Hrs</Text>
-          </View>
-          <View className="flex-1 bg-emerald-50 dark:bg-emerald-950/30 p-4 rounded-2xl border border-emerald-100 dark:border-emerald-900/50 items-center">
-            <Text className="text-2xl font-black text-emerald-600 dark:text-emerald-400">{stats.smartHours}</Text>
-            <Text className="text-[10px] text-emerald-600/70 dark:text-emerald-400/70 font-bold uppercase tracking-wider mt-1">Smart Hrs</Text>
-          </View>
-          <View className="flex-1 bg-white dark:bg-gray-900 p-4 rounded-2xl border border-gray-100 dark:border-gray-800 items-center">
-            <Text className="text-2xl font-black text-gray-900 dark:text-white">{stats.totalSessions}</Text>
-            <Text className="text-[10px] text-gray-500 dark:text-gray-400 font-bold uppercase tracking-wider mt-1">Sessions</Text>
-          </View>
-        </View>
 
         {/* ── 3. Settings ── */}
         <Text className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 ml-2">Settings</Text>
@@ -556,6 +515,15 @@ export default function ProfileScreen() {
             iconBg="bg-blue-500/10"
             label="Show Onboarding"
             onPress={() => router.replace('/onboarding' as any)}
+          />
+          <SettingRow
+            icon="refresh-cw"
+            iconBg="bg-purple-500/10"
+            label="Reset Tutorials"
+            onPress={() => {
+              useAppStore.getState().resetTutorials();
+              Alert.alert('Tutorials Reset', 'You will see the tutorials again when you navigate to the tabs.');
+            }}
           />
           <SettingRow
             icon="trash-2"

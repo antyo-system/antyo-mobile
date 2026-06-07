@@ -1,6 +1,7 @@
-import { ScrollView, View, Text, Pressable, Image } from 'react-native';
+import { ScrollView, View, Text, Pressable, Image, Platform, Dimensions } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useIsFocused } from '@react-navigation/native';
 import { Tabs, router } from 'expo-router';
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { useSessionStore } from '@/store/useSessionStore';
@@ -26,47 +27,33 @@ export default function StatsScreen() {
   const { hasSeenStatsTutorial, setTutorialSeen } = useAppStore();
   const [tutorialVisible, setTutorialVisible] = useState(false);
   const [tutorialSteps, setTutorialSteps] = useState<SpotlightStep[]>([]);
+  const isFocused = useIsFocused();
   
   const timeWidgetsRef = useRef<View>(null);
   const chartRef = useRef<View>(null);
   const heatmapRef = useRef<View>(null);
+  const rootRef = useRef<View>(null);
+  const scrollViewRef = useRef<ScrollView>(null);
+  
+  const [stepLayouts, setStepLayouts] = useState<Record<number, {y: number, h: number}>>({});
+  const handleLayout = (index: number) => (e: any) => {
+    const { y, height } = e.nativeEvent.layout;
+    setStepLayouts(prev => ({ ...prev, [index]: { y, h: height } }));
+  };
 
   useEffect(() => {
-    if (!hasSeenStatsTutorial) {
-      const timeout = setTimeout(async () => {
-        const measureAsync = (ref: any): Promise<SpotlightCoords> => {
-          return new Promise((resolve) => {
-            if (!ref.current) {
-              return resolve({ x: 0, y: 0, width: 0, height: 0 });
-            }
-            let resolved = false;
-            const fallback = setTimeout(() => {
-              if (!resolved) { resolved = true; resolve({ x: 0, y: 0, width: 0, height: 0 }); }
-            }, 400);
-            ref.current.measureInWindow((x: number, y: number, width: number, height: number) => {
-              if (!resolved) {
-                resolved = true;
-                clearTimeout(fallback);
-                resolve({ x, y, width, height });
-              }
-            });
-          });
-        };
-
-        const timeCoords = await measureAsync(timeWidgetsRef);
-        const chartCoords = await measureAsync(chartRef);
-        const heatmapCoords = await measureAsync(heatmapRef);
-
-        setTutorialSteps([
-          { coords: timeCoords, text: "Step 1: Your Life on a Clock. See exactly how much time you have left today and in your lifetime.", holeType: 'rect', holePadding: 8 },
-          { coords: chartCoords, text: "Step 2: Weekly Progress. Track your 10,000 hours flight time week by week.", holeType: 'rect', holePadding: 8 },
-          { coords: heatmapCoords, text: "Step 3: Consistency is everything. Fill this board every single day to build unbreakable momentum.", holeType: 'rect', holePadding: 8 },
-        ]);
+    if (!hasSeenStatsTutorial && isFocused) {
+      setTutorialSteps([
+        { targetRef: timeWidgetsRef, text: "Step 1: Your Life on a Clock. See exactly how much time you have left today and in your lifetime.", holeType: 'rect', holePadding: 8 },
+        { targetRef: chartRef, text: "Step 2: Weekly Progress. Track your 10,000 hours flight time week by week.", holeType: 'rect', holePadding: 8 },
+        { targetRef: heatmapRef, text: "Step 3: Consistency is everything. Fill this board every single day to build unbreakable momentum.", holeType: 'rect', holePadding: 8 },
+      ]);
+      const timeout = setTimeout(() => {
         setTutorialVisible(true);
       }, 500);
       return () => clearTimeout(timeout);
     }
-  }, [hasSeenStatsTutorial]);
+  }, [hasSeenStatsTutorial, isFocused]);
 
   // Today Stats
   const todaysSessions = sessions.filter(s => isToday(new Date(s.startTime)));
@@ -186,10 +173,14 @@ export default function StatsScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-gray-50 dark:bg-gray-950" edges={['top']}>
+      <View style={{ flex: 1 }} ref={rootRef} collapsable={false}>
       {/* Hide duplicate expo router header */}
-      <Tabs.Screen options={{ headerShown: false }} />
+      <Tabs.Screen options={{ 
+        headerShown: false,
+        tabBarStyle: tutorialVisible ? { display: 'none' } : undefined
+      }} />
       
-      <ScrollView className="flex-1" contentContainerStyle={{ padding: 24, paddingBottom: 130 }}>
+      <ScrollView ref={scrollViewRef} className="flex-1" contentContainerStyle={{ padding: 24, paddingBottom: 130 }}>
         <View className="flex-row justify-between items-center mb-8 mt-4">
           <Text className="text-3xl font-black tracking-tight text-gray-900 dark:text-white">
             Statistics
@@ -208,7 +199,7 @@ export default function StatsScreen() {
         </View>
 
         {/* TIME WIDGETS ROW */}
-        <View className="flex-row gap-4 mb-6" ref={timeWidgetsRef} collapsable={false}>
+        <View className="flex-row gap-4 mb-6" ref={timeWidgetsRef} collapsable={false} onLayout={handleLayout(0)}>
           
           {/* TIME LEFT WIDGET (2/3 width) */}
           <View className={`flex-[2] rounded-3xl p-6 shadow-sm relative overflow-hidden border ${
@@ -253,7 +244,7 @@ export default function StatsScreen() {
         </View>
 
         {/* WEEKLY BAR CHART */}
-        <View ref={chartRef} collapsable={false}>
+        <View ref={chartRef} collapsable={false} onLayout={handleLayout(1)}>
           <WeeklyBarChart sessions={sessions} />
         </View>
 
@@ -300,8 +291,8 @@ export default function StatsScreen() {
         </View>
 
 
-        {/* MASTERY HEATMAP (ALL TIME) */}
-        <View ref={heatmapRef} collapsable={false}>
+        {/* HEATMAP */}
+        <View ref={heatmapRef} collapsable={false} onLayout={handleLayout(2)}>
           <ContributionHeatmap sessions={sessions} />
         </View>
 
@@ -384,11 +375,21 @@ export default function StatsScreen() {
       <SpotlightOverlay
         visible={tutorialVisible}
         steps={tutorialSteps}
+        rootRef={rootRef}
+        onStepChange={(index) => {
+          const layout = stepLayouts[index];
+          if (layout && scrollViewRef.current) {
+            const screenH = Dimensions.get('window').height;
+            const scrollY = Math.max(0, layout.y - (screenH / 2) + (layout.h / 2));
+            scrollViewRef.current?.scrollTo({ y: scrollY, animated: true });
+          }
+        }}
         onFinish={() => {
           setTutorialVisible(false);
           setTutorialSeen('stats');
         }}
       />
+      </View>
     </SafeAreaView>
   );
 }

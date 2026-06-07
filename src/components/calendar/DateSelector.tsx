@@ -3,14 +3,17 @@ import { format, isSameDay, isToday } from 'date-fns';
 import { useMemo, useRef, useEffect, useState } from 'react';
 import { generateDateRange } from '@/utils/time';
 import { MonthlyCalendarModal } from './MonthlyCalendarModal';
+import { Feather } from '@expo/vector-icons';
 
 interface Props {
   selectedDate: Date;
   onSelectDate: (date: Date) => void;
   achievedDates: Date[];
+  isCompareMode: boolean;
+  onToggleCompareMode: () => void;
 }
 
-export function DateSelector({ selectedDate, onSelectDate, achievedDates }: Props) {
+export function DateSelector({ selectedDate, onSelectDate, achievedDates, isCompareMode, onToggleCompareMode }: Props) {
   const [modalVisible, setModalVisible] = useState(false);
   
   // Generate 14 days in the past and 14 days in the future relative to the *selectedDate* so it updates when jumping months
@@ -29,20 +32,28 @@ export function DateSelector({ selectedDate, onSelectDate, achievedDates }: Prop
   return (
     <View className="bg-white dark:bg-gray-950 border-b border-gray-100 dark:border-gray-900 pb-3 pt-2">
       <View className="px-5 mb-4 flex-row items-center justify-between">
-        <Pressable onPress={() => setModalVisible(true)} className="flex-row items-center">
+        <Pressable onPress={() => setModalVisible(true)} className="flex-row items-center flex-1">
           <Text className="text-2xl font-black tracking-tight text-gray-900 dark:text-white mr-1">
             {format(selectedDate, 'MMMM yyyy')}
           </Text>
           <Text className="text-[10px] text-gray-400 mt-1">▼</Text>
         </Pressable>
-        <Pressable 
-          onPress={() => {
-            onSelectDate(new Date());
-          }} 
-          className="bg-gray-100 dark:bg-gray-900 px-3 py-1.5 rounded-full border border-gray-200 dark:border-gray-800"
-        >
-          <Text className="text-[10px] font-black uppercase tracking-wider text-gray-600 dark:text-gray-400">Today</Text>
-        </Pressable>
+        <View className="flex-row items-center gap-2">
+          <Pressable 
+            onPress={onToggleCompareMode}
+            className={`w-8 h-8 items-center justify-center rounded-full border ${isCompareMode ? 'bg-blue-50 border-blue-200 dark:bg-blue-900/30 dark:border-blue-800' : 'bg-gray-50 border-gray-200 dark:bg-gray-900 dark:border-gray-800'}`}
+          >
+            <Feather name={isCompareMode ? "eye" : "eye-off"} size={14} color={isCompareMode ? "#3b82f6" : "#9ca3af"} />
+          </Pressable>
+          <Pressable 
+            onPress={() => {
+              onSelectDate(new Date());
+            }} 
+            className="bg-gray-100 dark:bg-gray-900 px-3 py-1.5 rounded-full border border-gray-200 dark:border-gray-800"
+          >
+            <Text className="text-[10px] font-black uppercase tracking-wider text-gray-600 dark:text-gray-400">Today</Text>
+          </Pressable>
+        </View>
       </View>
 
       <ScrollView 

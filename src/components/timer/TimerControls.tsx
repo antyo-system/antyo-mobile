@@ -26,9 +26,10 @@ function AnimatedButton({ onPress, className, children }: { onPress: () => void,
 
 interface TimerControlsProps {
   onSaveAndStop: () => void;
+  playButtonRef?: React.Ref<View>;
 }
 
-export function TimerControls({ onSaveAndStop }: TimerControlsProps) {
+export function TimerControls({ onSaveAndStop, playButtonRef }: TimerControlsProps) {
   const { status, startTimer, pauseTimer, stopTimer, mode } = useTimerStore(
     useShallow((s) => ({
       status: s.status,
@@ -62,12 +63,14 @@ export function TimerControls({ onSaveAndStop }: TimerControlsProps) {
   return (
     <View className="items-center justify-center w-full px-8 mt-4 min-h-[120px]">
       {status === 'idle' && (
-        <AnimatedButton 
-          onPress={handleStart} 
-          className="items-center justify-center p-4"
-        >
-          <Ionicons name="play" size={72} color={iconColor} />
-        </AnimatedButton>
+        <View ref={playButtonRef} collapsable={false}>
+          <AnimatedButton 
+            onPress={handleStart} 
+            className="items-center justify-center p-4"
+          >
+            <Ionicons name="play" size={72} color={iconColor} />
+          </AnimatedButton>
+        </View>
       )}
 
       {status === 'running' && (

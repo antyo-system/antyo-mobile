@@ -5,12 +5,25 @@ export interface ChangelogRelease {
   fixes: string[];
 }
 
-export const APP_VERSION = "1.2.0";
+export const APP_VERSION = "1.3.0";
 
 export const CHANGELOG: ChangelogRelease[] = [
   {
-    version: "1.2.0",
+    version: "1.3.0",
     date: new Date().toISOString().split('T')[0],
+    features: [
+      "Calendar Split View: Plan and Reality blocks are now cleanly separated side-by-side to avoid overlaps.",
+      "Focus Mode Toggle: Added a 'Eye' toggle icon in the calendar to switch between side-by-side comparison and full-width focus mode.",
+      "Streamlined UI: Removed redundant progress bars and profile info for a cleaner mastery and settings experience."
+    ],
+    fixes: [
+      "Fixed 'Couldn't find a navigation context' fatal error when quickly changing dates in the calendar.",
+      "Updated tutorial bubble text with better hints for switching between Schedule and Task views."
+    ]
+  },
+  {
+    version: "1.2.0",
+    date: "2026-06-07",
     features: [
       "Interactive Multi-Step Tutorial: Brand new onboarding experience across all tabs to guide first-time users.",
       "100% Data Safety: Migrated to a custom expo-file-system storage adapter for bulletproof local persistence."
@@ -22,7 +35,7 @@ export const CHANGELOG: ChangelogRelease[] = [
   },
   {
     version: "1.1.0",
-    date: new Date().toISOString().split('T')[0],
+    date: "2026-06-06",
     features: [
       "The Automated Routine Engine: Create recurring schedule blocks directly from the Mastery tab.",
       "Daily Target Tracking: Set and track daily minutes goal per skill.",

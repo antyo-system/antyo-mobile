@@ -1,7 +1,8 @@
 import { useState, useRef, useEffect, useMemo } from 'react';
-import { ScrollView, View, PanResponder, Pressable, Text, Image } from 'react-native';
+import { ScrollView, View, PanResponder, Pressable, Text, Image, Platform } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Tabs } from 'expo-router';
+import { useIsFocused } from '@react-navigation/native';
+import { Tabs, useNavigation } from 'expo-router';
 import { useSessionStore } from '@/store/useSessionStore';
 import { usePlanStore, Plan } from '@/store/usePlanStore';
 import { useSettingsStore } from '@/store/useSettingsStore';
@@ -115,53 +116,41 @@ function calculateLayout<T extends { startMinutes: number; durationMinutes?: num
 
 export default function CalendarScreen() {
   const [selectedDate, setSelectedDate] = useState(new Date());
+  const [isCompareMode, setIsCompareMode] = useState(true);
   const insets = useSafeAreaInsets();
+  const navigation = useNavigation();
   
   // Tutorial State
   const { hasSeenCalendarTutorial, setTutorialSeen } = useAppStore();
   const [tutorialVisible, setTutorialVisible] = useState(false);
   const [tutorialSteps, setTutorialSteps] = useState<SpotlightStep[]>([]);
+  const isFocused = useIsFocused();
+
+  useEffect(() => {
+    navigation.setOptions({
+      headerShown: false,
+      tabBarStyle: tutorialVisible ? { display: 'none' } : undefined
+    });
+  }, [navigation, tutorialVisible]);
   
   const dateRef = useRef<View>(null);
   const toggleRef = useRef<View>(null);
   const fabRef = useRef<View>(null);
+  const rootRef = useRef<View>(null);
 
   useEffect(() => {
-    if (!hasSeenCalendarTutorial) {
-      const timeout = setTimeout(async () => {
-        const measureAsync = (ref: any): Promise<SpotlightCoords> => {
-          return new Promise((resolve) => {
-            if (!ref.current) {
-              return resolve({ x: 0, y: 0, width: 0, height: 0 });
-            }
-            let resolved = false;
-            const fallback = setTimeout(() => {
-              if (!resolved) { resolved = true; resolve({ x: 0, y: 0, width: 0, height: 0 }); }
-            }, 400);
-            ref.current.measureInWindow((x: number, y: number, width: number, height: number) => {
-              if (!resolved) {
-                resolved = true;
-                clearTimeout(fallback);
-                resolve({ x, y, width, height });
-              }
-            });
-          });
-        };
-
-        const dateCoords = await measureAsync(dateRef);
-        const toggleCoords = await measureAsync(toggleRef);
-        const fabCoords = await measureAsync(fabRef);
-
-        setTutorialSteps([
-          { coords: dateCoords, text: "Step 1: Time Travel. Swipe or tap to view your past execution and future plans.", holeType: 'rect', holePadding: 4 },
-          { coords: toggleCoords, text: "Step 2: The Reality Check. Compare your 'Plan' against your 'Real' tracked sessions.", holeType: 'rect', holePadding: 8 },
-          { coords: fabCoords, text: "Step 3: Block your time. Tap here to structure your day intentionally.", holeType: 'circle', holePadding: 16 },
-        ]);
+    if (!hasSeenCalendarTutorial && isFocused) {
+      setTutorialSteps([
+        { targetRef: dateRef, text: "Step 1: Your Life Calendar. See the big picture of what you plan vs what you actually execute.", holeType: 'rect', holePadding: 8 },
+        { targetRef: toggleRef, text: "Step 2: Plan vs Reality. Switch to 'Plan' to organize your day, switch to 'Reality' to see what truly happened.\n\nTip: Tap again to switch into Schedule list or Task list views!", holeType: 'rect', holePadding: 8 },
+        { targetRef: fabRef, text: "Step 3: Time Blocking. Tap here to block your focus sessions for tomorrow.", holeType: 'circle', holePadding: 16 },
+      ]);
+      const timeout = setTimeout(() => {
         setTutorialVisible(true);
       }, 500);
       return () => clearTimeout(timeout);
     }
-  }, [hasSeenCalendarTutorial]);
+  }, [hasSeenCalendarTutorial, isFocused]);
 
   // Real Sessions
   const sessions = useSessionStore(s => s.sessions);
@@ -301,14 +290,16 @@ export default function CalendarScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-gray-50 dark:bg-gray-950" edges={['top']}>
-      {/* Force hide the duplicate Expo Router header */}
-      <Tabs.Screen options={{ headerShown: false }} />
+      <View style={{ flex: 1 }} ref={rootRef} collapsable={false}>
+
       
       <View ref={dateRef} collapsable={false}>
         <DateSelector 
           selectedDate={selectedDate} 
           onSelectDate={setSelectedDate} 
           achievedDates={achievedDates}
+          isCompareMode={isCompareMode}
+          onToggleCompareMode={() => setIsCompareMode(p => !p)}
         />
       </View>
       
@@ -372,34 +363,39 @@ export default function CalendarScreen() {
 
         {/* Render Planned Blocks */}
         <View className="absolute top-0 bottom-0 left-16 right-4" pointerEvents="box-none">
-          {dailyPlans.map(plan => (
-            <View 
-              key={plan.id} 
-              style={{ 
-                position: 'absolute',
-                top: 0,
-                left: `${plan._left}%`, 
-                width: `${plan._width}%`,
-                opacity: activeTab === 'plan' ? 1 : 0.35, 
-                zIndex: activeTab === 'plan' ? 30 : 10 
-              }}
-              pointerEvents={activeTab === 'plan' ? 'box-none' : 'none'}
-            >
-              <InteractivePlanBlock
-                plan={plan}
-                pixelsPerMinute={PIXELS_PER_MINUTE}
-                onUpdatePlan={updatePlan}
-                onEditPress={handleEditPress}
-                setScrollEnabled={setIsScrollEnabled}
-                width={plan._width}
-              />
-            </View>
-          ))}
+          {dailyPlans.map(plan => {
+            if (!isCompareMode && activeTab !== 'plan') return null;
+            return (
+              <View 
+                key={plan.id} 
+                style={{ 
+                  position: 'absolute',
+                  top: 0,
+                  left: isCompareMode ? `${plan._left * 0.49}%` : `${plan._left}%`, 
+                  width: isCompareMode ? `${plan._width * 0.49}%` : `${plan._width}%`,
+                  opacity: isCompareMode ? (activeTab === 'plan' ? 1 : 0.5) : 1, 
+                  zIndex: activeTab === 'plan' ? 30 : 10 
+                }}
+                pointerEvents={activeTab === 'plan' ? 'box-none' : 'none'}
+              >
+                <InteractivePlanBlock
+                  plan={plan}
+                  pixelsPerMinute={PIXELS_PER_MINUTE}
+                  onUpdatePlan={updatePlan}
+                  onEditPress={handleEditPress}
+                  setScrollEnabled={setIsScrollEnabled}
+                  width={isCompareMode ? plan._width * 0.49 : plan._width}
+                />
+              </View>
+            );
+          })}
         </View>
 
         {/* Render Real Sessions */}
         <View className="absolute top-0 bottom-0 left-16 right-4" pointerEvents="box-none">
           {dailySessionsLayout.map(session => {
+            if (!isCompareMode && activeTab !== 'real') return null;
+
             const startMins = getMinutesFromMidnight(session.startTime);
             const durationMins = Math.max(1, Math.round(session.durationSeconds / 60));
             
@@ -415,9 +411,9 @@ export default function CalendarScreen() {
                 style={{ 
                   position: 'absolute',
                   top: 0,
-                  left: `${session._left}%`, 
-                  width: `${session._width}%`,
-                  opacity: activeTab === 'real' ? 1 : 0.35, 
+                  left: isCompareMode ? `${51 + (session._left * 0.49)}%` : `${session._left}%`, 
+                  width: isCompareMode ? `${session._width * 0.49}%` : `${session._width}%`,
+                  opacity: isCompareMode ? (activeTab === 'real' ? 1 : 0.5) : 1, 
                   zIndex: activeTab === 'real' ? 30 : 10 
                 }}
                 pointerEvents={activeTab === 'real' ? 'box-none' : 'none'}
@@ -446,7 +442,9 @@ export default function CalendarScreen() {
         {/* Empty State Watermark Removed */}
 
         {/* Center Divider Line */}
-        <View className="absolute top-0 bottom-0 left-[52.5%] w-[1px] bg-gray-100 dark:bg-gray-800 pointer-events-none" />
+        {isCompareMode && (
+          <View className="absolute top-0 bottom-0 left-[52.5%] w-[1px] bg-gray-100 dark:bg-gray-800 pointer-events-none" />
+        )}
           </Pressable>
         </ScrollView>
       </View>
@@ -495,11 +493,13 @@ export default function CalendarScreen() {
       <SpotlightOverlay
         visible={tutorialVisible}
         steps={tutorialSteps}
+        rootRef={rootRef}
         onFinish={() => {
           setTutorialVisible(false);
           setTutorialSeen('calendar');
         }}
       />
+      </View>
     </SafeAreaView>
   );
 }

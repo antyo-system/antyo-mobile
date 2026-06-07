@@ -1,18 +1,24 @@
 import { Redirect } from 'expo-router';
 import { useAppStore } from '@/store/useAppStore';
 import { useEffect, useState } from 'react';
-import { View } from 'react-native';
+import { View, Image } from 'react-native';
 
 export default function Index() {
   const hasSeenOnboarding = useAppStore(state => state.hasSeenOnboarding);
-  const [isReady, setIsReady] = useState(false);
+  const _hasHydrated = useAppStore(state => state._hasHydrated);
 
-  useEffect(() => {
-    // Avoid hydration mismatch by waiting for first render
-    setIsReady(true);
-  }, []);
-
-  if (!isReady) return <View className="flex-1 bg-black" />;
+  if (!_hasHydrated) {
+    return (
+      <View className="flex-1 bg-white dark:bg-gray-950 items-center justify-center">
+        <Image 
+          // @ts-ignore
+          source={require('../assets/images/logo.png')} 
+          style={{ width: 120, height: 120 }} 
+          resizeMode="contain" 
+        />
+      </View>
+    );
+  }
 
   if (!hasSeenOnboarding) {
     return <Redirect href="/onboarding" />;

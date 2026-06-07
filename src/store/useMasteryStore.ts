@@ -26,7 +26,7 @@ export interface Skill {
 
 interface MasteryState {
   skills: Skill[];
-  addSkill: (skill: Omit<Skill, 'id' | 'totalSeconds' | 'createdAt' | 'pillars'>) => void;
+  addSkill: (skill: Omit<Skill, 'totalSeconds' | 'createdAt' | 'pillars'> & { id?: string; initialPillars?: string[] }) => void;
   updateSkill: (id: string, updates: Partial<Skill>) => void;
   deleteSkill: (id: string) => void;
   addTimeToSkill: (id: string, pillarId: string | null, seconds: number) => void;
@@ -63,13 +63,18 @@ export const useMasteryStore = create<MasteryState>()(
           ]
         }
       ],
-      addSkill: (skill) => set((state) => ({
+      addSkill: ({ id, initialPillars, ...rest }) => set((state) => ({
         skills: [...state.skills, {
-          ...skill,
-          id: Date.now().toString(),
+          ...rest,
+          id: id || Date.now().toString(),
           totalSeconds: 0,
           createdAt: new Date().toISOString(),
-          pillars: [],
+          pillars: initialPillars ? initialPillars.map(name => ({
+            id: Math.random().toString(36).substring(2, 9),
+            name,
+            totalSeconds: 0,
+            createdAt: new Date().toISOString()
+          })) : [],
         }]
       })),
       updateSkill: (id, updates) => set((state) => ({

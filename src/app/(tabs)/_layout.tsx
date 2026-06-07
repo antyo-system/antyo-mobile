@@ -9,8 +9,11 @@ function CustomTabBar({ state, descriptors, navigation }: any) {
   const status = useTimerStore(s => s.status);
   const insets = useSafeAreaInsets();
 
-  // Hide Navbar when timer is active
-  if (status !== 'idle') return null;
+  const focusedRoute = state.routes[state.index];
+  const focusedOptions = descriptors[focusedRoute.key].options;
+
+  // Hide Navbar when timer is active or when explicitly hidden (e.g. during tutorial)
+  if (status !== 'idle' || focusedOptions.tabBarStyle?.display === 'none') return null;
 
   return (
     <View 
