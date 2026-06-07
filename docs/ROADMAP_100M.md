@@ -1,5 +1,7 @@
 # ANTYO Focus: Roadmap to 100M Downloads 🚀
 
+> "Most productivity apps only know what users planned to do. Pomodoro apps know timer data. Calendar apps know scheduled plans. Neither knows what actually happened. ANTYO Focus solves this by recording focus/distracted durations and visualizing them on a calendar alongside your planned blocks."
+
 Membangun aplikasi dari MVP hingga mencapai *1 juta hingga 100 juta unduhan* membutuhkan transisi fokus dari sekadar **fitur** menjadi **psikologi pengguna (habit-forming)** dan **growth loops (viralitas)**. 
 
 Di bawah ini adalah rancangan strategis untuk ANTYO Focus, terbagi menjadi Roadmap Produk dan Strategi Monetisasi, dengan tetap mematuhi prinsip *5-Step Algorithm* (Buang yang tidak perlu, perkuat yang penting).
@@ -22,6 +24,7 @@ Di bawah ini adalah rancangan strategis untuk ANTYO Focus, terbagi menjadi Roadm
 ### Phase 3: Cloud, Sync & Premium (Bulan 6-8)
 *Fokus: Infrastruktur Skala Besar & Monetisasi Awal.*
 * **Widgets & Live Activities:** Mendukung iOS Live Activities & Android Widgets agar *timer* selalu terlihat tanpa membuka aplikasi.
+* **Computer Vision Focus Tracking:** Fitur AI menggunakan kamera depan untuk melacak secara *real-time* waktu fokus asli (jika user ada di depan kamera) dan waktu distraksi (jika absen dari depan kamera). 
 * **Backend Integration:** Implementasi Supabase + Clerk untuk sinkronisasi antar perangkat (Cloud Sync).
 * **Paywall Integration:** Menggunakan RevenueCat untuk meluncurkan ANTYO Pro.
 * **Advanced Analytics (Pro):** Wawasan berbasis data (Jam paling produktif, korelasi hari vs efisiensi).
