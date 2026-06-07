@@ -5,12 +5,25 @@ export interface ChangelogRelease {
   fixes: string[];
 }
 
-export const APP_VERSION = "1.3.0";
+export const APP_VERSION = "1.4.0";
 
 export const CHANGELOG: ChangelogRelease[] = [
   {
-    version: "1.3.0",
+    version: "1.4.0",
     date: new Date().toISOString().split('T')[0],
+    features: [
+      "Quick Life Logging: 'Mark as Done' button for non-skill plans allows instant tracking without a timer.",
+      "Lock Schedule Mode: A new toggle to lock calendar blocks, preventing accidental dragging.",
+      "Manual Session Editor: Full ability to edit or manually log past Focus Sessions directly from the calendar."
+    ],
+    fixes: [
+      "Fixed 'New Skill' modal input being hidden by keyboard on Android.",
+      "Delete Focus Session button UI now matches the Plan editor."
+    ]
+  },
+  {
+    version: "1.3.0",
+    date: "2026-06-07",
     features: [
       "Calendar Split View: Plan and Reality blocks are now cleanly separated side-by-side to avoid overlaps.",
       "Focus Mode Toggle: Added a 'Eye' toggle icon in the calendar to switch between side-by-side comparison and full-width focus mode.",

@@ -20,3 +20,7 @@
 - **Goal**: Menampilkan data waktu distraksi yang sangat akurat dan berbasis realita di dalam *Stats*.
 - **Reason for Postponing**: Masih terlalu dini untuk MVP, dan integrasi API OS native (Android UsageStats, iOS ScreenTime) sangat kompleks dan butuh custom native module di Expo. Disimpan di bank ide untuk iterasi mendatang.
 
+## Comprehensive Review & Social Share System
+- **Concept**: Fitur untuk merangkum progress "Plan vs Reality" user dalam rentang waktu tertentu (Daily, Weekly, Monthly, Quarterly, Annually) dan menyediakannya dalam format visual yang estetik untuk dibagikan (share) ke media sosial (seperti Instagram Stories, Twitter, dsb).
+- **Goal**: Membangun *growth loop* secara organik (sesuai *Roadmap 100M*). Saat user membagikan rutinitas disiplin mereka, ini mengundang rasa penasaran orang lain. Membantu user merefleksikan pencapaian mereka dari skala mikro (harian) hingga makro (tahunan).
+- **Reason for Postponing**: Saat ini aplikasi masih fokus menstabilkan *core loop* (Timer & Calendar). Kalkulasi agregat jangka panjang dan pembuatan aset gambar/grafis untuk *social sharing* akan diimplementasikan setelah pondasi MVP benar-benar kokoh dan *user retention* stabil.

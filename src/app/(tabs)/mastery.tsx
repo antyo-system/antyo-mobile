@@ -62,10 +62,16 @@ function SkillCard({ skill, onSetTarget, onCreateRoutine }: { skill: Skill, onSe
     const endH = Math.floor(endMinutes / 60).toString().padStart(2, '0');
     const endM = (endMinutes % 60).toString().padStart(2, '0');
 
-    let recStr = 'Custom';
+    let recStr = 'Once';
     if (plan.recurrence === 'weekdays') recStr = 'Mon-Fri';
     else if (plan.recurrence === 'daily') recStr = 'Daily';
     else if (plan.recurrence === 'weekly') recStr = 'Weekly';
+    else if (plan.recurrence === 'specific_days' && plan.recurrenceDays && plan.recurrenceDays.length > 0) {
+      const daysMap = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+      // sort days for consistency
+      const sortedDays = [...plan.recurrenceDays].sort((a, b) => a - b);
+      recStr = sortedDays.map(d => daysMap[d]).join(', ');
+    }
 
     return `${recStr} ${startH}.${startM}-${endH}.${endM}`;
   };
@@ -312,7 +318,7 @@ export default function MasteryScreen() {
           </Text>
 
           <View className="gap-2" ref={listRef} collapsable={false} onLayout={handleLayout(1)}>
-            {skills.map(skill => (
+            {[...skills].sort((a, b) => b.totalSeconds - a.totalSeconds).map(skill => (
               <SkillCard
                 key={skill.id}
                 skill={skill}

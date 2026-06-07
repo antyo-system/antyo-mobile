@@ -3,6 +3,7 @@ import { ScrollView, View, PanResponder, Pressable, Text, Image, Platform } from
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useIsFocused } from '@react-navigation/native';
 import { Tabs, useNavigation } from 'expo-router';
+import { Feather } from '@expo/vector-icons';
 import { useSessionStore } from '@/store/useSessionStore';
 import { usePlanStore, Plan } from '@/store/usePlanStore';
 import { useSettingsStore } from '@/store/useSettingsStore';
@@ -165,6 +166,7 @@ export default function CalendarScreen() {
   const deletePlan = usePlanStore(s => s.deletePlan);
 
   const [activeTab, setActiveTab] = useState<'plan' | 'schedule' | 'real' | 'task'>('plan');
+  const [isLocked, setIsLocked] = useState(false);
   const [isScrollEnabled, setIsScrollEnabled] = useState(true);
   const [editorVisible, setEditorVisible] = useState(false);
   const [editingPlan, setEditingPlan] = useState<Plan | null>(null);
@@ -276,16 +278,33 @@ export default function CalendarScreen() {
     let clickedMinutes = Math.round(y / PIXELS_PER_MINUTE);
     clickedMinutes = Math.floor(clickedMinutes / 15) * 15; // Snap down to nearest 15 mins block
     
-    // Auto-create a new 30 minute plan at that exact time
-    setEditingPlan({
-      id: Date.now().toString(),
-      title: '',
-      startMinutes: clickedMinutes,
-      durationMinutes: 30,
-      recurrence: 'none',
-      baseDate: selectedDate.toISOString(),
-    });
-    setEditorVisible(true);
+    if (activeTab === 'real') {
+       const manualDate = new Date(selectedDate);
+       manualDate.setHours(Math.floor(clickedMinutes / 60), clickedMinutes % 60, 0, 0);
+       
+       setEditingRealSession({
+         id: Date.now().toString(),
+         title: '',
+         startTime: manualDate.toISOString(),
+         durationSeconds: 30 * 60,
+         focusDurationSeconds: 30 * 60,
+         distractedDurationSeconds: 0,
+         isSmartMode: false,
+         color: '#3B82F6',
+       } as any);
+       setRealEditorVisible(true);
+    } else {
+      // Auto-create a new 30 minute plan at that exact time
+      setEditingPlan({
+        id: Date.now().toString(),
+        title: '',
+        startMinutes: clickedMinutes,
+        durationMinutes: 30,
+        recurrence: 'none',
+        baseDate: selectedDate.toISOString(),
+      });
+      setEditorVisible(true);
+    }
   };
 
   return (
@@ -329,6 +348,14 @@ export default function CalendarScreen() {
           }`}>
             {activeTab === 'task' ? 'Task' : 'Real'}
           </Text>
+        </Pressable>
+
+        {/* Lock Toggle */}
+        <Pressable 
+          onPress={() => setIsLocked(p => !p)}
+          className="absolute right-4 top-2.5 px-3 py-1 items-center justify-center rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-100 dark:border-gray-800"
+        >
+          <Feather name={isLocked ? "lock" : "unlock"} size={14} color={isLocked ? "#F59E0B" : "#9CA3AF"} />
         </Pressable>
       </View>
 
@@ -385,6 +412,7 @@ export default function CalendarScreen() {
                   onEditPress={handleEditPress}
                   setScrollEnabled={setIsScrollEnabled}
                   width={isCompareMode ? plan._width * 0.49 : plan._width}
+                  isLocked={isLocked}
                 />
               </View>
             );
@@ -476,7 +504,15 @@ export default function CalendarScreen() {
         session={editingRealSession}
         onClose={() => setRealEditorVisible(false)}
         onSave={(updates) => {
-          if (editingRealSession) updateSession(editingRealSession.id, updates);
+          if (editingRealSession) {
+            const exists = sessions.some(s => s.id === editingRealSession.id);
+            if (exists) {
+              updateSession(editingRealSession.id, updates);
+            } else {
+              const { addSession } = useSessionStore.getState();
+              addSession({ ...editingRealSession, ...updates } as any);
+            }
+          }
         }}
         onDelete={(id) => {
           removeSession(id);

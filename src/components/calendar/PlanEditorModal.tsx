@@ -2,9 +2,12 @@ import { useState, useEffect } from 'react';
 import { Modal, View, Text, TextInput, Pressable, ScrollView, KeyboardAvoidingView, Platform, Switch } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Plan, Recurrence } from '@/store/usePlanStore';
+import { useSessionStore } from '@/store/useSessionStore';
 import { useSettingsStore } from '@/store/useSettingsStore';
 import { useMasteryStore } from '@/store/useMasteryStore';
+import { useTimerStore } from '@/store/useTimerStore';
 import { Feather } from '@expo/vector-icons';
+import { router } from 'expo-router';
 import { CalendarPicker } from './CalendarPicker';
 
 interface Props {
@@ -388,13 +391,73 @@ export function PlanEditorModal({ visible, plan, onClose, onSave, onDelete }: Pr
 
           </ScrollView>
 
-          <View className="flex-row gap-4 mt-auto pt-4 border-t border-gray-100 dark:border-gray-900">
-            {plan && plan.title && (
+          <View className="flex-row gap-3 mt-auto pt-4 border-t border-gray-100 dark:border-gray-900">
+            {plan && plan.title && plan.id !== '' && (
               <Pressable 
                 onPress={() => onDelete(plan.id)}
-                className="bg-red-50 dark:bg-red-900/20 px-6 py-4 rounded-2xl items-center justify-center border border-red-100 dark:border-red-900/50"
+                className="bg-red-50 dark:bg-red-900/20 px-4 py-4 rounded-2xl items-center justify-center border border-red-100 dark:border-red-900/50"
               >
-                <Text className="text-red-600 dark:text-red-400 font-black tracking-wider uppercase text-xs">Delete</Text>
+                <Feather name="trash-2" size={20} color="#EF4444" />
+              </Pressable>
+            )}
+            {plan && plan.id !== '' && !skillId && (
+              <Pressable 
+                onPress={() => {
+                  let dur = 1440;
+                  if (!isAllDay) {
+                    const startMins = parseTimeInput(startTimeStr, 9 * 60);
+                    let endMins = parseTimeInput(endTimeStr, startMins + 30);
+                    if (endMins <= startMins) endMins = startMins + 15;
+                    dur = endMins - startMins;
+                  }
+                  
+                  const d = new Date(baseDate || new Date().toISOString());
+                  const startMins = parseTimeInput(startTimeStr, 9 * 60);
+                  d.setHours(Math.floor(startMins / 60), startMins % 60, 0, 0);
+                  
+                  const { addSession } = useSessionStore.getState();
+                  addSession({
+                    id: Date.now().toString(),
+                    title: title || 'Life Activity',
+                    startTime: d.toISOString(),
+                    durationSeconds: dur * 60,
+                    focusDurationSeconds: dur * 60,
+                    distractedDurationSeconds: 0,
+                    isSmartMode: false,
+                    color: color,
+                    skillId: null,
+                    pillarId: null,
+                  } as any);
+                  onClose();
+                }}
+                className="bg-teal-50 dark:bg-teal-900/20 px-4 py-4 rounded-2xl items-center justify-center border border-teal-100 dark:border-teal-900/50"
+              >
+                <Feather name="check" size={20} color="#0D9488" />
+              </Pressable>
+            )}
+            {plan && plan.id !== '' && skillId && (
+              <Pressable 
+                onPress={() => {
+                  const timerStore = useTimerStore.getState();
+                  timerStore.setSelectedSkillId(skillId);
+                  if (pillarId) timerStore.setSelectedPillarId(pillarId);
+                  
+                  let dur = 1440;
+                  if (!isAllDay) {
+                    const startMins = parseTimeInput(startTimeStr, 9 * 60);
+                    let endMins = parseTimeInput(endTimeStr, startMins + 30);
+                    if (endMins <= startMins) endMins = startMins + 15;
+                    dur = endMins - startMins;
+                  }
+                  timerStore.setDuration(dur * 60);
+                  if (title) timerStore.setTitle(title);
+                  
+                  onClose();
+                  router.push('/(tabs)');
+                }}
+                className="bg-green-50 dark:bg-green-900/20 px-4 py-4 rounded-2xl items-center justify-center border border-green-100 dark:border-green-900/50"
+              >
+                <Feather name="play" size={20} color="#10B981" />
               </Pressable>
             )}
             <Pressable 

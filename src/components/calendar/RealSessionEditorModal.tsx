@@ -4,6 +4,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Session } from '@/types';
 import { format } from 'date-fns';
 import { formatLongTime } from '@/utils/time';
+import { useMasteryStore } from '@/store/useMasteryStore';
+import { Feather } from '@expo/vector-icons';
 
 interface Props {
   visible: boolean;
@@ -19,16 +21,59 @@ export function RealSessionEditorModal({ visible, session, onClose, onSave, onDe
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [color, setColor] = useState(SESSION_COLORS[0]);
+  
+  const [startTimeStr, setStartTimeStr] = useState('');
+  const [endTimeStr, setEndTimeStr] = useState('');
+  
+  const [skillId, setSkillId] = useState<string | null>(null);
+  const [pillarId, setPillarId] = useState<string | null>(null);
+
+  const skills = useMasteryStore(s => s.skills);
 
   useEffect(() => {
     if (session) {
       setTitle(session.title);
       setDescription(session.description || '');
       setColor(session.color || SESSION_COLORS[0]);
+      setSkillId(session.skillId || null);
+      setPillarId(session.pillarId || null);
+
+      const startDate = new Date(session.startTime);
+      const startH = startDate.getHours().toString().padStart(2, '0');
+      const startM = startDate.getMinutes().toString().padStart(2, '0');
+      setStartTimeStr(`${startH}:${startM}`);
+      
+      const endDate = new Date(startDate.getTime() + session.durationSeconds * 1000);
+      const endH = endDate.getHours().toString().padStart(2, '0');
+      const endM = endDate.getMinutes().toString().padStart(2, '0');
+      setEndTimeStr(`${endH}:${endM}`);
     }
   }, [session, visible]);
 
   if (!visible || !session) return null;
+
+  const handleTimeInput = (text: string, setter: (val: string) => void) => {
+    const cleaned = text.replace(/[^0-9]/g, '');
+    if (cleaned.length >= 3) {
+      setter(`${cleaned.slice(0, 2)}:${cleaned.slice(2, 4)}`);
+    } else {
+      setter(cleaned);
+    }
+  };
+
+  const parseTimeInput = (str: string, fallback: Date) => {
+    const parts = str.split(':');
+    if (parts.length === 2) {
+      const h = parseInt(parts[0], 10);
+      const m = parseInt(parts[1], 10);
+      if (!isNaN(h) && !isNaN(m)) {
+        const d = new Date(session.startTime);
+        d.setHours(h, m, 0, 0);
+        return d;
+      }
+    }
+    return fallback;
+  };
 
   return (
     <Modal visible={visible} animationType="slide" transparent={false}>
@@ -46,17 +91,33 @@ export function RealSessionEditorModal({ visible, session, onClose, onSave, onDe
           </View>
 
           <ScrollView className="flex-1" showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
-            {/* Read-only Time Info */}
-            <View className="bg-blue-50 dark:bg-blue-900/30 p-4 rounded-2xl mb-6 border border-blue-100 dark:border-blue-800/50">
-              <Text className="text-blue-800 dark:text-blue-200 text-xs font-black tracking-widest uppercase mb-2">
-                Recorded Time (Locked)
-              </Text>
-              <Text className="text-blue-900 dark:text-blue-100 font-bold mb-1 text-lg">
-                {format(new Date(session.startTime), 'MMM d, yyyy')}
-              </Text>
-              <Text className="text-blue-700 dark:text-blue-300 font-medium">
-                {format(new Date(session.startTime), 'h:mm a')} • Duration: {formatLongTime(session.durationSeconds)}
-              </Text>
+            
+            {/* Time Settings */}
+            <View className="flex-row gap-4 mb-6">
+              <View style={{ flex: 1 }}>
+                <Text className="text-xs font-bold text-gray-500 dark:text-gray-400 mb-1.5 uppercase tracking-wider">Start Time</Text>
+                <TextInput
+                  value={startTimeStr}
+                  onChangeText={(val) => handleTimeInput(val, setStartTimeStr)}
+                  keyboardType="numeric"
+                  maxLength={5}
+                  placeholder="09:00"
+                  placeholderTextColor="#9ca3af"
+                  className="bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-4 rounded-2xl text-gray-900 dark:text-white font-bold text-lg text-center"
+                />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text className="text-xs font-bold text-gray-500 dark:text-gray-400 mb-1.5 uppercase tracking-wider">End Time</Text>
+                <TextInput
+                  value={endTimeStr}
+                  onChangeText={(val) => handleTimeInput(val, setEndTimeStr)}
+                  keyboardType="numeric"
+                  maxLength={5}
+                  placeholder="10:00"
+                  placeholderTextColor="#9ca3af"
+                  className="bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-4 rounded-2xl text-gray-900 dark:text-white font-bold text-lg text-center"
+                />
+              </View>
             </View>
 
             {/* Smart Mode Analytics Infographic */}
@@ -115,6 +176,93 @@ export function RealSessionEditorModal({ visible, session, onClose, onSave, onDe
               className="bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 p-4 rounded-2xl text-gray-900 dark:text-white font-bold text-lg mb-6"
             />
 
+            <Text className="text-xs font-bold text-gray-500 dark:text-gray-400 mb-1.5 uppercase tracking-wider">Link to Skill (Mastery)</Text>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} className="mb-6 -mx-6 px-6">
+              <View className="flex-row gap-2 pr-6">
+                <Pressable
+                  onPress={() => setSkillId(null)}
+                  className={`px-4 py-3 rounded-2xl border flex-row items-center gap-2 ${
+                    skillId === null 
+                      ? 'bg-gray-800 border-gray-800 dark:bg-white dark:border-white' 
+                      : 'bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-800'
+                  }`}
+                >
+                  <Text className={`font-bold ${skillId === null ? 'text-white dark:text-gray-900' : 'text-gray-500'}`}>None</Text>
+                </Pressable>
+                
+                {skills.map(skill => {
+                  const isSelected = skillId === skill.id;
+                  return (
+                    <Pressable
+                      key={skill.id}
+                      onPress={() => {
+                        setSkillId(skill.id);
+                        const colorMap: Record<string, string> = {
+                          'blue': '#3B82F6',
+                          'green': '#10B981',
+                          'yellow': '#F59E0B',
+                          'red': '#EF4444',
+                          'purple': '#8B5CF6',
+                          'pink': '#EC4899',
+                        };
+                        const hex = colorMap[skill.color] || SESSION_COLORS[0];
+                        setColor(hex);
+                      }}
+                      className={`px-4 py-3 rounded-2xl border flex-row items-center gap-2 ${
+                        isSelected 
+                          ? 'bg-orange-50 dark:bg-orange-900/20 border-orange-200 dark:border-orange-900/50' 
+                          : 'bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-800'
+                      }`}
+                    >
+                      <Feather name={skill.icon as any} size={14} color={isSelected ? "#F97316" : "#6B7280"} />
+                      <Text className={`font-bold ${isSelected ? 'text-orange-600 dark:text-orange-400' : 'text-gray-600 dark:text-gray-300'}`}>
+                        {skill.name}
+                      </Text>
+                    </Pressable>
+                  );
+                })}
+              </View>
+            </ScrollView>
+
+            {skillId && skills.find(s => s.id === skillId)?.pillars.length ? (
+              <>
+                <Text className="text-xs font-bold text-gray-500 dark:text-gray-400 mb-1.5 uppercase tracking-wider">Link to Subskill (Pillar)</Text>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} className="mb-6 -mx-6 px-6">
+                  <View className="flex-row gap-2 pr-6">
+                    <Pressable
+                      onPress={() => setPillarId(null)}
+                      className={`px-4 py-2 rounded-2xl border flex-row items-center ${
+                        pillarId === null 
+                          ? 'bg-gray-800 border-gray-800 dark:bg-white dark:border-white' 
+                          : 'bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-800'
+                      }`}
+                    >
+                      <Text className={`text-xs font-bold ${pillarId === null ? 'text-white dark:text-gray-900' : 'text-gray-500'}`}>None</Text>
+                    </Pressable>
+                    
+                    {skills.find(s => s.id === skillId)?.pillars.map(pillar => {
+                      const isSelected = pillarId === pillar.id;
+                      return (
+                        <Pressable
+                          key={pillar.id}
+                          onPress={() => setPillarId(pillar.id)}
+                          className={`px-4 py-2 rounded-2xl border flex-row items-center ${
+                            isSelected 
+                              ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-900/50' 
+                              : 'bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-800'
+                          }`}
+                        >
+                          <Text className={`text-xs font-bold ${isSelected ? 'text-blue-600 dark:text-blue-400' : 'text-gray-600 dark:text-gray-300'}`}>
+                            {pillar.name}
+                          </Text>
+                        </Pressable>
+                      );
+                    })}
+                  </View>
+                </ScrollView>
+              </>
+            ) : null}
+
             <Text className="text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Description / Notes</Text>
             <TextInput
               value={description}
@@ -141,18 +289,42 @@ export function RealSessionEditorModal({ visible, session, onClose, onSave, onDe
             </View>
           </ScrollView>
 
-          <View className="flex-row gap-4 mt-auto pt-4 border-t border-gray-100 dark:border-gray-900 pb-4">
-            <Pressable 
-              onPress={() => onDelete(session.id)}
-              className="bg-red-50 dark:bg-red-900/20 px-6 py-4 rounded-2xl items-center justify-center border border-red-100 dark:border-red-900/50"
-            >
-              <Text className="text-red-600 dark:text-red-400 font-black tracking-wider uppercase text-xs">Delete</Text>
-            </Pressable>
+          <View className="flex-row gap-3 mt-auto pt-4 border-t border-gray-100 dark:border-gray-900 pb-4">
+            {session && session.id !== '' && (
+              <Pressable 
+                onPress={() => onDelete(session.id)}
+                className="bg-red-50 dark:bg-red-900/20 px-4 py-4 rounded-2xl items-center justify-center border border-red-100 dark:border-red-900/50"
+              >
+                <Feather name="trash-2" size={20} color="#EF4444" />
+              </Pressable>
+            )}
             
             <Pressable 
               onPress={() => {
                 if (title.trim()) {
-                  onSave({ title, description, color });
+                  let updates: Partial<Session> = { title, description, color, skillId, pillarId };
+                  
+                  const newStart = parseTimeInput(startTimeStr, new Date(session.startTime));
+                  let newEnd = parseTimeInput(endTimeStr, new Date(newStart.getTime() + session.durationSeconds * 1000));
+                  
+                  if (newEnd <= newStart) {
+                    newEnd = new Date(newStart.getTime() + 15 * 60 * 1000); // min 15 mins
+                  }
+
+                  const durSeconds = Math.floor((newEnd.getTime() - newStart.getTime()) / 1000);
+                  updates.startTime = newStart.toISOString();
+                  updates.durationSeconds = durSeconds;
+                  
+                  if (session.isSmartMode && session.focusDurationSeconds !== undefined) {
+                    if (session.focusDurationSeconds > durSeconds) {
+                       updates.focusDurationSeconds = durSeconds;
+                       updates.distractedDurationSeconds = 0;
+                    }
+                  } else {
+                     updates.focusDurationSeconds = durSeconds;
+                  }
+
+                  onSave(updates);
                   onClose();
                 }
               }}

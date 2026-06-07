@@ -9,9 +9,10 @@ interface Props {
   onEditPress: (plan: Plan) => void;
   setScrollEnabled: (enabled: boolean) => void;
   width?: number;
+  isLocked?: boolean;
 }
 
-export function InteractivePlanBlock({ plan, pixelsPerMinute, onUpdatePlan, onEditPress, setScrollEnabled, width }: Props) {
+export function InteractivePlanBlock({ plan, pixelsPerMinute, onUpdatePlan, onEditPress, setScrollEnabled, width, isLocked }: Props) {
   const [tempStart, setTempStart] = useState(plan.startMinutes);
   const [tempDuration, setTempDuration] = useState(plan.durationMinutes);
 
@@ -24,7 +25,7 @@ export function InteractivePlanBlock({ plan, pixelsPerMinute, onUpdatePlan, onEd
   const moveResponder = useRef(
     PanResponder.create({
       onStartShouldSetPanResponder: () => false,
-      onMoveShouldSetPanResponderCapture: (evt, gestureState) => Math.abs(gestureState.dy) > 5,
+      onMoveShouldSetPanResponderCapture: (evt, gestureState) => !isLocked && Math.abs(gestureState.dy) > 5,
       onPanResponderGrant: () => setScrollEnabled(false),
       onPanResponderMove: (evt, gestureState) => {
         const minuteDelta = Math.round(gestureState.dy / pixelsPerMinute);
@@ -47,7 +48,7 @@ export function InteractivePlanBlock({ plan, pixelsPerMinute, onUpdatePlan, onEd
 
   const resizeResponder = useRef(
     PanResponder.create({
-      onStartShouldSetPanResponder: () => true,
+      onStartShouldSetPanResponder: () => !isLocked,
       onPanResponderGrant: () => setScrollEnabled(false),
       onPanResponderMove: (evt, gestureState) => {
         const minuteDelta = Math.round(gestureState.dy / pixelsPerMinute);
@@ -96,12 +97,14 @@ export function InteractivePlanBlock({ plan, pixelsPerMinute, onUpdatePlan, onEd
       </View>
 
       {/* Resize Handle (Bottom Center) */}
-      <View 
-        {...resizeResponder.panHandlers}
-        className="absolute bottom-0 w-full h-5 items-center justify-center rounded-b-md z-20"
-      >
-        <View className="w-8 h-1 rounded-full opacity-60" style={{ backgroundColor: color }} />
-      </View>
+      {!isLocked && (
+        <View 
+          {...resizeResponder.panHandlers}
+          className="absolute bottom-0 w-full h-5 items-center justify-center rounded-b-md z-20"
+        >
+          <View className="w-8 h-1 rounded-full opacity-60" style={{ backgroundColor: color }} />
+        </View>
+      )}
     </View>
   );
 }

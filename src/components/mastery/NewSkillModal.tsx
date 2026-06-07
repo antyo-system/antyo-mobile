@@ -118,7 +118,7 @@ export function NewSkillModal({ visible, onClose }: Props) {
     <Modal visible={visible} animationType="slide" transparent={false}>
       <SafeAreaView className="flex-1 bg-white dark:bg-gray-950">
         <KeyboardAvoidingView
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
           className="flex-1 px-6 pt-4 pb-6"
         >
           <View className="flex-row justify-between items-center mb-6">
@@ -128,7 +128,12 @@ export function NewSkillModal({ visible, onClose }: Props) {
             </Pressable>
           </View>
 
-          <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
+          <ScrollView 
+            className="flex-1" 
+            showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
+            contentContainerStyle={{ paddingBottom: 120 }}
+          >
             {/* Skill Name */}
             <Text className="text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Skill Name</Text>
             <TextInput

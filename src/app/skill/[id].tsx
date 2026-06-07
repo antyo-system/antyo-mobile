@@ -1,4 +1,6 @@
 import { useMasteryStore } from '@/store/useMasteryStore';
+import { usePlanStore, Plan } from '@/store/usePlanStore';
+import { useTimerStore } from '@/store/useTimerStore';
 import { getMasteryProgress } from '@/utils/mastery';
 import { Feather } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
@@ -42,6 +44,38 @@ export default function SkillDetailScreen() {
   }
 
   const progress = getMasteryProgress(skill.totalSeconds);
+  
+  const plans = usePlanStore(s => s.plans);
+  const skillRoutines = plans.filter(p => p.skillId === skill.id && p.recurrence !== 'none');
+
+  const formatRoutineTime = (plan: Plan) => {
+    const startH = Math.floor(plan.startMinutes / 60).toString().padStart(2, '0');
+    const startM = (plan.startMinutes % 60).toString().padStart(2, '0');
+    const endMinutes = plan.startMinutes + plan.durationMinutes;
+    const endH = Math.floor(endMinutes / 60).toString().padStart(2, '0');
+    const endM = (endMinutes % 60).toString().padStart(2, '0');
+
+    let recStr = 'Once';
+    if (plan.recurrence === 'weekdays') recStr = 'Mon-Fri';
+    else if (plan.recurrence === 'daily') recStr = 'Daily';
+    else if (plan.recurrence === 'weekly') recStr = 'Weekly';
+    else if (plan.recurrence === 'specific_days' && plan.recurrenceDays && plan.recurrenceDays.length > 0) {
+      const daysMap = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+      const sortedDays = [...plan.recurrenceDays].sort((a, b) => a - b);
+      recStr = sortedDays.map(d => daysMap[d]).join(', ');
+    }
+
+    return `${recStr} ${startH}.${startM}-${endH}.${endM}`;
+  };
+
+  const handleRoutinePress = (plan: Plan) => {
+    const timerStore = useTimerStore.getState();
+    timerStore.setSelectedSkillId(plan.skillId || null);
+    if (plan.pillarId) timerStore.setSelectedPillarId(plan.pillarId);
+    timerStore.setDuration(plan.durationMinutes * 60);
+    if (plan.title) timerStore.setTitle(plan.title);
+    router.push('/(tabs)');
+  };
 
   const handleAddPillar = () => {
     if (newPillarName.trim()) {
@@ -190,6 +224,30 @@ export default function SkillDetailScreen() {
             </View>
           )}
         </View>
+
+        {/* Routines Section */}
+        {skillRoutines.length > 0 && (
+          <View className="mt-4">
+            <View className="mb-4">
+              <Text className="text-xl font-black text-gray-900 dark:text-white">Routines</Text>
+              <Text className="text-xs font-bold text-gray-500 dark:text-gray-400">Scheduled plans for this skill</Text>
+            </View>
+            <View className="flex-row flex-wrap gap-3">
+              {skillRoutines.map(routine => (
+                <Pressable
+                  key={routine.id}
+                  onPress={() => handleRoutinePress(routine)}
+                  className="flex-row items-center bg-blue-50 dark:bg-blue-900/20 px-4 py-3 rounded-2xl border border-blue-100 dark:border-blue-900/50"
+                >
+                  <Feather name="play-circle" size={16} color="#3B82F6" />
+                  <Text className="ml-2 text-xs font-black tracking-wide text-blue-700 dark:text-blue-400">
+                    {formatRoutineTime(routine)}
+                  </Text>
+                </Pressable>
+              ))}
+            </View>
+          </View>
+        )}
 
       </ScrollView>
 
