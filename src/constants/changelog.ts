@@ -5,9 +5,22 @@ export interface ChangelogRelease {
   fixes: string[];
 }
 
-export const APP_VERSION = "1.4.0";
+export const APP_VERSION = "1.5.0";
 
 export const CHANGELOG: ChangelogRelease[] = [
+  {
+    version: "1.5.0",
+    date: new Date().toISOString().split('T')[0],
+    features: [
+      "Pomodoro Chaining: Seamlessly chain focus sessions with break sessions automatically using the Auto-Play feature.",
+      "Redesigned Timer Settings: A new, highly-polished compact UI with a bottom-sheet modal and steppers for setting durations.",
+      "Session Complete Overlay: A beautifully animated fullscreen overlay indicating when a focus or break session is completed."
+    ],
+    fixes: [
+      "Fixed UI cropping issues on the Timer Settings page for smaller devices.",
+      "Fixed 'Time Left Today' widget text overflow on smaller screens."
+    ]
+  },
   {
     version: "1.4.0",
     date: new Date().toISOString().split('T')[0],

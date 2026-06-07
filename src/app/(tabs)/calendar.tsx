@@ -273,6 +273,8 @@ export default function CalendarScreen() {
   };
 
   const handleTimelinePress = (e: any) => {
+    if (isLocked) return;
+    
     // Capture the Y coordinate to determine the time tapped
     const y = e.nativeEvent.locationY;
     let clickedMinutes = Math.round(y / PIXELS_PER_MINUTE);

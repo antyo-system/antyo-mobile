@@ -17,10 +17,10 @@ This stack is optimized for **AI tooling support**, **documentation quality**, a
 * **Alternative considered:** Redux Toolkit or React Context.
 * **Tradeoffs:** Redux is too heavy for a simple timer/calendar app. React Context can lead to unnecessary re-renders if not optimized. Zustand strikes the perfect balance for an MVP.
 
-## 4. Local Storage: react-native-mmkv
-* **Why chosen:** The fastest key-value storage for React Native. It's synchronous, meaning no `async/await` overhead when reading/writing timer state or session data, which is crucial for a timer app's performance.
-* **Alternative considered:** AsyncStorage.
-* **Tradeoffs:** MMKV requires a native build (handled easily by Expo prebuild/development builds), whereas AsyncStorage is purely JS but significantly slower.
+## 4. Local Storage: expo-file-system (Custom Zustand Adapter)
+* **Why chosen:** Ensures 100% data safety and compatibility across both Expo Go and bare native builds. We built a custom JSON storage adapter for Zustand using the file system to avoid the asynchronous quirks and unreliability of AsyncStorage.
+* **Alternative considered:** react-native-mmkv / AsyncStorage.
+* **Tradeoffs:** Writing to the file system is slightly slower than memory-mapped MMKV, but it eliminates the need for native dev clients during the early rapid prototyping phase (Expo Go support) while being far more reliable than AsyncStorage.
 
 ## 5. Styling: NativeWind (Tailwind CSS for React Native)
 * **Why chosen:** NativeWind brings Tailwind CSS to React Native, allowing rapid, responsive, and consistent UI design. AI models are highly proficient with Tailwind utility classes, accelerating development.
@@ -36,7 +36,7 @@ This stack is optimized for **AI tooling support**, **documentation quality**, a
 1. `expo`
 2. `expo-router`
 3. `zustand`
-4. `react-native-mmkv`
+4. `expo-file-system`
 5. `react-native-safe-area-context`
 6. `nativewind`
 7. `date-fns`

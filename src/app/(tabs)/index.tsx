@@ -17,9 +17,14 @@ import { usePlanStore, Plan } from '@/store/usePlanStore';
 import { useAppStore } from '@/store/useAppStore';
 import { SkillSelector } from '@/components/timer/SkillSelector';
 import { SpotlightOverlay, SpotlightStep, SpotlightCoords } from '@/components/tutorial/SpotlightOverlay';
+import { SessionCompleteOverlay } from '@/components/timer/SessionCompleteOverlay';
+import { getMasteryProgress } from '@/utils/mastery';
 
 export default function TimerScreen() {
-  const { status, mode, timeLeft, timeElapsed, tick, currentTitle, duration, stopTimer, sessionStartTime, selectedSkillId, selectedPillarId } = useTimerStore(
+  const { 
+    status, mode, timeLeft, timeElapsed, tick, currentTitle, duration, 
+    sessionType, autoPlay, setSessionType, startTimer, stopTimer, sessionStartTime, selectedSkillId, selectedPillarId 
+  } = useTimerStore(
     useShallow((s) => ({
       status: s.status,
       mode: s.mode,
@@ -28,6 +33,10 @@ export default function TimerScreen() {
       tick: s.tick,
       currentTitle: s.currentTitle,
       duration: s.duration,
+      sessionType: s.sessionType,
+      autoPlay: s.autoPlay,
+      setSessionType: s.setSessionType,
+      startTimer: s.startTimer,
       stopTimer: s.stopTimer,
       sessionStartTime: s.sessionStartTime,
       selectedSkillId: s.selectedSkillId,
@@ -49,6 +58,54 @@ export default function TimerScreen() {
   const skillRef = useRef<View>(null);
   const durationRef = useRef<View>(null);
   const playRef = useRef<View>(null);
+
+  // Overlay State
+  const [overlayVisible, setOverlayVisible] = useState(false);
+  const [overlayType, setOverlayType] = useState<'session_complete' | 'level_up' | null>(null);
+  const [overlayDuration, setOverlayDuration] = useState(0);
+  const [overlaySkillName, setOverlaySkillName] = useState<string | undefined>();
+  const [overlayNewLevel, setOverlayNewLevel] = useState<string | undefined>();
+
+  const triggerOverlay = (totalDurationSeconds: number) => {
+    let skillName = undefined;
+    let oldLevel = undefined;
+    let newLevel = undefined;
+
+    if (selectedSkillId) {
+      const masteryStore = useMasteryStore.getState();
+      const skill = masteryStore.skills.find(s => s.id === selectedSkillId);
+      
+      if (skill) {
+        skillName = skill.name;
+        oldLevel = getMasteryProgress(skill.totalSeconds).currentLevel;
+        
+        masteryStore.addTimeToSkill(selectedSkillId, selectedPillarId, totalDurationSeconds);
+        
+        const updatedSkill = useMasteryStore.getState().skills.find(s => s.id === selectedSkillId);
+        if (updatedSkill) {
+          newLevel = getMasteryProgress(updatedSkill.totalSeconds).currentLevel;
+        }
+      }
+    }
+
+    setOverlayDuration(Math.round(totalDurationSeconds / 60));
+    setOverlaySkillName(skillName);
+
+    if (oldLevel && newLevel && newLevel.level > oldLevel.level) {
+      setOverlayType('level_up');
+      setOverlayNewLevel(`${newLevel.icon} ${newLevel.level}`);
+    } else {
+      setOverlayType('session_complete');
+    }
+    
+    setOverlayVisible(true);
+    
+    if (autoPlay) {
+      setTimeout(() => {
+        setOverlayVisible(false);
+      }, 1500); // Shorter duration if auto-play is on
+    }
+  };
 
   useEffect(() => {
     if (!hasSeenTimerTutorial && isFocused) {
@@ -107,28 +164,53 @@ export default function TimerScreen() {
   // Handle timer auto-completion
   useEffect(() => {
     if (status === 'running' && mode === 'timer' && timeLeft === 0 && sessionStartTime) {
-      const totalDuration = duration;
-      
-      addSession({
-        id: Date.now().toString(),
-        title: currentTitle || 'Focus Session',
-        durationSeconds: totalDuration,
-        startTime: sessionStartTime,
-        endTime: new Date().toISOString(),
-        isSmartMode: false,
-        focusDurationSeconds: undefined,
-        distractedDurationSeconds: undefined,
-        skillId: selectedSkillId,
-        pillarId: selectedPillarId,
-      });
-      
-      if (selectedSkillId) {
-        useMasteryStore.getState().addTimeToSkill(selectedSkillId, selectedPillarId, totalDuration);
+      if (sessionType === 'focus') {
+        const totalDuration = duration;
+        
+        addSession({
+          id: Date.now().toString(),
+          title: currentTitle || 'Focus Session',
+          durationSeconds: totalDuration,
+          startTime: sessionStartTime,
+          endTime: new Date().toISOString(),
+          isSmartMode: false,
+          focusDurationSeconds: undefined,
+          distractedDurationSeconds: undefined,
+          skillId: selectedSkillId,
+          pillarId: selectedPillarId,
+        });
+        
+        triggerOverlay(totalDuration);
+        
+        // Transition to Break
+        stopTimer(); // First reset to idle
+        setSessionType('break'); // Set to break mode (this will set timeLeft to breakDuration)
+        
+        if (autoPlay) {
+          // Add a tiny delay to let UI breathe before auto-starting break
+          setTimeout(() => {
+            startTimer();
+          }, 100);
+        }
+      } else if (sessionType === 'break') {
+        // Break finished. Untracked. 
+        // Just trigger Haptic
+        import('expo-haptics').then(Haptics => {
+          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        });
+
+        // Transition back to Focus
+        stopTimer();
+        setSessionType('focus');
+
+        if (autoPlay) {
+          setTimeout(() => {
+            startTimer();
+          }, 100);
+        }
       }
-      
-      stopTimer();
     }
-  }, [timeLeft, status, mode, sessionStartTime, duration, currentTitle, selectedSkillId, selectedPillarId, addSession, stopTimer]);
+  }, [timeLeft, status, mode, sessionType, autoPlay, sessionStartTime, duration, currentTitle, selectedSkillId, selectedPillarId, addSession, stopTimer, setSessionType, startTimer]);
 
   // Tick interval
   useEffect(() => {
@@ -144,28 +226,31 @@ export default function TimerScreen() {
   // Manual save for Stopwatch mode or early stop
   const handleSaveAndStop = () => {
     if (sessionStartTime) {
-      let totalDuration = duration;
-      if (mode === 'stopwatch') {
-        totalDuration = timeElapsed;
-      } else {
-        totalDuration = duration - timeLeft;
-      }
-      
-      addSession({
-        id: Date.now().toString(),
-        title: currentTitle || 'Focus Session',
-        durationSeconds: totalDuration,
-        startTime: sessionStartTime,
-        endTime: new Date().toISOString(),
-        isSmartMode: false,
-        focusDurationSeconds: undefined,
-        distractedDurationSeconds: undefined,
-        skillId: selectedSkillId,
-        pillarId: selectedPillarId,
-      });
-      
-      if (selectedSkillId) {
-        useMasteryStore.getState().addTimeToSkill(selectedSkillId, selectedPillarId, totalDuration);
+      if (sessionType === 'focus') {
+        let totalDuration = duration;
+        if (mode === 'stopwatch') {
+          totalDuration = timeElapsed;
+        } else {
+          totalDuration = duration - timeLeft;
+        }
+        
+        // Don't save if it was incredibly short (less than 10 seconds)
+        if (totalDuration > 10) {
+          addSession({
+            id: Date.now().toString(),
+            title: currentTitle || 'Focus Session',
+            durationSeconds: totalDuration,
+            startTime: sessionStartTime,
+            endTime: new Date().toISOString(),
+            isSmartMode: false,
+            focusDurationSeconds: undefined,
+            distractedDurationSeconds: undefined,
+            skillId: selectedSkillId,
+            pillarId: selectedPillarId,
+          });
+          
+          triggerOverlay(totalDuration);
+        }
       }
     }
     stopTimer();
@@ -177,6 +262,16 @@ export default function TimerScreen() {
         headerShown: false,
         tabBarStyle: tutorialVisible ? { display: 'none' } : undefined
       }} />
+
+      <SessionCompleteOverlay
+        visible={overlayVisible}
+        type={overlayType}
+        durationMinutes={overlayDuration}
+        skillName={overlaySkillName}
+        newLevelName={overlayNewLevel}
+        onAnimationEnd={() => setOverlayVisible(false)}
+      />
+
       <View style={{ flex: 1 }} ref={rootRef} collapsable={false}>
         <KeyboardAvoidingView
           className="flex-1"

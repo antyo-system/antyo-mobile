@@ -217,24 +217,24 @@ export default function StatsScreen() {
               {timeLeft.sleeping ? 'Sleep Debt (Borrowed) 🌙' : 'Time Left Today'}
             </Text>
             
-            <View className="flex-row items-baseline gap-1 mt-1">
+            <Text className="mt-1 flex-row items-baseline" adjustsFontSizeToFit numberOfLines={1}>
               {timeLeft.sleeping && <Text className="text-3xl font-black tabular-nums text-red-600 dark:text-red-500 mr-1">-</Text>}
               
-              <Text className={`text-4xl font-black tabular-nums ${timeLeft.sleeping ? 'text-red-600 dark:text-red-500' : 'text-orange-600 dark:text-orange-500'}`}>
+              <Text className={`text-3xl font-black tabular-nums ${timeLeft.sleeping ? 'text-red-600 dark:text-red-500' : 'text-orange-600 dark:text-orange-500'}`}>
                 {timeLeft.hours.toString().padStart(2, '0')}
               </Text>
-              <Text className={`text-lg font-bold mr-1 ${timeLeft.sleeping ? 'text-red-400' : 'text-orange-400'}`}>h</Text>
+              <Text className={`text-base font-bold mr-1 ${timeLeft.sleeping ? 'text-red-400' : 'text-orange-400'}`}>h </Text>
               
-              <Text className={`text-4xl font-black tabular-nums ${timeLeft.sleeping ? 'text-red-600 dark:text-red-500' : 'text-orange-600 dark:text-orange-500'}`}>
+              <Text className={`text-3xl font-black tabular-nums ${timeLeft.sleeping ? 'text-red-600 dark:text-red-500' : 'text-orange-600 dark:text-orange-500'}`}>
                 {timeLeft.minutes.toString().padStart(2, '0')}
               </Text>
-              <Text className={`text-lg font-bold mr-1 ${timeLeft.sleeping ? 'text-red-400' : 'text-orange-400'}`}>m</Text>
+              <Text className={`text-base font-bold mr-1 ${timeLeft.sleeping ? 'text-red-400' : 'text-orange-400'}`}>m </Text>
               
-              <Text className={`text-4xl font-black tabular-nums ${timeLeft.sleeping ? 'text-red-600/80 dark:text-red-500/80' : 'text-orange-600/80 dark:text-orange-500/80'}`}>
+              <Text className={`text-3xl font-black tabular-nums ${timeLeft.sleeping ? 'text-red-600/80 dark:text-red-500/80' : 'text-orange-600/80 dark:text-orange-500/80'}`}>
                 {timeLeft.seconds.toString().padStart(2, '0')}
               </Text>
-              <Text className={`text-lg font-bold ${timeLeft.sleeping ? 'text-red-400' : 'text-orange-400'}`}>s</Text>
-            </View>
+              <Text className={`text-base font-bold ${timeLeft.sleeping ? 'text-red-400' : 'text-orange-400'}`}>s</Text>
+            </Text>
           </View>
 
           {/* LIFETIME COUNTDOWN (1/3 width) */}

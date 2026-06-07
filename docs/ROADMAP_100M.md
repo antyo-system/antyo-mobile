@@ -10,18 +10,18 @@ Di bawah ini adalah rancangan strategis untuk ANTYO Focus, terbagi menjadi Roadm
 
 ### Phase 1: The Bulletproof Foundation (Bulan 1-2)
 *Fokus: Retensi D-1 & D-7. Pengguna harus jatuh cinta pada pandangan pertama.*
-* **Polish UI/UX:** Animasi *micro-interaction* yang sangat memuaskan saat *timer* selesai atau naik level.
-* **Widgets & Live Activities:** Mendukung iOS Live Activities & Android Widgets agar *timer* selalu terlihat tanpa membuka aplikasi.
-* **Data Robustness:** Memastikan *local-first storage* (Zustand + expo-file-system) sangat stabil dan tidak pernah kehilangan data sesi pengguna.
+* ~~**Polish UI/UX:**~~ ✅ *(Sudah Selesai)* Animasi *micro-interaction* yang sangat memuaskan saat *timer* selesai atau naik level.
+* ~~**Data Robustness:**~~ ✅ *(Sudah Selesai)* Memastikan *local-first storage* (Zustand + expo-file-system) sangat stabil dan tidak pernah kehilangan data sesi pengguna.
 
 ### Phase 2: The Hook & Gamification (Bulan 3-5)
 *Fokus: Psikologi Habit 10.000 Jam.*
 * **Milestone Sharing:** Fitur *Share to Instagram Story / TikTok* yang sangat estetik ketika pengguna mencapai "100 Jam di Skill Coding". Ini adalah *growth loop* gratis.
-* **Streaks & Heatmap:** Kalender seperti GitHub *contributions* untuk memicu FOMO (Fear Of Missing Out) jika pengguna bolong fokus satu hari.
-* **Pillars Expansion:** Fitur *Skill Tree* visual di mana *Pillars* digambarkan seperti ranting keahlian di *game RPG*.
+* ~~**Streaks & Heatmap:**~~ ✅ *(Sudah Selesai di Phase 1)* Kalender seperti GitHub *contributions* untuk memicu FOMO (Fear Of Missing Out) jika pengguna bolong fokus satu hari.
+* ~~**Pillars Expansion:**~~ ✅ *(Sudah Selesai)* Fitur *Skill Tree* visual di mana *Pillars* digambarkan seperti ranting keahlian di *game RPG*.
 
 ### Phase 3: Cloud, Sync & Premium (Bulan 6-8)
 *Fokus: Infrastruktur Skala Besar & Monetisasi Awal.*
+* **Widgets & Live Activities:** Mendukung iOS Live Activities & Android Widgets agar *timer* selalu terlihat tanpa membuka aplikasi.
 * **Backend Integration:** Implementasi Supabase + Clerk untuk sinkronisasi antar perangkat (Cloud Sync).
 * **Paywall Integration:** Menggunakan RevenueCat untuk meluncurkan ANTYO Pro.
 * **Advanced Analytics (Pro):** Wawasan berbasis data (Jam paling produktif, korelasi hari vs efisiensi).

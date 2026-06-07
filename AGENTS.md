@@ -69,12 +69,14 @@ Always refer to the **[ROADMAP_100M.md](./docs/ROADMAP_100M.md)** file for the o
 - **Pull Requests:** Mandate small, focused PRs to keep Git history readable and automated reviews effective.
 - **Code Quality:** Use Prettier/ESLint for code formatting and linting.
 - **Testing:** Unit tests are MANDATORY for the `/src/utils` folder (e.g., `date-fns` logic). UI testing can wait for the MVP, but core time calculation must be bulletproof.
-- **Version Updates & Changelog (CRITICAL):** 
-  - Whenever you add a major feature, fix a bug, or make structural changes, you MUST update the version number across **ALL 3 FILES**:
+- **Version Updates & Documentation Sync (CRITICAL):** 
+  - Whenever you add a major feature, fix a bug, or make structural changes, you MUST update the version number across **ALL 4 FILES**:
     1. `package.json`
     2. `app.json`
     3. `src/constants/changelog.ts` (Update `APP_VERSION` and add to the `CHANGELOG` array).
+    4. `CHANGELOG.md` (Root directory markdown file).
   - The settings screen dynamically reads from `changelog.ts` to show users the update notes popup. Keep it accurate.
+  - **CRITICAL RULE:** Whenever you update the version or add features, you MUST also audit and update ALL relevant documentation files (`docs/FEATURE_LIST.md`, `docs/ROADMAP_100M.md`, `docs/tech-stack.md`) to reflect the latest state of the project. Do not let documentation go out of sync.
 
 ---
 
@@ -144,7 +146,7 @@ Use `StyleSheet.create` or inline styles ONLY for the following where NativeWind
 ## State Management & Performance
 - **Zustand** for global client state.
 - **Local State** (`useState`) for temporary UI state.
-- **react-native-mmkv** for persistence (critical for immediate timer data saving).
+- **expo-file-system** for persistence (custom Zustand adapter ensuring 100% data safety on Expo Go and Bare workflows).
 - **The Timer Trap:** Isolate rapid-updating state (like the ticking timer) from static UI state to prevent global re-renders. Use Zustand's atomic selectors or `useShallow`.
 
 ---
