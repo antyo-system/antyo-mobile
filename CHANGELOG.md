@@ -8,6 +8,7 @@
 ## ✨ New Features & Fixes
 | Date | Feature | Notes |
 |---|---|---|
+| 2026-06-09 | v1.7.0 Release | Added Task/To-Do list feed in Calendar. Added one-tap Task Scheduling Modal. Added Zen Mode (curtain toggle). Added interactive calendar tutorial. Refined translations for 'All Day' and 'Link to Skill'. Fixed PlanEditor UI alignments. |
 | 2026-06-05 | UI Simplification | Removed CircularTimer for a cleaner Focus UI. |
 | 2026-06-05 | Navigation Bugfix | Fixed Android `KeyboardAvoidingView` crashes in Mastery and Focus modals. |
 | 2026-06-05 | Inline Skill CRUD | Added Manage Mode in Focus tab's Assign Skill modal to Create, Edit, and Delete skills inline. |

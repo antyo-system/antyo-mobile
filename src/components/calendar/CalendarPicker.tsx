@@ -40,12 +40,12 @@ export function CalendarPicker({ selectedDate, onSelectDate }: Props) {
     <>
       <Pressable
         onPress={() => setPickerVisible(true)}
-        className="flex-row items-center justify-between bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-4 rounded-2xl mb-6"
+        className="flex-row items-center justify-between bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 px-4 rounded-2xl h-[56px]"
       >
-        <Text className="text-gray-900 dark:text-white font-black text-xl mb-4 text-center">
+        <Text className="text-gray-900 dark:text-white font-bold text-base">
           {isToday(selectedDate) ? t('calendarComp.today') : formatDate(selectedDate, 'MMM d, yyyy')}
         </Text>
-        <Text className="text-blue-600 dark:text-blue-400 font-bold text-sm">{t('calendarComp.change')}</Text>
+        <Text className="text-blue-600 dark:text-blue-400 font-bold text-xs">{t('calendarComp.change')}</Text>
       </Pressable>
 
       <Modal visible={pickerVisible} transparent animationType="fade">

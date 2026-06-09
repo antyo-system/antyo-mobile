@@ -3,7 +3,9 @@ import { View, Text, ScrollView, TextInput, Pressable, useColorScheme, KeyboardA
 import { Feather, Ionicons } from '@expo/vector-icons';
 import { useTaskStore } from '@/store/useTaskStore';
 import * as Haptics from 'expo-haptics';
-import { formatDate } from '@/utils/time';
+import { formatDate, getMinutesFromMidnight } from '@/utils/time';
+import { isToday } from 'date-fns';
+import { usePlanStore } from '@/store/usePlanStore';
 import { useTranslation } from '@/hooks/useTranslation';
 import { Modal } from 'react-native';
 
@@ -11,9 +13,10 @@ const PROJECT_COLORS = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '
 
 interface Props {
   selectedDate: Date;
+  onScheduleTask?: (task: any) => void;
 }
 
-export function TaskListView({ selectedDate }: Props) {
+export function TaskListView({ selectedDate, onScheduleTask }: Props) {
   const { t } = useTranslation();
   const colorScheme = useColorScheme();
   const isDark = colorScheme === 'dark';
@@ -21,6 +24,7 @@ export function TaskListView({ selectedDate }: Props) {
   const [newTaskTitle, setNewTaskTitle] = useState('');
   
   const tasks = useTaskStore(s => s.tasks);
+  const plans = usePlanStore(s => s.plans);
   const projects = useTaskStore(s => s.projects) || [];
   const addTask = useTaskStore(s => s.addTask);
   const toggleTask = useTaskStore(s => s.toggleTask);
@@ -37,9 +41,15 @@ export function TaskListView({ selectedDate }: Props) {
   // We use ISO string date part just to filter by day easily
   const selectedDateString = selectedDateISO.split('T')[0];
 
-  const dailyTasks = tasks.filter(t => t.baseDate === selectedDateString && (activeProjectId === 'all' || t.projectId === activeProjectId));
+  const dailyTasks = tasks.filter(t => t.baseDate === selectedDateString && !t.planId && (activeProjectId === 'all' || t.projectId === activeProjectId));
   const activeTasks = dailyTasks.filter(t => !t.completed).sort((a, b) => b.createdAt - a.createdAt);
   const completedTasks = dailyTasks.filter(t => t.completed).sort((a, b) => b.createdAt - a.createdAt);
+
+  const isSelectedDateToday = isToday(selectedDate);
+  const currentMins = getMinutesFromMidnight(new Date().toISOString());
+  
+  const ongoingPlan = isSelectedDateToday ? plans.find(p => p.baseDate.split('T')[0] === selectedDateString && p.startMinutes <= currentMins && (p.startMinutes + p.durationMinutes) > currentMins) : null;
+  const ongoingTasks = ongoingPlan ? tasks.filter(t => t.planId === ongoingPlan.id && !t.completed).sort((a, b) => b.createdAt - a.createdAt) : [];
 
   const handleAddTask = () => {
     if (!newTaskTitle.trim()) return;
@@ -63,12 +73,6 @@ export function TaskListView({ selectedDate }: Props) {
       className="flex-1 bg-white dark:bg-gray-950"
     >
       <ScrollView className="flex-1 px-5 pt-6" contentContainerStyle={{ paddingBottom: 150 }}>
-        <View className="mb-4">
-          <Text className="text-xl font-black text-gray-900 dark:text-white">{t('calendarComp.dailyTasks')}</Text>
-          <Text className="text-xs font-bold text-gray-500 dark:text-gray-400 mt-1 uppercase tracking-wider">
-            {formatDate(selectedDate, 'EEEE, MMM d')}
-          </Text>
-        </View>
 
         {/* Project Tags (Horizontal Scroll) */}
         <View className="mb-6 -mx-5 px-5">
@@ -135,9 +139,38 @@ export function TaskListView({ selectedDate }: Props) {
           </Pressable>
         </View>
 
+        {/* Ongoing Tasks */}
+        {ongoingPlan && ongoingTasks.length > 0 && (
+          <View className="mb-8">
+            <View className="flex-row items-center mb-4">
+              <Feather name="play-circle" size={14} color="#3B82F6" />
+              <Text className="ml-2 text-xs font-black text-blue-600 dark:text-blue-400 uppercase tracking-[0.2em]">
+                {t('calendarComp.ongoing')}: {ongoingPlan.title}
+              </Text>
+            </View>
+            <View className="gap-3">
+              {ongoingTasks.map(task => (
+                <View 
+                  key={task.id} 
+                  className="flex-row items-center bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-900/50 p-4 rounded-2xl shadow-sm"
+                >
+                  <Pressable onPress={() => handleToggle(task.id)} className="mr-4">
+                    <View className="w-6 h-6 rounded-md border-2 border-blue-300 dark:border-blue-600 items-center justify-center" />
+                  </Pressable>
+                  <View className="flex-1">
+                    <Text className="text-base font-bold text-blue-900 dark:text-blue-100">
+                      {task.title}
+                    </Text>
+                  </View>
+                </View>
+              ))}
+            </View>
+          </View>
+        )}
+
         {/* Active Tasks */}
         <View className="gap-3 mb-8">
-          {activeTasks.length === 0 && completedTasks.length === 0 ? (
+          {activeTasks.length === 0 && completedTasks.length === 0 && ongoingTasks.length === 0 ? (
             <View className="items-center justify-center py-10 opacity-50">
               <Feather name="check-circle" size={40} color={isDark ? '#9CA3AF' : '#6B7280'} />
               <Text className="text-gray-500 dark:text-gray-400 font-bold mt-4">{t('calendarComp.noTasksForThisDay')}</Text>
@@ -164,9 +197,17 @@ export function TaskListView({ selectedDate }: Props) {
                     </View>
                   )}
                 </View>
-                <Pressable onPress={() => deleteTask(task.id)} className="p-2 opacity-50 active:opacity-100">
-                  <Feather name="trash-2" size={16} color="#EF4444" />
-                </Pressable>
+                <View className="flex-row items-center gap-2">
+                  <Pressable 
+                    onPress={() => onScheduleTask?.(task)} 
+                    className="p-2 opacity-70 active:opacity-100 border border-gray-200 dark:border-gray-800 rounded-lg"
+                  >
+                    <Feather name="calendar" size={16} color="#3B82F6" />
+                  </Pressable>
+                  <Pressable onPress={() => deleteTask(task.id)} className="p-2 opacity-50 active:opacity-100">
+                    <Feather name="trash-2" size={16} color="#EF4444" />
+                  </Pressable>
+                </View>
               </View>
             )})
           )}

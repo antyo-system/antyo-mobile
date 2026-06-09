@@ -15,6 +15,7 @@ export interface Task {
   baseDate: string; // ISO date string matching the selected date
   createdAt: number;
   projectId?: string;
+  planId?: string; // Relation to Timeblock (Plan)
 }
 
 interface TaskState {
@@ -26,6 +27,7 @@ interface TaskState {
   deleteTask: (id: string) => void;
   addProject: (name: string, color: string) => void;
   deleteProject: (id: string) => void;
+  assignTaskToPlan: (taskId: string, planId: string | undefined) => void;
 }
 
 export const useTaskStore = create<TaskState>()(
@@ -72,6 +74,12 @@ export const useTaskStore = create<TaskState>()(
 
       deleteTask: (id) => set((state) => ({
         tasks: state.tasks.filter(t => t.id !== id)
+      })),
+
+      assignTaskToPlan: (taskId, planId) => set((state) => ({
+        tasks: state.tasks.map(t => 
+          t.id === taskId ? { ...t, planId } : t
+        )
       })),
     }),
     {

@@ -5,9 +5,23 @@ export interface ChangelogRelease {
   fixes: string[];
 }
 
-export const APP_VERSION = "1.6.1";
+export const APP_VERSION = "1.7.0";
 
 export const CHANGELOG: ChangelogRelease[] = [
+  {
+    version: "1.7.0",
+    date: new Date().toISOString().split('T')[0],
+    features: [
+      "Task & To-Do List View: Added a dedicated Task feed directly inside the Calendar for better task management.",
+      "Task Scheduling Modal: Added the ability to seamlessly schedule a task into a specific timeblock with one tap.",
+      "Zen Mode (Curtain): Added an up-arrow toggle to hide the calendar grid and focus entirely on the day's timeline.",
+      "Interactive Tutorial: Added a guided, interactive walkthrough for the Calendar screen to onboard new users."
+    ],
+    fixes: [
+      "Fixed alignment issues in Plan Editor modal.",
+      "Refined translation texts for shorter, more natural UI strings."
+    ]
+  },
   {
     version: "1.6.1",
     date: new Date().toISOString().split('T')[0],

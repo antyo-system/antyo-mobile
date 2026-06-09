@@ -16,6 +16,7 @@ export interface SpotlightStep {
   text: string;
   holeType?: 'circle' | 'rect';
   holePadding?: number;
+  buttonText?: string;
 }
 
 interface SpotlightOverlayProps {
@@ -161,10 +162,21 @@ export function SpotlightOverlay({
   // Position tooltip where there is MORE space (Above vs Below)
   const spaceAbove = paddedY;
   const spaceBelow = rHeight - (paddedY + paddedHeight);
-  const placeBelow = spaceBelow > spaceAbove;
   
-  const tooltipTop = placeBelow ? (paddedY + paddedHeight + 24) : undefined;
-  const tooltipBottom = !placeBelow ? (rHeight - paddedY + 24) : undefined;
+  let tooltipTop: number | string | undefined = undefined;
+  let tooltipBottom: number | string | undefined = undefined;
+  let tooltipJustify: 'center' | 'flex-start' | 'flex-end' | undefined = undefined;
+
+  // If the hole is giant (takes up most of the screen), place it near the bottom so it doesn't block the middle content
+  if (spaceAbove < 200 && spaceBelow < 200) {
+    tooltipTop = undefined;
+    tooltipBottom = 140;
+    tooltipJustify = undefined;
+  } else if (spaceBelow >= spaceAbove) {
+    tooltipTop = paddedY + paddedHeight + 24;
+  } else {
+    tooltipBottom = rHeight - paddedY + 24;
+  }
 
   return (
     <Animated.View 
@@ -192,7 +204,7 @@ export function SpotlightOverlay({
         </Svg>
 
         {activeCoords && (
-          <View style={{ position: 'absolute', top: tooltipTop, bottom: tooltipBottom, width: '100%', paddingHorizontal: 24 }}>
+          <View style={{ position: 'absolute', top: tooltipTop, bottom: tooltipBottom, justifyContent: tooltipJustify, width: '100%', paddingHorizontal: 24 }}>
             <View className="bg-white dark:bg-gray-900 rounded-3xl p-6 shadow-2xl border border-gray-100 dark:border-gray-800">
               <Text className="text-gray-900 dark:text-white font-bold mb-6 text-base leading-relaxed tracking-wide">
                 {text}
@@ -217,7 +229,7 @@ export function SpotlightOverlay({
                   className="px-6 py-3 bg-blue-600 rounded-2xl active:bg-blue-700"
                 >
                   <Text className="text-white font-black uppercase tracking-widest text-xs">
-                    {currentStepIndex < steps.length - 1 ? 'NEXT' : 'GOT IT'}
+                    {currentStep.buttonText || (currentStepIndex < steps.length - 1 ? 'NEXT' : 'GOT IT')}
                   </Text>
                 </Pressable>
               </View>

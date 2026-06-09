@@ -138,6 +138,7 @@ const en = {
       listColor: 'List Color',
       cancel: 'Cancel',
       createList: 'Create List',
+      ongoing: 'Ongoing',
     },
     statsComp: {
       masteryJourney: 'Mastery Journey',
@@ -164,10 +165,12 @@ const en = {
       start: 'Start',
       end: 'End',
       color: 'Color',
-      linkToSkill: 'Link to Skill (Mastery)',
-      none: 'None',
-      linkToSubskill: 'Link to Subskill (Pillar)',
+      linkToSkill: 'Select Skill',
+      none: 'General',
+      linkToSubskill: 'Select Subskill',
       recurrence: 'Recurrence',
+      savePlan: 'Save',
+      deletePlan: 'Delete Plan',
       once: 'Once',
       daily: 'Daily',
       weekdays: 'Weekdays',
@@ -177,7 +180,6 @@ const en = {
       customDays: 'Custom Days',
       notes: 'Notes (Optional)',
       notesPlaceholder: 'Add details or context...',
-      savePlan: 'Save Plan',
     },
     newSkill: {
       newSkill: 'New Skill',
@@ -269,9 +271,10 @@ const en = {
         step4: "Step 4: Ignite your engine. No distractions. Just pure execution."
       },
       calendar: {
-        step1: "Step 1: Your Life Calendar. See the big picture of what you plan vs what you actually execute.",
-        step2: "Step 2: Plan vs Reality. Switch to 'Plan' to organize your day, switch to 'Reality' to see what truly happened.\n\nTip: Tap again to switch into Schedule list or Task list views!",
-        step3: "Step 3: Time Blocking. Tap here to block your focus sessions for tomorrow."
+        step1: "Select a date to plan your future.",
+        step2: "Tap to switch between Plan and Reality. Tap again for Schedule or Task views!",
+        step3: "⏫: Zen Mode. 🔒: Lock Calendar Edits.",
+        step4: "Let's build your first Timeblock!"
       }
     }
   };
@@ -418,6 +421,7 @@ const id: TranslationDictionary = {
       listColor: 'Warna Daftar',
       cancel: 'Batal',
       createList: 'Buat Daftar',
+      ongoing: 'Sedang Berjalan',
     },
     statsComp: {
       masteryJourney: 'Jam Terbang',
@@ -439,15 +443,17 @@ const id: TranslationDictionary = {
       planTitle: 'Judul Rencana',
       planTitlePlaceholder: 'misal: Kerja Fokus',
       date: 'Tanggal',
-      allDay: 'Sepanjang Hari',
+      allDay: 'Seharian',
       remind: 'Pengingat',
       start: 'Mulai',
       end: 'Selesai',
       color: 'Warna',
-      linkToSkill: 'Tautkan ke Keterampilan (Penguasaan)',
-      none: 'Tidak Ada',
-      linkToSubskill: 'Tautkan ke Sub-keterampilan (Pilar)',
+      linkToSkill: 'Pilih Keterampilan',
+      none: 'Umum',
+      linkToSubskill: 'Pilih Sub-keterampilan',
       recurrence: 'Pengulangan',
+      savePlan: 'Simpan',
+      deletePlan: 'Hapus Rencana',
       once: 'Sekali',
       daily: 'Harian',
       weekdays: 'Hari Kerja',
@@ -457,7 +463,6 @@ const id: TranslationDictionary = {
       customDays: 'Hari Tertentu',
       notes: 'Catatan (Opsional)',
       notesPlaceholder: 'Tambahkan detail atau konteks...',
-      savePlan: 'Simpan Rencana',
     },
     newSkill: {
       newSkill: 'Keterampilan Baru',
@@ -549,9 +554,10 @@ const id: TranslationDictionary = {
         step4: "Langkah 4: Nyalakan mesin Anda. Tanpa gangguan. Murni eksekusi."
       },
       calendar: {
-        step1: "Langkah 1: Kalender Hidup Anda. Lihat gambaran besar apa yang Anda rencanakan vs apa yang benar-benar Anda eksekusi.",
-        step2: "Langkah 2: Rencana vs Realita. Beralih ke 'Rencana' untuk mengatur hari Anda, beralih ke 'Realita' untuk melihat apa yang benar-benar terjadi.\n\nTips: Ketuk lagi untuk beralih ke tampilan daftar Jadwal atau daftar Tugas!",
-        step3: "Langkah 3: Blok Waktu. Ketuk di sini untuk memblokir sesi fokus Anda untuk besok."
+        step1: "Pilih tanggal untuk merencanakan masa depan.",
+        step2: "Ketuk untuk beralih antara Rencana dan Realita. Ketuk lagi untuk tampilan Jadwal atau Tugas!",
+        step3: "⏫: Zen Mode. 🔒: Kunci Editan Kalender.",
+        step4: "Mari buat Timeblock pertama Anda!"
       }
     }
   };
@@ -698,6 +704,7 @@ const zh: TranslationDictionary = {
     listColor: '列表颜色',
     cancel: '取消',
     createList: '创建列表',
+    ongoing: '进行中',
   },
   statsComp: {
     masteryJourney: '精通之旅',
@@ -724,10 +731,12 @@ const zh: TranslationDictionary = {
     start: '开始',
     end: '结束',
     color: '颜色',
-    linkToSkill: '链接到技能（精通）',
-    none: '无',
-    linkToSubskill: '链接到子技能（支柱）',
+    linkToSkill: '选择技能',
+    none: '通用',
+    linkToSubskill: '选择子技能',
     recurrence: '重复',
+    savePlan: '保存',
+    deletePlan: '删除计划',
     once: '一次',
     daily: '每天',
     weekdays: '工作日',
@@ -737,7 +746,6 @@ const zh: TranslationDictionary = {
     customDays: '自定义天数',
     notes: '备注（可选）',
     notesPlaceholder: '添加详细信息或背景...',
-    savePlan: '保存计划',
   },
   newSkill: {
     newSkill: '新技能',
@@ -829,9 +837,10 @@ const zh: TranslationDictionary = {
       step4: "步骤 4：点燃您的引擎。没有干扰。纯粹的执行。"
     },
     calendar: {
-      step1: "步骤 1：您的人生日历。看看您计划的与实际执行的全局对比。",
-      step2: "步骤 2：计划与实际。切换到“计划”来组织您的一天，切换到“实际”来看看真正发生了什么。\n\n提示：再次点击切换到日程表或任务列表视图！",
-      step3: "步骤 3：时间块。点击此处为您明天安排专注时间段。"
+      step1: "选择一个日期来规划你的未来。",
+      step2: "点击在计划和现实之间切换。再次点击查看日程或任务视图！",
+      step3: "⏫: 禅模式。🔒: 锁定日历编辑。",
+      step4: "让我们构建你的第一个时间块！"
     }
   }
 };

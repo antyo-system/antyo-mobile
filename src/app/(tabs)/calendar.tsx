@@ -6,12 +6,16 @@ import { Tabs, useNavigation } from 'expo-router';
 import { Feather } from '@expo/vector-icons';
 import { useSessionStore } from '@/store/useSessionStore';
 import { usePlanStore, Plan } from '@/store/usePlanStore';
+import { useTaskStore } from '@/store/useTaskStore';
+import { useTimerStore } from '@/store/useTimerStore';
 import { useSettingsStore } from '@/store/useSettingsStore';
 import { Session } from '@/types';
 import { TimelineHourMarkers } from '@/components/calendar/TimelineHourMarkers';
 import { TimelineBlock } from '@/components/calendar/TimelineBlock';
 import { InteractivePlanBlock } from '@/components/calendar/InteractivePlanBlock';
 import { PlanEditorModal } from '@/components/calendar/PlanEditorModal';
+import { PlanQuickActionModal } from '@/components/calendar/PlanQuickActionModal';
+import { TaskScheduleModal } from '@/components/calendar/TaskScheduleModal';
 import { RealSessionEditorModal } from '@/components/calendar/RealSessionEditorModal';
 import { QuickSleepEditorModal } from '@/components/calendar/QuickSleepEditorModal';
 import { useMasteryStore } from '@/store/useMasteryStore';
@@ -140,13 +144,15 @@ export default function CalendarScreen() {
   const toggleRef = useRef<View>(null);
   const fabRef = useRef<View>(null);
   const rootRef = useRef<View>(null);
+  const bodyRef = useRef<View>(null);
 
   useEffect(() => {
     if (!hasSeenCalendarTutorial && isFocused) {
       setTutorialSteps([
         { targetRef: dateRef, text: t('tutorial.calendar.step1'), holeType: 'rect', holePadding: 8 },
         { targetRef: toggleRef, text: t('tutorial.calendar.step2'), holeType: 'rect', holePadding: 8 },
-        { targetRef: fabRef, text: t('tutorial.calendar.step3'), holeType: 'circle', holePadding: 16 },
+        { targetRef: toggleRef, text: t('tutorial.calendar.step3'), holeType: 'rect', holePadding: 8 },
+        { targetRef: fabRef, text: t('tutorial.calendar.step4'), holeType: 'circle', holePadding: 16, buttonText: t('planEditor.start') },
       ]);
       const timeout = setTimeout(() => {
         setTutorialVisible(true);
@@ -169,9 +175,15 @@ export default function CalendarScreen() {
 
   const [activeTab, setActiveTab] = useState<'plan' | 'schedule' | 'real' | 'task'>('plan');
   const [isLocked, setIsLocked] = useState(false);
+  const [isHeaderVisible, setIsHeaderVisible] = useState(true);
   const [isScrollEnabled, setIsScrollEnabled] = useState(true);
   const [editorVisible, setEditorVisible] = useState(false);
   const [editingPlan, setEditingPlan] = useState<Plan | null>(null);
+  const [quickActionVisible, setQuickActionVisible] = useState(false);
+  const [quickActionPlan, setQuickActionPlan] = useState<Plan | null>(null);
+
+  const [taskScheduleVisible, setTaskScheduleVisible] = useState(false);
+  const [taskToSchedule, setTaskToSchedule] = useState<any | null>(null);
   const [realEditorVisible, setRealEditorVisible] = useState(false);
   const [quickSleepVisible, setQuickSleepVisible] = useState(false);
   const [editingRealSession, setEditingRealSession] = useState<Session | null>(null);
@@ -250,8 +262,8 @@ export default function CalendarScreen() {
   };
 
   const handleEditPress = useCallback((plan: Plan) => {
-    setEditingPlan(plan);
-    setEditorVisible(true);
+    setQuickActionPlan(plan);
+    setQuickActionVisible(true);
   }, []);
 
   const handleSleepBlockPress = useCallback(() => {
@@ -259,12 +271,13 @@ export default function CalendarScreen() {
   }, []);
 
   const handleSavePlan = (data: Partial<Plan>) => {
+    const planId = editingPlan ? editingPlan.id : Date.now().toString();
     // If it exists in the store, update it. Otherwise, add it.
     if (editingPlan && plans.some(p => p.id === editingPlan.id)) {
       updatePlan(editingPlan.id, data);
     } else {
       addPlan({
-        id: editingPlan ? editingPlan.id : Date.now().toString(),
+        id: planId,
         title: data.title || 'New Plan',
         startMinutes: data.startMinutes ?? (editingPlan ? editingPlan.startMinutes : 9 * 60),
         durationMinutes: data.durationMinutes ?? (editingPlan ? editingPlan.durationMinutes : 30),
@@ -275,6 +288,13 @@ export default function CalendarScreen() {
         skillId: data.skillId,
       });
     }
+
+    if (linkedTaskId) {
+      const { assignTaskToPlan } = useTaskStore.getState();
+      assignTaskToPlan(linkedTaskId, planId);
+      setLinkedTaskId(null); // reset
+    }
+
     setEditorVisible(false);
   };
 
@@ -315,20 +335,56 @@ export default function CalendarScreen() {
     }
   };
 
+  const [linkedTaskId, setLinkedTaskId] = useState<string | null>(null);
+
+  const handleScheduleTask = useCallback((task: any) => {
+    setTaskToSchedule(task);
+    setTaskScheduleVisible(true);
+  }, []);
+
+  const handleCreateNewFromTask = useCallback(() => {
+    setTaskScheduleVisible(false);
+    if (!taskToSchedule) return;
+
+    setLinkedTaskId(taskToSchedule.id);
+    const currentMins = getMinutesFromMidnight(new Date().toISOString());
+    const startMins = Math.floor(currentMins / 15) * 15; // snap to 15 mins
+    
+    setEditingPlan({
+      id: Date.now().toString(),
+      title: taskToSchedule.title,
+      startMinutes: startMins,
+      durationMinutes: 30,
+      recurrence: 'none',
+      baseDate: selectedDate.toISOString(),
+    } as any);
+    setEditorVisible(true);
+  }, [taskToSchedule, selectedDate]);
+
+  const handleAssignToExistingPlan = useCallback((planId: string) => {
+    if (taskToSchedule) {
+      const { assignTaskToPlan } = useTaskStore.getState();
+      assignTaskToPlan(taskToSchedule.id, planId);
+    }
+    setTaskScheduleVisible(false);
+  }, [taskToSchedule]);
+
   return (
     <SafeAreaView className="flex-1 bg-gray-50 dark:bg-gray-950" edges={['top']}>
       <View style={{ flex: 1 }} ref={rootRef} collapsable={false}>
 
       
-      <View ref={dateRef} collapsable={false}>
-        <DateSelector 
-          selectedDate={selectedDate} 
-          onSelectDate={setSelectedDate} 
-          achievedDates={achievedDates}
-          isCompareMode={isCompareMode}
-          onToggleCompareMode={() => setIsCompareMode(p => !p)}
-        />
-      </View>
+      {isHeaderVisible && (
+        <View ref={dateRef} collapsable={false}>
+          <DateSelector 
+            selectedDate={selectedDate} 
+            onSelectDate={setSelectedDate} 
+            achievedDates={achievedDates}
+            isCompareMode={isCompareMode}
+            onToggleCompareMode={() => setIsCompareMode(p => !p)}
+          />
+        </View>
+      )}
       
       {/* PLAN vs REAL Minimalist Toggle */}
       <View 
@@ -358,6 +414,14 @@ export default function CalendarScreen() {
           </Text>
         </Pressable>
 
+        {/* Hide Header Toggle */}
+        <Pressable 
+          onPress={() => setIsHeaderVisible(p => !p)}
+          className="absolute left-4 top-2.5 px-3 py-1 items-center justify-center rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-100 dark:border-gray-800"
+        >
+          <Feather name={isHeaderVisible ? "chevron-up" : "chevron-down"} size={14} color="#9CA3AF" />
+        </Pressable>
+
         {/* Lock Toggle */}
         <Pressable 
           onPress={() => setIsLocked(p => !p)}
@@ -368,10 +432,10 @@ export default function CalendarScreen() {
       </View>
 
       {activeTab === 'schedule' && <ScheduleFeedView selectedDate={selectedDate} />}
-      {activeTab === 'task' && <TaskListView selectedDate={selectedDate} />}
+      {activeTab === 'task' && <TaskListView selectedDate={selectedDate} onScheduleTask={handleScheduleTask} />}
 
       {(activeTab === 'plan' || activeTab === 'real') && (
-        <View className="flex-1" {...panResponder.panHandlers}>
+        <View className="flex-1" {...panResponder.panHandlers} ref={bodyRef} collapsable={false}>
         <ScrollView 
           ref={verticalScrollRef}
           className="flex-1"
@@ -496,6 +560,57 @@ export default function CalendarScreen() {
         </Pressable>
       </View>
 
+      <PlanQuickActionModal
+        visible={quickActionVisible}
+        plan={quickActionPlan}
+        onClose={() => setQuickActionVisible(false)}
+        onEdit={() => {
+          setQuickActionVisible(false);
+          setEditingPlan(quickActionPlan);
+          setEditorVisible(true);
+        }}
+        onStartTimer={() => {
+          setQuickActionVisible(false);
+          if (quickActionPlan && quickActionPlan.skillId) {
+             const timerStore = useTimerStore.getState();
+             timerStore.setSelectedSkillId(quickActionPlan.skillId);
+             if (quickActionPlan.pillarId) timerStore.setSelectedPillarId(quickActionPlan.pillarId);
+             timerStore.setDuration(quickActionPlan.durationMinutes * 60);
+             if (quickActionPlan.title) timerStore.setTitle(quickActionPlan.title);
+             navigation.navigate('index' as never);
+          }
+        }}
+        onMarkDone={() => {
+          setQuickActionVisible(false);
+          if (quickActionPlan) {
+             const d = new Date(quickActionPlan.baseDate);
+             d.setHours(Math.floor(quickActionPlan.startMinutes / 60), quickActionPlan.startMinutes % 60, 0, 0);
+             const { addSession } = useSessionStore.getState();
+             addSession({
+               id: Date.now().toString(),
+               title: quickActionPlan.title || 'Life Activity',
+               startTime: d.toISOString(),
+               durationSeconds: quickActionPlan.durationMinutes * 60,
+               focusDurationSeconds: quickActionPlan.durationMinutes * 60,
+               distractedDurationSeconds: 0,
+               isSmartMode: false,
+               color: quickActionPlan.color || '#3B82F6',
+               skillId: quickActionPlan.skillId || null,
+               pillarId: quickActionPlan.pillarId || null,
+             } as any);
+          }
+        }}
+      />
+
+      <TaskScheduleModal
+        visible={taskScheduleVisible}
+        task={taskToSchedule}
+        plansToday={plans}
+        onClose={() => setTaskScheduleVisible(false)}
+        onAssignToPlan={handleAssignToExistingPlan}
+        onCreateNew={handleCreateNewFromTask}
+      />
+
       <PlanEditorModal 
         visible={editorVisible}
         plan={editingPlan}
@@ -541,6 +656,16 @@ export default function CalendarScreen() {
         onFinish={() => {
           setTutorialVisible(false);
           setTutorialSeen('calendar');
+          // Simulated interactive onboarding: immediately open the plan editor!
+          setEditingPlan({
+            id: Date.now().toString(),
+            title: '',
+            startMinutes: 480, // Default to 8:00 AM
+            durationMinutes: 60,
+            recurrence: 'none',
+            baseDate: selectedDate.toISOString(),
+          } as any);
+          setEditorVisible(true);
         }}
       />
       </View>

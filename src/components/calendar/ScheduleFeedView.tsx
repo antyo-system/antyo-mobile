@@ -74,12 +74,6 @@ export function ScheduleFeedView({ selectedDate }: Props) {
 
   return (
     <ScrollView className="flex-1 px-5 pt-6 bg-white dark:bg-gray-950" contentContainerStyle={{ paddingBottom: 150 }}>
-      <View className="mb-6">
-        <Text className="text-xl font-black text-gray-900 dark:text-white">{t('calendarComp.dailySchedule')}</Text>
-        <Text className="text-xs font-bold text-gray-500 dark:text-gray-400 mt-1 uppercase tracking-wider">
-          {formatDate(selectedDate, 'EEEE, MMM d')}
-        </Text>
-      </View>
 
       {dailyItems.length === 0 ? (
         <View className="items-center justify-center py-20 opacity-50">

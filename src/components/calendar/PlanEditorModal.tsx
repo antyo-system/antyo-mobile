@@ -402,66 +402,6 @@ export function PlanEditorModal({ visible, plan, onClose, onSave, onDelete }: Pr
                 <Feather name="trash-2" size={20} color="#EF4444" />
               </Pressable>
             )}
-            {plan && plan.id !== '' && !skillId && (
-              <Pressable 
-                onPress={() => {
-                  let dur = 1440;
-                  if (!isAllDay) {
-                    const startMins = parseTimeInput(startTimeStr, 9 * 60);
-                    let endMins = parseTimeInput(endTimeStr, startMins + 30);
-                    if (endMins <= startMins) endMins = startMins + 15;
-                    dur = endMins - startMins;
-                  }
-                  
-                  const d = new Date(baseDate || new Date().toISOString());
-                  const startMins = parseTimeInput(startTimeStr, 9 * 60);
-                  d.setHours(Math.floor(startMins / 60), startMins % 60, 0, 0);
-                  
-                  const { addSession } = useSessionStore.getState();
-                  addSession({
-                    id: Date.now().toString(),
-                    title: title || 'Life Activity',
-                    startTime: d.toISOString(),
-                    durationSeconds: dur * 60,
-                    focusDurationSeconds: dur * 60,
-                    distractedDurationSeconds: 0,
-                    isSmartMode: false,
-                    color: color,
-                    skillId: null,
-                    pillarId: null,
-                  } as any);
-                  onClose();
-                }}
-                className="bg-teal-50 dark:bg-teal-900/20 px-4 py-4 rounded-2xl items-center justify-center border border-teal-100 dark:border-teal-900/50"
-              >
-                <Feather name="check" size={20} color="#0D9488" />
-              </Pressable>
-            )}
-            {plan && plan.id !== '' && skillId && (
-              <Pressable 
-                onPress={() => {
-                  const timerStore = useTimerStore.getState();
-                  timerStore.setSelectedSkillId(skillId);
-                  if (pillarId) timerStore.setSelectedPillarId(pillarId);
-                  
-                  let dur = 1440;
-                  if (!isAllDay) {
-                    const startMins = parseTimeInput(startTimeStr, 9 * 60);
-                    let endMins = parseTimeInput(endTimeStr, startMins + 30);
-                    if (endMins <= startMins) endMins = startMins + 15;
-                    dur = endMins - startMins;
-                  }
-                  timerStore.setDuration(dur * 60);
-                  if (title) timerStore.setTitle(title);
-                  
-                  onClose();
-                  router.push('/(tabs)');
-                }}
-                className="bg-green-50 dark:bg-green-900/20 px-4 py-4 rounded-2xl items-center justify-center border border-green-100 dark:border-green-900/50"
-              >
-                <Feather name="play" size={20} color="#10B981" />
-              </Pressable>
-            )}
             <Pressable 
               onPress={handleSave}
               className="flex-1 bg-blue-600 py-4 rounded-2xl items-center justify-center shadow-lg shadow-blue-500/30"
