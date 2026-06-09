@@ -3,12 +3,14 @@ import { useMemo, useRef, useEffect } from 'react';
 import { subDays, format, isSameDay, startOfDay } from 'date-fns';
 import { Session } from '@/types';
 import { formatLongTime } from '@/utils/time';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface Props {
   sessions: Session[];
 }
 
 export function ContributionHeatmap({ sessions }: Props) {
+  const { t } = useTranslation();
   const scrollViewRef = useRef<ScrollView>(null);
 
   // Generate the last 15 weeks of data (105 days)
@@ -80,8 +82,8 @@ export function ContributionHeatmap({ sessions }: Props) {
     <View className="bg-white dark:bg-gray-900 rounded-3xl p-6 shadow-sm border border-gray-100 dark:border-gray-800 mb-6">
       
       <View className="flex-row items-center justify-between mb-2">
-        <Text className="text-gray-900 dark:text-white font-black text-xl tracking-tight">Mastery Journey</Text>
-        <Text className="text-[10px] font-black uppercase tracking-widest text-emerald-500">All-Time</Text>
+        <Text className="text-gray-900 dark:text-white font-black text-xl tracking-tight flex-1 mr-2" numberOfLines={1} adjustsFontSizeToFit>{t('statsComp.masteryJourney')}</Text>
+        <Text className="text-[10px] font-black uppercase tracking-widest text-emerald-500">{t('statsComp.allTime')}</Text>
       </View>
       
       <View className="flex-row items-baseline gap-2 mb-6">
@@ -89,7 +91,7 @@ export function ContributionHeatmap({ sessions }: Props) {
           {formatLongTime(totalSecondsAllTime)}
         </Text>
         <Text className="text-xs font-bold text-gray-400">
-          / 10,000 hrs
+          / 10,000 {t('statsComp.hrs')}
         </Text>
       </View>
 
@@ -115,16 +117,16 @@ export function ContributionHeatmap({ sessions }: Props) {
       </ScrollView>
 
       <View className="flex-row items-center justify-between mt-2">
-        <Text className="text-[10px] font-bold text-gray-400">{totalSessionsAllTime} sessions completed</Text>
+        <Text className="text-[10px] font-bold text-gray-400">{totalSessionsAllTime} {t('statsComp.sessionsCompleted')}</Text>
         
         <View className="flex-row items-center gap-1">
-          <Text className="text-[9px] text-gray-400 mr-1">Less</Text>
+          <Text className="text-[9px] text-gray-400 mr-1">{t('statsComp.less')}</Text>
           <View className="w-2.5 h-2.5 rounded-[2px] bg-gray-100 dark:bg-gray-800/60" />
           <View className="w-2.5 h-2.5 rounded-[2px] bg-emerald-200 dark:bg-emerald-900/50" />
           <View className="w-2.5 h-2.5 rounded-[2px] bg-emerald-400 dark:bg-emerald-700/60" />
           <View className="w-2.5 h-2.5 rounded-[2px] bg-emerald-500 dark:bg-emerald-600/80" />
           <View className="w-2.5 h-2.5 rounded-[2px] bg-emerald-600 dark:bg-emerald-500" />
-          <Text className="text-[9px] text-gray-400 ml-1">More</Text>
+          <Text className="text-[9px] text-gray-400 ml-1">{t('statsComp.more')}</Text>
         </View>
       </View>
 

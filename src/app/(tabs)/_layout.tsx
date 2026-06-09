@@ -4,6 +4,7 @@ import { Feather } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTimerStore } from '@/store/useTimerStore';
+import { useTranslation } from '@/hooks/useTranslation';
 
 function CustomTabBar({ state, descriptors, navigation }: any) {
   const status = useTimerStore(s => s.status);
@@ -65,15 +66,17 @@ function CustomTabBar({ state, descriptors, navigation }: any) {
 }
 
 export default function TabLayout() {
+  const { t } = useTranslation();
+
   return (
     <Tabs 
       tabBar={(props) => <CustomTabBar {...props} />}
       screenOptions={{ headerShown: false }}
     >
-      <Tabs.Screen name="index" options={{ title: 'Focus' }} />
-      <Tabs.Screen name="calendar" options={{ title: 'Calendar' }} />
-      <Tabs.Screen name="mastery" options={{ title: 'Mastery' }} />
-      <Tabs.Screen name="stats" options={{ title: 'Stats' }} />
+      <Tabs.Screen name="index" options={{ title: t('tabs.focus') }} />
+      <Tabs.Screen name="calendar" options={{ title: t('tabs.calendar') }} />
+      <Tabs.Screen name="mastery" options={{ title: t('tabs.mastery') }} />
+      <Tabs.Screen name="stats" options={{ title: t('tabs.stats') }} />
     </Tabs>
   );
 }

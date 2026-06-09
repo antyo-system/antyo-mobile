@@ -1,4 +1,6 @@
-import { startOfDay, differenceInMinutes, eachDayOfInterval, subDays, addDays } from 'date-fns';
+import { startOfDay, differenceInMinutes, eachDayOfInterval, subDays, addDays, format } from 'date-fns';
+import { id, zhCN } from 'date-fns/locale';
+import { useSettingsStore } from '@/store/useSettingsStore';
 
 /**
  * Formats seconds into a MM:SS string representation.
@@ -47,4 +49,18 @@ export function formatLongTime(seconds: number): string {
     return `${h}h ${m}m`;
   }
   return `${m}m`;
+}
+
+/**
+ * Localized date formatter using date-fns
+ */
+export function formatDate(date: Date | number, formatStr: string): string {
+  const lang = useSettingsStore.getState().language;
+  if (lang === 'id') {
+    return format(date, formatStr, { locale: id });
+  }
+  if (lang === 'zh') {
+    return format(date, formatStr, { locale: zhCN });
+  }
+  return format(date, formatStr);
 }

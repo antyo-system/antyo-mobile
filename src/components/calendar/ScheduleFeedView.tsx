@@ -4,12 +4,15 @@ import { Feather } from '@expo/vector-icons';
 import { format, isSameDay } from 'date-fns';
 import { usePlanStore } from '@/store/usePlanStore';
 import { useSessionStore } from '@/store/useSessionStore';
+import { formatDate } from '@/utils/time';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface Props {
   selectedDate: Date;
 }
 
 export function ScheduleFeedView({ selectedDate }: Props) {
+  const { t } = useTranslation();
   const colorScheme = useColorScheme();
   const isDark = colorScheme === 'dark';
 
@@ -72,16 +75,16 @@ export function ScheduleFeedView({ selectedDate }: Props) {
   return (
     <ScrollView className="flex-1 px-5 pt-6 bg-white dark:bg-gray-950" contentContainerStyle={{ paddingBottom: 150 }}>
       <View className="mb-6">
-        <Text className="text-xl font-black text-gray-900 dark:text-white">Daily Schedule</Text>
+        <Text className="text-xl font-black text-gray-900 dark:text-white">{t('calendarComp.dailySchedule')}</Text>
         <Text className="text-xs font-bold text-gray-500 dark:text-gray-400 mt-1 uppercase tracking-wider">
-          {format(selectedDate, 'EEEE, MMM d')}
+          {formatDate(selectedDate, 'EEEE, MMM d')}
         </Text>
       </View>
 
       {dailyItems.length === 0 ? (
         <View className="items-center justify-center py-20 opacity-50">
           <Feather name="calendar" size={48} color={isDark ? '#9CA3AF' : '#6B7280'} />
-          <Text className="text-gray-500 dark:text-gray-400 font-bold mt-4">No schedule for this day</Text>
+          <Text className="text-gray-500 dark:text-gray-400 font-bold mt-4">{t('calendarComp.noScheduleForThisDay')}</Text>
         </View>
       ) : (
         <View className="gap-3">
@@ -98,7 +101,7 @@ export function ScheduleFeedView({ selectedDate }: Props) {
                 <Text className={`text-xs font-black uppercase tracking-widest ${
                   item.type === 'plan' ? 'text-yellow-600 dark:text-yellow-500' : 'text-blue-600 dark:text-blue-400'
                 }`}>
-                  {item.type === 'plan' ? 'Plan' : 'Real'}
+                  {item.type === 'plan' ? t('calendar.plan') : t('calendar.real')}
                 </Text>
                 <Text className="text-xs font-bold text-gray-500 dark:text-gray-400 tabular-nums">
                   {formatTimeRange(item.startMins, item.durationMins)}

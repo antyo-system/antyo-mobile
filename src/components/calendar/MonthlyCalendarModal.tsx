@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Modal, View, Text, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { format, addMonths, subMonths, startOfMonth, endOfMonth, startOfWeek, endOfWeek, eachDayOfInterval, isSameMonth, isSameDay, isToday } from 'date-fns';
+import { addMonths, eachDayOfInterval, endOfMonth, endOfWeek, isSameDay, isSameMonth, isToday, startOfMonth, startOfWeek, subMonths } from 'date-fns';
+import { formatDate } from '@/utils/time';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface Props {
   visible: boolean;
@@ -12,6 +14,7 @@ interface Props {
 }
 
 export function MonthlyCalendarModal({ visible, selectedDate, onSelectDate, onClose, achievedDates = [] }: Props) {
+  const { t } = useTranslation();
   const [currentMonth, setCurrentMonth] = useState(startOfMonth(selectedDate));
 
   // Sync state if selectedDate changes externally
@@ -30,7 +33,7 @@ export function MonthlyCalendarModal({ visible, selectedDate, onSelectDate, onCl
   const endDate = endOfWeek(monthEnd);
 
   const days = eachDayOfInterval({ start: startDate, end: endDate });
-  const weekDays = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
+  const weekDays = t('calendarComp.weekDaysInitial').split(',');
 
   return (
     <Modal visible={visible} animationType="fade" transparent>
@@ -41,7 +44,7 @@ export function MonthlyCalendarModal({ visible, selectedDate, onSelectDate, onCl
               <Text className="text-xl font-black text-gray-400">{'<'}</Text>
             </Pressable>
             <Text className="text-xl font-black tracking-tight text-gray-900 dark:text-white">
-              {format(currentMonth, 'MMMM yyyy')}
+              {formatDate(currentMonth, 'MMMM yyyy')}
             </Text>
             <Pressable onPress={handleNextMonth} className="p-2 -mr-2">
               <Text className="text-xl font-black text-gray-400">{'>'}</Text>
@@ -96,8 +99,8 @@ export function MonthlyCalendarModal({ visible, selectedDate, onSelectDate, onCl
                   }}
                   className={`w-[13%] aspect-square items-center justify-center rounded-full mb-2 ${bgClass}`}
                 >
-                  <Text className={`font-bold ${textClass}`}>
-                    {format(day, 'd')}
+                  <Text className={`text-base font-bold ${textClass}`}>
+                    {formatDate(day, 'd')}
                   </Text>
                 </Pressable>
               );
@@ -105,7 +108,7 @@ export function MonthlyCalendarModal({ visible, selectedDate, onSelectDate, onCl
           </View>
           
           <Pressable onPress={onClose} className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-900 items-center">
-            <Text className="text-gray-400 font-black uppercase tracking-widest text-xs">Close</Text>
+            <Text className="text-gray-400 font-black uppercase tracking-widest text-xs">{t('calendarComp.close')}</Text>
           </Pressable>
         </View>
       </SafeAreaView>

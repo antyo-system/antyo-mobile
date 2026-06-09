@@ -9,6 +9,7 @@ export interface Settings {
   defaultBreakMinutes: number;
   hapticsEnabled: boolean;
   appearance: 'system' | 'light' | 'dark';
+  language: 'en' | 'id' | 'zh';
   dailyFocusTargetHours: number;
   birthYear: number;
   retirementAge: number;
@@ -27,6 +28,7 @@ export const useSettingsStore = create<SettingsState>()(
       defaultBreakMinutes: 5,
       hapticsEnabled: true,
       appearance: 'system',
+      language: 'en',
       dailyFocusTargetHours: 3,
       birthYear: 2000,
       retirementAge: 65,

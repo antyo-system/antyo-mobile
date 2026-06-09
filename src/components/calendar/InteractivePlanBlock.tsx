@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, memo } from 'react';
 import { View, Text, PanResponder, Pressable } from 'react-native';
 import { Plan } from '@/store/usePlanStore';
 
@@ -12,7 +12,12 @@ interface Props {
   isLocked?: boolean;
 }
 
-export function InteractivePlanBlock({ plan, pixelsPerMinute, onUpdatePlan, onEditPress, setScrollEnabled, width, isLocked }: Props) {
+export const InteractivePlanBlock = memo(function InteractivePlanBlock({ plan, pixelsPerMinute, onUpdatePlan, onEditPress, setScrollEnabled, width, isLocked }: Props) {
+  const latestProps = useRef({ isLocked, pixelsPerMinute, plan, onUpdatePlan, setScrollEnabled });
+  
+  useEffect(() => {
+    latestProps.current = { isLocked, pixelsPerMinute, plan, onUpdatePlan, setScrollEnabled };
+  }, [isLocked, pixelsPerMinute, plan, onUpdatePlan, setScrollEnabled]);
   const [tempStart, setTempStart] = useState(plan.startMinutes);
   const [tempDuration, setTempDuration] = useState(plan.durationMinutes);
 
@@ -25,17 +30,18 @@ export function InteractivePlanBlock({ plan, pixelsPerMinute, onUpdatePlan, onEd
   const moveResponder = useRef(
     PanResponder.create({
       onStartShouldSetPanResponder: () => false,
-      onMoveShouldSetPanResponderCapture: (evt, gestureState) => !isLocked && Math.abs(gestureState.dy) > 5,
-      onPanResponderGrant: () => setScrollEnabled(false),
+      onMoveShouldSetPanResponderCapture: (evt, gestureState) => !latestProps.current.isLocked && Math.abs(gestureState.dy) > 5,
+      onPanResponderGrant: () => latestProps.current.setScrollEnabled(false),
       onPanResponderMove: (evt, gestureState) => {
+        const { pixelsPerMinute, plan } = latestProps.current;
         const minuteDelta = Math.round(gestureState.dy / pixelsPerMinute);
         let newStart = plan.startMinutes + minuteDelta;
-        // Track perfectly with finger, no snap during move
         if (newStart < 0) newStart = 0;
         if (newStart > 24 * 60 - tempDuration) newStart = 24 * 60 - tempDuration;
         setTempStart(newStart);
       },
       onPanResponderRelease: (evt, gestureState) => {
+        const { pixelsPerMinute, plan, onUpdatePlan, setScrollEnabled } = latestProps.current;
         setScrollEnabled(true);
         const minuteDelta = Math.round(gestureState.dy / pixelsPerMinute);
         let newStart = plan.startMinutes + minuteDelta;
@@ -48,16 +54,17 @@ export function InteractivePlanBlock({ plan, pixelsPerMinute, onUpdatePlan, onEd
 
   const resizeResponder = useRef(
     PanResponder.create({
-      onStartShouldSetPanResponder: () => !isLocked,
-      onPanResponderGrant: () => setScrollEnabled(false),
+      onStartShouldSetPanResponder: () => !latestProps.current.isLocked,
+      onPanResponderGrant: () => latestProps.current.setScrollEnabled(false),
       onPanResponderMove: (evt, gestureState) => {
+        const { pixelsPerMinute, plan } = latestProps.current;
         const minuteDelta = Math.round(gestureState.dy / pixelsPerMinute);
         let newDuration = plan.durationMinutes + minuteDelta;
-        // Track perfectly with finger, no snap during move
-        if (newDuration < 15) newDuration = 15; // Minimum 15 minutes
+        if (newDuration < 15) newDuration = 15;
         setTempDuration(newDuration);
       },
       onPanResponderRelease: (evt, gestureState) => {
+        const { pixelsPerMinute, plan, onUpdatePlan, setScrollEnabled } = latestProps.current;
         setScrollEnabled(true);
         const minuteDelta = Math.round(gestureState.dy / pixelsPerMinute);
         let newDuration = plan.durationMinutes + minuteDelta;
@@ -107,4 +114,4 @@ export function InteractivePlanBlock({ plan, pixelsPerMinute, onUpdatePlan, onEd
       )}
     </View>
   );
-}
+});

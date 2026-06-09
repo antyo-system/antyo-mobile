@@ -15,10 +15,12 @@ import { router, Tabs } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
 import { Animated, Dimensions, Pressable, ScrollView, Text, useColorScheme, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTranslation } from '@/hooks/useTranslation';
 
 const { width } = Dimensions.get('window');
 
 function SkillCard({ skill, onSetTarget, onCreateRoutine }: { skill: Skill, onSetTarget: (skill: Skill) => void, onCreateRoutine: (skill: Skill) => void }) {
+  const { t } = useTranslation();
   const isDark = useColorScheme() === 'dark';
   const progress = getMasteryProgress(skill.totalSeconds);
 
@@ -62,10 +64,10 @@ function SkillCard({ skill, onSetTarget, onCreateRoutine }: { skill: Skill, onSe
     const endH = Math.floor(endMinutes / 60).toString().padStart(2, '0');
     const endM = (endMinutes % 60).toString().padStart(2, '0');
 
-    let recStr = 'Once';
-    if (plan.recurrence === 'weekdays') recStr = 'Mon-Fri';
-    else if (plan.recurrence === 'daily') recStr = 'Daily';
-    else if (plan.recurrence === 'weekly') recStr = 'Weekly';
+    let recStr = t('mastery.once');
+    if (plan.recurrence === 'weekdays') recStr = t('mastery.monFri');
+    else if (plan.recurrence === 'daily') recStr = t('mastery.daily');
+    else if (plan.recurrence === 'weekly') recStr = t('mastery.weekly');
     else if (plan.recurrence === 'specific_days' && plan.recurrenceDays && plan.recurrenceDays.length > 0) {
       const daysMap = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
       // sort days for consistency
@@ -105,7 +107,7 @@ function SkillCard({ skill, onSetTarget, onCreateRoutine }: { skill: Skill, onSe
           <View>
             <Text className="text-xl font-black text-gray-900 dark:text-white">{skill.name}</Text>
             <Text className="text-xs font-bold text-gray-500 dark:text-gray-400 mt-0.5">
-              {progress.currentLevel.icon} {progress.currentLevel.level}
+              {progress.currentLevel.icon} {t(`levels.${progress.currentLevel.level.toLowerCase()}` as any)}
             </Text>
           </View>
         </View>
@@ -113,7 +115,7 @@ function SkillCard({ skill, onSetTarget, onCreateRoutine }: { skill: Skill, onSe
           <Text className={`text-sm font-black ${isTargetMet ? 'text-orange-600 dark:text-orange-400' : 'text-blue-600 dark:text-blue-400'}`}>
             {Math.floor(progress.totalHours).toLocaleString()} / 10K
           </Text>
-          <Text className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-0.5">Hours</Text>
+          <Text className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-0.5">{t('mastery.hours')}</Text>
         </View>
       </View>
 
@@ -126,11 +128,11 @@ function SkillCard({ skill, onSetTarget, onCreateRoutine }: { skill: Skill, onSe
             <View>
               <View className="flex-row justify-between mb-2">
                 <View className="flex-row items-center gap-1.5">
-                  <Text className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Daily Target</Text>
+                  <Text className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('mastery.dailyTarget')}</Text>
                   {isTargetMet && <Text className="text-sm">🔥</Text>}
                 </View>
                 <Text className={`text-xs font-black ${isTargetMet ? 'text-orange-500' : 'text-gray-900 dark:text-gray-300'}`}>
-                  {todayProgressMinutes} / {targetMinutes} min
+                  {todayProgressMinutes} / {targetMinutes} {t('mastery.min')}
                 </Text>
               </View>
               <View className={`w-full h-2 rounded-full overflow-hidden ${isTargetMet ? 'bg-orange-200 dark:bg-orange-900/30' : 'bg-gray-100 dark:bg-gray-800'}`}>
@@ -142,9 +144,9 @@ function SkillCard({ skill, onSetTarget, onCreateRoutine }: { skill: Skill, onSe
             </View>
           ) : (
             <View className="flex-row items-center justify-between">
-              <Text className="text-xs font-bold text-gray-500 dark:text-gray-400">No Daily Target Set</Text>
+              <Text className="text-xs font-bold text-gray-500 dark:text-gray-400">{t('mastery.noDailyTargetSet')}</Text>
               <Animated.View style={{ opacity: (!hasCompletedTutorial && targetMinutes === 0) ? pulseAnim : 1 }} className={`px-3 py-1.5 rounded-full ${(!hasCompletedTutorial && targetMinutes === 0) ? 'bg-orange-500' : 'bg-gray-100 dark:bg-gray-800'}`}>
-                <Text className={`text-[10px] font-bold uppercase tracking-widest ${(!hasCompletedTutorial && targetMinutes === 0) ? 'text-white' : 'text-gray-600 dark:text-gray-300'}`}>Set Target</Text>
+                <Text className={`text-[10px] font-bold uppercase tracking-widest ${(!hasCompletedTutorial && targetMinutes === 0) ? 'text-white' : 'text-gray-600 dark:text-gray-300'}`}>{t('mastery.setTarget')}</Text>
               </Animated.View>
             </View>
           )}
@@ -177,7 +179,7 @@ function SkillCard({ skill, onSetTarget, onCreateRoutine }: { skill: Skill, onSe
         >
           <Animated.View style={{ opacity: (!hasCompletedTutorial && targetMinutes > 0 && skillRoutines.length === 0) ? pulseAnim : 1 }} className={`mt-3 flex-row items-center justify-center py-3 rounded-2xl border ${(!hasCompletedTutorial && targetMinutes > 0 && skillRoutines.length === 0) ? 'bg-blue-600 border-blue-600' : 'bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700'}`}>
             <Feather name="calendar" size={14} color={(!hasCompletedTutorial && targetMinutes > 0 && skillRoutines.length === 0) ? "#fff" : "#6B7280"} />
-            <Text className={`ml-2 text-xs font-bold ${(!hasCompletedTutorial && targetMinutes > 0 && skillRoutines.length === 0) ? 'text-white' : 'text-gray-600 dark:text-gray-300'}`}>Create Routine</Text>
+            <Text className={`ml-2 text-xs font-bold ${(!hasCompletedTutorial && targetMinutes > 0 && skillRoutines.length === 0) ? 'text-white' : 'text-gray-600 dark:text-gray-300'}`}>{t('mastery.createRoutine')}</Text>
           </Animated.View>
         </Pressable>
       </View>
@@ -186,6 +188,7 @@ function SkillCard({ skill, onSetTarget, onCreateRoutine }: { skill: Skill, onSe
 }
 
 export default function MasteryScreen() {
+  const { t } = useTranslation();
   const isDark = useColorScheme() === 'dark';
   const skills = useMasteryStore(s => s.skills);
   const addSkill = useMasteryStore(s => s.addSkill);
@@ -216,16 +219,16 @@ export default function MasteryScreen() {
   useEffect(() => {
     if (!hasSeenMasteryTutorial && isFocused) {
       setTutorialSteps([
-        { targetRef: addRef, text: "Step 1: Your Focus Areas. Tap here to create a Skill you want to master.", holeType: 'circle', holePadding: 12 },
-        { targetRef: listRef, text: "Step 2: The 10,000 Hours Journey. Watch your level grow here as you record focused time.", holeType: 'rect', holePadding: 8 },
-        { targetRef: infoRef, text: "Step 3: Keep going. Every session brings you closer to world-class mastery.", holeType: 'rect', holePadding: 8 },
+        { targetRef: addRef, text: t('tutorial.mastery.step1'), holeType: 'circle', holePadding: 12 },
+        { targetRef: listRef, text: t('tutorial.mastery.step2'), holeType: 'rect', holePadding: 8 },
+        { targetRef: infoRef, text: t('tutorial.mastery.step3'), holeType: 'rect', holePadding: 8 },
       ]);
       const timeout = setTimeout(() => {
         setTutorialVisible(true);
       }, 500);
       return () => clearTimeout(timeout);
     }
-  }, [hasSeenMasteryTutorial, isFocused]);
+  }, [hasSeenMasteryTutorial, isFocused, t]);
 
   const [targetModalVisible, setTargetModalVisible] = useState(false);
   const [selectedSkillForTarget, setSelectedSkillForTarget] = useState<Skill | null>(null);
@@ -299,7 +302,7 @@ export default function MasteryScreen() {
         <ScrollView ref={scrollViewRef} className="flex-1" contentContainerStyle={{ padding: 24, paddingBottom: 130 }}>
           <View className="flex-row justify-between items-center mb-2 mt-4">
             <Text className="text-3xl font-black tracking-tight text-gray-900 dark:text-white">
-              Mastery
+              {t('mastery.title')}
             </Text>
             <View className="flex-row items-center gap-3">
               <View ref={addRef} collapsable={false}>
@@ -314,7 +317,7 @@ export default function MasteryScreen() {
           </View>
 
           <Text className="text-sm font-bold text-gray-500 dark:text-gray-400 mb-8">
-            The journey to 10,000 hours of deep work.
+            {t('mastery.subtitle')}
           </Text>
 
           <View className="gap-2" ref={listRef} collapsable={false} onLayout={handleLayout(1)}>
@@ -330,7 +333,7 @@ export default function MasteryScreen() {
             {skills.length === 0 && (
               <View className="items-center justify-center py-10 opacity-50">
                 <Feather name="award" size={48} color={isDark ? '#9CA3AF' : '#6B7280'} />
-                <Text className="text-gray-500 font-bold mt-4">No skills added yet.</Text>
+                <Text className="text-gray-500 font-bold mt-4">{t('mastery.noSkillsAddedYet')}</Text>
               </View>
             )}
           </View>
@@ -343,12 +346,12 @@ export default function MasteryScreen() {
             onLayout={handleLayout(2)}
           >
             <View className="flex-row items-center justify-between">
-              <Text className="text-sm font-bold text-blue-800 dark:text-blue-300">Why 10,000 Hours?</Text>
+              <Text className="text-sm font-bold text-blue-800 dark:text-blue-300">{t('mastery.why10kHours')}</Text>
               <Feather name={showInfo ? "chevron-up" : "chevron-down"} size={16} color={isDark ? "#93C5FD" : "#1E3A8A"} />
             </View>
             {showInfo && (
               <Text className="text-xs font-semibold text-blue-600 dark:text-blue-400 leading-relaxed mt-3">
-                It takes approximately 10,000 hours of deliberate practice to achieve world-class mastery in any field. Every focus session brings you one step closer to greatness.
+                {t('mastery.why10kHoursDesc')}
               </Text>
             )}
           </Pressable>

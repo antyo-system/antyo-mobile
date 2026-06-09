@@ -2,13 +2,15 @@ import { View, Text, Pressable } from 'react-native';
 import { useMemo, useState } from 'react';
 import { subDays, format, isSameDay, startOfDay } from 'date-fns';
 import { Session } from '@/types';
-import { formatLongTime } from '@/utils/time';
+import { formatLongTime, formatDate } from '@/utils/time';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface Props {
   sessions: Session[];
 }
 
 export function WeeklyBarChart({ sessions }: Props) {
+  const { t } = useTranslation();
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
 
   // Generate the last 7 days (including today)
@@ -27,7 +29,7 @@ export function WeeklyBarChart({ sessions }: Props) {
       
       days.push({
         date,
-        dayLabel: i === 0 ? 'Today' : format(date, 'EEE'), // Mon, Tue, etc.
+        dayLabel: i === 0 ? t('calendarComp.today') : formatDate(date, 'EEE'), // Mon, Tue, etc.
         totalHours,
         totalSeconds,
         sessionCount: dailySessions.length,
@@ -42,8 +44,8 @@ export function WeeklyBarChart({ sessions }: Props) {
   const maxHours = Math.max(...daysData.map(d => d.totalHours), 1); // minimum scale is 1 hour
 
   const selectedDay = selectedIndex !== null ? daysData[selectedIndex] : null;
-  const headerTitle = selectedDay ? selectedDay.dayLabel : 'This Week';
-  const headerSubtitle = selectedDay ? format(selectedDay.date, 'MMM d, yyyy') : 'Past 7 Days';
+  const headerTitle = selectedDay ? selectedDay.dayLabel : t('statsComp.thisWeek');
+  const headerSubtitle = selectedDay ? formatDate(selectedDay.date, 'MMM d, yyyy') : t('statsComp.past7Days');
   const headerValue = selectedDay 
     ? selectedDay.totalSeconds 
     : daysData.reduce((acc, curr) => acc + curr.totalSeconds, 0);
@@ -65,7 +67,7 @@ export function WeeklyBarChart({ sessions }: Props) {
         </View>
         <View className="items-end">
           <Text className="text-[10px] font-bold text-gray-400">{headerSubtitle}</Text>
-          <Text className="text-xs text-gray-500 font-medium mt-1">{sessionCount} sessions</Text>
+          <Text className="text-xs text-gray-500 font-medium mt-1">{sessionCount} {t('statsComp.sessionsCompleted')}</Text>
         </View>
       </View>
 
@@ -114,7 +116,6 @@ export function WeeklyBarChart({ sessions }: Props) {
                 />
               </View>
               
-              {/* Day Label */}
               <Text className={`text-[10px] font-bold mt-2 ${
                 selectedIndex === index
                   ? 'text-blue-600 dark:text-blue-400'
@@ -122,7 +123,7 @@ export function WeeklyBarChart({ sessions }: Props) {
                     ? 'text-blue-600 dark:text-blue-400' 
                     : 'text-gray-400'
               }`}>
-                {format(day.date, 'EEE')}
+                {formatDate(day.date, 'EEE')}
               </Text>
             </Pressable>
           );

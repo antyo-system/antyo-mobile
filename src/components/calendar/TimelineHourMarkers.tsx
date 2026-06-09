@@ -1,8 +1,9 @@
+import { memo } from 'react';
 import { View, Text } from 'react-native';
 
 const HOURS = Array.from({ length: 25 }, (_, i) => i);
 
-export function TimelineHourMarkers({ pixelsPerMinute }: { pixelsPerMinute: number }) {
+export const TimelineHourMarkers = memo(function TimelineHourMarkers({ pixelsPerMinute }: { pixelsPerMinute: number }) {
   return (
     <View className="absolute inset-0">
       {HOURS.map((hour) => (
@@ -19,4 +20,4 @@ export function TimelineHourMarkers({ pixelsPerMinute }: { pixelsPerMinute: numb
       ))}
     </View>
   );
-}
+});

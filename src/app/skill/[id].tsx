@@ -3,12 +3,14 @@ import { usePlanStore, Plan } from '@/store/usePlanStore';
 import { useTimerStore } from '@/store/useTimerStore';
 import { getMasteryProgress } from '@/utils/mastery';
 import { Feather } from '@expo/vector-icons';
-import { router, useLocalSearchParams } from 'expo-router';
+import { router, useLocalSearchParams, Stack } from 'expo-router';
 import { useState } from 'react';
 import { Alert, KeyboardAvoidingView, Modal, Platform, Pressable, ScrollView, Text, TextInput, useColorScheme, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTranslation } from '@/hooks/useTranslation';
 
 export default function SkillDetailScreen() {
+  const { t } = useTranslation();
   const { id } = useLocalSearchParams<{ id: string }>();
   const isDark = useColorScheme() === 'dark';
   const skill = useMasteryStore(s => s.skills.find(sk => sk.id === id));
@@ -35,9 +37,9 @@ export default function SkillDetailScreen() {
   if (!skill) {
     return (
       <SafeAreaView className="flex-1 bg-white dark:bg-gray-950 items-center justify-center">
-        <Text className="text-gray-500">Skill not found.</Text>
+        <Text className="text-gray-500">{t('skillDetail.skillNotFound')}</Text>
         <Pressable onPress={() => router.back()} className="mt-4 px-4 py-2 bg-gray-100 dark:bg-gray-800 rounded-lg">
-          <Text className="text-gray-900 dark:text-white">Go Back</Text>
+          <Text className="text-gray-900 dark:text-white">{t('skillDetail.goBack')}</Text>
         </Pressable>
       </SafeAreaView>
     );
@@ -55,12 +57,12 @@ export default function SkillDetailScreen() {
     const endH = Math.floor(endMinutes / 60).toString().padStart(2, '0');
     const endM = (endMinutes % 60).toString().padStart(2, '0');
 
-    let recStr = 'Once';
-    if (plan.recurrence === 'weekdays') recStr = 'Mon-Fri';
-    else if (plan.recurrence === 'daily') recStr = 'Daily';
-    else if (plan.recurrence === 'weekly') recStr = 'Weekly';
+    let recStr = t('skillDetail.once');
+    if (plan.recurrence === 'weekdays') recStr = t('skillDetail.monFri');
+    else if (plan.recurrence === 'daily') recStr = t('skillDetail.daily');
+    else if (plan.recurrence === 'weekly') recStr = t('skillDetail.weekly');
     else if (plan.recurrence === 'specific_days' && plan.recurrenceDays && plan.recurrenceDays.length > 0) {
-      const daysMap = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+      const daysMap = [t('skillDetail.sun'), t('skillDetail.mon'), t('skillDetail.tue'), t('skillDetail.wed'), t('skillDetail.thu'), t('skillDetail.fri'), t('skillDetail.sat')];
       const sortedDays = [...plan.recurrenceDays].sort((a, b) => a - b);
       recStr = sortedDays.map(d => daysMap[d]).join(', ');
     }
@@ -87,12 +89,12 @@ export default function SkillDetailScreen() {
 
   const handleDeleteSkill = () => {
     Alert.alert(
-      "Delete Skill",
-      `Are you sure you want to delete "${skill.name}"? This action cannot be undone.`,
+      t('skillDetail.deleteSkillTitle'),
+      t('skillDetail.deleteSkillMsg').replace('{name}', skill.name),
       [
-        { text: "Cancel", style: "cancel" },
+        { text: t('skillDetail.cancel'), style: "cancel" },
         {
-          text: "Delete",
+          text: t('skillDetail.delete'),
           style: "destructive",
           onPress: () => {
             deleteSkill(skill.id);
@@ -126,13 +128,15 @@ export default function SkillDetailScreen() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-gray-50 dark:bg-gray-950" edges={['top']}>
-      {/* Header */}
+    <>
+      <Stack.Screen options={{ headerShown: false }} />
+      <SafeAreaView className="flex-1 bg-gray-50 dark:bg-gray-950" edges={['top']}>
+        {/* Header */}
       <View className="flex-row items-center justify-between px-6 py-4">
         <Pressable onPress={() => router.back()} className="w-10 h-10 items-center justify-center bg-gray-200 dark:bg-gray-800 rounded-full">
           <Feather name="arrow-left" size={20} color={isDark ? "white" : "black"} />
         </Pressable>
-        <Text className="text-lg font-black text-gray-900 dark:text-white">Skill Details</Text>
+        <Text className="text-lg font-black text-gray-900 dark:text-white">{t('skillDetail.skillDetails')}</Text>
         <View className="flex-row items-center gap-2">
           <Pressable
             onPress={() => {
@@ -158,30 +162,30 @@ export default function SkillDetailScreen() {
           </View>
           <Text className="text-2xl font-black text-gray-900 dark:text-white mb-1">{skill.name}</Text>
           <Text className="text-sm font-bold text-gray-500 dark:text-gray-400 mb-6">
-            {progress.currentLevel.icon} {progress.currentLevel.level} Level
+            {progress.currentLevel.icon} {t(`levels.${progress.currentLevel.level.toLowerCase()}` as any)} {t('skillDetail.level')}
           </Text>
 
           <View className="w-full bg-gray-100 dark:bg-gray-800 h-4 rounded-full overflow-hidden mb-2">
             <View className="h-full bg-blue-500 rounded-full" style={{ width: `${progress.progressPercentage}%` }} />
           </View>
           <View className="w-full flex-row justify-between">
-            <Text className="text-xs font-bold text-gray-400">{Math.floor(progress.totalHours)}h Total</Text>
-            <Text className="text-xs font-bold text-blue-500">10,000h Goal</Text>
+            <Text className="text-xs font-bold text-gray-400">{Math.floor(progress.totalHours)}{t('skillDetail.hTotal')}</Text>
+            <Text className="text-xs font-bold text-blue-500">10,000h {t('skillDetail.goal')}</Text>
           </View>
         </View>
 
         {/* Pillars (Skill Tree) */}
         <View className="flex-row items-center justify-between mb-6">
           <View>
-            <Text className="text-xl font-black text-gray-900 dark:text-white">Pillars</Text>
-            <Text className="text-xs font-bold text-gray-500 dark:text-gray-400">Your core sub-skills</Text>
+            <Text className="text-xl font-black text-gray-900 dark:text-white">{t('skillDetail.pillars')}</Text>
+            <Text className="text-xs font-bold text-gray-500 dark:text-gray-400">{t('skillDetail.coreSubSkills')}</Text>
           </View>
           <Pressable
             onPress={() => setModalVisible(true)}
             className="flex-row items-center gap-1.5 px-3 py-1.5 bg-blue-50 dark:bg-blue-900/30 rounded-full border border-blue-200 dark:border-blue-800"
           >
             <Feather name="plus" size={14} color="#3B82F6" />
-            <Text className="text-sm font-bold text-blue-600 dark:text-blue-400">Add</Text>
+            <Text className="text-sm font-bold text-blue-600 dark:text-blue-400">{t('skillDetail.add')}</Text>
           </Pressable>
         </View>
 
@@ -212,7 +216,7 @@ export default function SkillDetailScreen() {
                   </View>
                 </View>
                 <Text className="text-sm font-bold text-blue-600 dark:text-blue-400">
-                  {Math.floor(pillar.totalSeconds / 3600)} Hours
+                  {Math.floor(pillar.totalSeconds / 3600)} {t('skillDetail.hours')}
                 </Text>
               </View>
             </View>
@@ -220,7 +224,7 @@ export default function SkillDetailScreen() {
 
           {(!skill.pillars || skill.pillars.length === 0) && (
             <View className="py-4">
-              <Text className="text-gray-500 font-bold">No pillars created yet. Add one to start tracking sub-skills.</Text>
+              <Text className="text-gray-500 font-bold">{t('skillDetail.noPillars')}</Text>
             </View>
           )}
         </View>
@@ -229,8 +233,8 @@ export default function SkillDetailScreen() {
         {skillRoutines.length > 0 && (
           <View className="mt-4">
             <View className="mb-4">
-              <Text className="text-xl font-black text-gray-900 dark:text-white">Routines</Text>
-              <Text className="text-xs font-bold text-gray-500 dark:text-gray-400">Scheduled plans for this skill</Text>
+              <Text className="text-xl font-black text-gray-900 dark:text-white">{t('skillDetail.routines')}</Text>
+              <Text className="text-xs font-bold text-gray-500 dark:text-gray-400">{t('skillDetail.scheduledPlans')}</Text>
             </View>
             <View className="flex-row flex-wrap gap-3">
               {skillRoutines.map(routine => (
@@ -256,7 +260,7 @@ export default function SkillDetailScreen() {
         <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} className="flex-1 justify-center bg-black/50 p-6">
           <View className="bg-white dark:bg-gray-900 rounded-3xl p-6 border border-gray-200 dark:border-gray-800">
             <View className="flex-row justify-between items-center mb-4">
-              <Text className="text-lg font-black text-gray-900 dark:text-white">New Pillar</Text>
+              <Text className="text-lg font-black text-gray-900 dark:text-white">{t('skillDetail.newPillar')}</Text>
               <Pressable onPress={() => setModalVisible(false)}>
                 <Feather name="x" size={20} color={isDark ? "white" : "black"} />
               </Pressable>
@@ -264,7 +268,7 @@ export default function SkillDetailScreen() {
             <TextInput
               value={newPillarName}
               onChangeText={setNewPillarName}
-              placeholder="e.g., React Native, Typography..."
+              placeholder={t('skillDetail.pillarPlaceholder')}
               placeholderTextColor="#9CA3AF"
               style={{ backgroundColor: isDark ? '#1F2937' : '#F3F4F6', borderRadius: 12, padding: 16, color: isDark ? 'white' : '#111827', fontWeight: '600', marginBottom: 24 }}
             />
@@ -272,7 +276,7 @@ export default function SkillDetailScreen() {
               onPress={handleAddPillar}
               className="bg-blue-600 py-4 rounded-xl items-center"
             >
-              <Text className="text-white font-black">Create Pillar</Text>
+              <Text className="text-white font-black">{t('skillDetail.createPillar')}</Text>
             </Pressable>
           </View>
         </KeyboardAvoidingView>
@@ -283,18 +287,18 @@ export default function SkillDetailScreen() {
         <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} className="flex-1 justify-center bg-black/50 p-6">
           <View className="bg-white dark:bg-gray-900 rounded-3xl p-6 border border-gray-200 dark:border-gray-800">
             <View className="flex-row justify-between items-center mb-6">
-              <Text className="text-lg font-black text-gray-900 dark:text-white">Edit Skill</Text>
+              <Text className="text-lg font-black text-gray-900 dark:text-white">{t('skillDetail.editSkill')}</Text>
               <Pressable onPress={() => setEditSkillVisible(false)}>
                 <Feather name="x" size={20} color={isDark ? "white" : "black"} />
               </Pressable>
             </View>
-            <Text className="text-sm font-bold text-gray-500 dark:text-gray-400 mb-2">Skill Name</Text>
+            <Text className="text-sm font-bold text-gray-500 dark:text-gray-400 mb-2">{t('skillDetail.skillName')}</Text>
             <TextInput
               value={editSkillName}
               onChangeText={setEditSkillName}
               style={{ backgroundColor: isDark ? '#1F2937' : '#F3F4F6', borderRadius: 12, padding: 16, color: isDark ? 'white' : '#111827', fontWeight: '600', marginBottom: 16 }}
             />
-            <Text className="text-sm font-bold text-gray-500 dark:text-gray-400 mb-2">Total Hours (Progress)</Text>
+            <Text className="text-sm font-bold text-gray-500 dark:text-gray-400 mb-2">{t('skillDetail.totalHoursProgress')}</Text>
             <TextInput
               value={editSkillHours}
               onChangeText={setEditSkillHours}
@@ -302,7 +306,7 @@ export default function SkillDetailScreen() {
               style={{ backgroundColor: isDark ? '#1F2937' : '#F3F4F6', borderRadius: 12, padding: 16, color: isDark ? 'white' : '#111827', fontWeight: '600', marginBottom: 24 }}
             />
             <Pressable onPress={handleSaveEditSkill} className="bg-blue-600 py-4 rounded-xl items-center">
-              <Text className="text-white font-black">Save Changes</Text>
+              <Text className="text-white font-black">{t('skillDetail.saveChanges')}</Text>
             </Pressable>
           </View>
         </KeyboardAvoidingView>
@@ -313,18 +317,18 @@ export default function SkillDetailScreen() {
         <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} className="flex-1 justify-center bg-black/50 p-6">
           <View className="bg-white dark:bg-gray-900 rounded-3xl p-6 border border-gray-200 dark:border-gray-800">
             <View className="flex-row justify-between items-center mb-6">
-              <Text className="text-lg font-black text-gray-900 dark:text-white">Edit Pillar</Text>
+              <Text className="text-lg font-black text-gray-900 dark:text-white">{t('skillDetail.editPillar')}</Text>
               <Pressable onPress={() => { setEditPillarVisible(false); setEditingPillarId(null); }}>
                 <Feather name="x" size={20} color={isDark ? "white" : "black"} />
               </Pressable>
             </View>
-            <Text className="text-sm font-bold text-gray-500 dark:text-gray-400 mb-2">Pillar Name</Text>
+            <Text className="text-sm font-bold text-gray-500 dark:text-gray-400 mb-2">{t('skillDetail.pillarName')}</Text>
             <TextInput
               value={editPillarName}
               onChangeText={setEditPillarName}
               style={{ backgroundColor: isDark ? '#1F2937' : '#F3F4F6', borderRadius: 12, padding: 16, color: isDark ? 'white' : '#111827', fontWeight: '600', marginBottom: 16 }}
             />
-            <Text className="text-sm font-bold text-gray-500 dark:text-gray-400 mb-2">Total Hours</Text>
+            <Text className="text-sm font-bold text-gray-500 dark:text-gray-400 mb-2">{t('skillDetail.totalHours')}</Text>
             <TextInput
               value={editPillarHours}
               onChangeText={setEditPillarHours}
@@ -332,11 +336,12 @@ export default function SkillDetailScreen() {
               style={{ backgroundColor: isDark ? '#1F2937' : '#F3F4F6', borderRadius: 12, padding: 16, color: isDark ? 'white' : '#111827', fontWeight: '600', marginBottom: 24 }}
             />
             <Pressable onPress={handleSaveEditPillar} className="bg-blue-600 py-4 rounded-xl items-center">
-              <Text className="text-white font-black">Save Changes</Text>
+              <Text className="text-white font-black">{t('skillDetail.saveChanges')}</Text>
             </Pressable>
           </View>
         </KeyboardAvoidingView>
       </Modal>
     </SafeAreaView>
+    </>
   );
 }

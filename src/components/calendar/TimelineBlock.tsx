@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { View, Text, Pressable } from 'react-native';
 
 interface Props {
@@ -13,7 +14,7 @@ interface Props {
 
 import { Feather } from '@expo/vector-icons';
 
-export function TimelineBlock({ title, startMinutes, durationMinutes, pixelsPerMinute, type, skillIcon, color, onPress }: Props) {
+export const TimelineBlock = memo(function TimelineBlock({ title, startMinutes, durationMinutes, pixelsPerMinute, type, skillIcon, color, onPress }: Props) {
   const top = startMinutes * pixelsPerMinute;
   const height = durationMinutes * pixelsPerMinute;
   const isReal = type === 'real';
@@ -51,4 +52,4 @@ export function TimelineBlock({ title, startMinutes, durationMinutes, pixelsPerM
       )}
     </Container>
   );
-}
+});

@@ -3,7 +3,8 @@ import { View, Text, ScrollView, TextInput, Pressable, useColorScheme, KeyboardA
 import { Feather, Ionicons } from '@expo/vector-icons';
 import { useTaskStore } from '@/store/useTaskStore';
 import * as Haptics from 'expo-haptics';
-import { format } from 'date-fns';
+import { formatDate } from '@/utils/time';
+import { useTranslation } from '@/hooks/useTranslation';
 import { Modal } from 'react-native';
 
 const PROJECT_COLORS = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899'];
@@ -13,6 +14,7 @@ interface Props {
 }
 
 export function TaskListView({ selectedDate }: Props) {
+  const { t } = useTranslation();
   const colorScheme = useColorScheme();
   const isDark = colorScheme === 'dark';
   
@@ -62,9 +64,9 @@ export function TaskListView({ selectedDate }: Props) {
     >
       <ScrollView className="flex-1 px-5 pt-6" contentContainerStyle={{ paddingBottom: 150 }}>
         <View className="mb-4">
-          <Text className="text-xl font-black text-gray-900 dark:text-white">To-Do List</Text>
+          <Text className="text-xl font-black text-gray-900 dark:text-white">{t('calendarComp.dailyTasks')}</Text>
           <Text className="text-xs font-bold text-gray-500 dark:text-gray-400 mt-1 uppercase tracking-wider">
-            {format(selectedDate, 'EEEE, MMM d')}
+            {formatDate(selectedDate, 'EEEE, MMM d')}
           </Text>
         </View>
 
@@ -76,7 +78,7 @@ export function TaskListView({ selectedDate }: Props) {
               className={`px-4 py-2 rounded-full border ${activeProjectId === 'all' ? 'bg-gray-900 dark:bg-white border-gray-900 dark:border-white' : 'bg-transparent border-gray-200 dark:border-gray-800'}`}
             >
               <Text className={`font-bold text-sm ${activeProjectId === 'all' ? 'text-white dark:text-gray-900' : 'text-gray-500 dark:text-gray-400'}`}>
-                All
+                {t('calendarComp.all')}
               </Text>
             </Pressable>
             
@@ -109,7 +111,7 @@ export function TaskListView({ selectedDate }: Props) {
             >
               <Feather name="plus" size={14} color={isDark ? '#9CA3AF' : '#6B7280'} />
               <Text className="font-bold text-sm text-gray-500 dark:text-gray-400">
-                New List
+                {t('calendarComp.newList')}
               </Text>
             </Pressable>
           </ScrollView>
@@ -120,7 +122,7 @@ export function TaskListView({ selectedDate }: Props) {
           <TextInput
             value={newTaskTitle}
             onChangeText={setNewTaskTitle}
-            placeholder="Add a new task..."
+            placeholder={t('calendarComp.addNewTask')}
             placeholderTextColor={isDark ? '#6B7280' : '#9CA3AF'}
             onSubmitEditing={handleAddTask}
             className="flex-1 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl px-4 py-3 text-gray-900 dark:text-white font-bold"
@@ -138,7 +140,7 @@ export function TaskListView({ selectedDate }: Props) {
           {activeTasks.length === 0 && completedTasks.length === 0 ? (
             <View className="items-center justify-center py-10 opacity-50">
               <Feather name="check-circle" size={40} color={isDark ? '#9CA3AF' : '#6B7280'} />
-              <Text className="text-gray-500 dark:text-gray-400 font-bold mt-4">All clear for today!</Text>
+              <Text className="text-gray-500 dark:text-gray-400 font-bold mt-4">{t('calendarComp.noTasksForThisDay')}</Text>
             </View>
           ) : (
             activeTasks.map(task => {
@@ -174,7 +176,7 @@ export function TaskListView({ selectedDate }: Props) {
         {completedTasks.length > 0 && (
           <View>
             <Text className="text-sm font-black text-gray-400 dark:text-gray-600 uppercase tracking-widest mb-4">
-              Selesai ({completedTasks.length})
+              {t('calendarComp.completed')} ({completedTasks.length})
             </Text>
             <View className="gap-3 opacity-60">
               {completedTasks.map(task => (
@@ -205,18 +207,18 @@ export function TaskListView({ selectedDate }: Props) {
         <View className="flex-1 bg-black/50 justify-center px-6">
           <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
             <View className="bg-white dark:bg-gray-900 rounded-3xl p-6 shadow-xl">
-              <Text className="text-xl font-black text-gray-900 dark:text-white mb-4">Create New List</Text>
+              <Text className="text-xl font-black text-gray-900 dark:text-white mb-4">{t('calendarComp.createNewList')}</Text>
               
               <TextInput
                 value={newProjectName}
                 onChangeText={setNewProjectName}
-                placeholder="List Name (e.g. Work, Thesis)"
+                placeholder={t('calendarComp.listNamePlaceholder')}
                 placeholderTextColor={isDark ? '#6B7280' : '#9CA3AF'}
                 className="bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl px-4 py-3 text-gray-900 dark:text-white font-bold mb-6"
                 autoFocus
               />
 
-              <Text className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">List Color</Text>
+              <Text className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">{t('calendarComp.listColor')}</Text>
               <View className="flex-row justify-between mb-8">
                 {PROJECT_COLORS.map(color => (
                   <Pressable
@@ -235,7 +237,7 @@ export function TaskListView({ selectedDate }: Props) {
                   onPress={() => setProjectModalVisible(false)}
                   className="flex-1 py-4 bg-gray-100 dark:bg-gray-800 rounded-xl items-center"
                 >
-                  <Text className="font-bold text-gray-600 dark:text-gray-300">Cancel</Text>
+                  <Text className="font-bold text-gray-600 dark:text-gray-300">{t('calendarComp.cancel')}</Text>
                 </Pressable>
                 <Pressable 
                   onPress={() => {
@@ -248,7 +250,7 @@ export function TaskListView({ selectedDate }: Props) {
                   }}
                   className="flex-1 py-4 bg-blue-600 rounded-xl items-center"
                 >
-                  <Text className="font-bold text-white">Create List</Text>
+                  <Text className="font-bold text-white">{t('calendarComp.createList')}</Text>
                 </Pressable>
               </View>
             </View>

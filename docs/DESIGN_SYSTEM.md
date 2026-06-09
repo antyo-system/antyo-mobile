@@ -85,8 +85,4 @@ Jika Anda menggambar ulang UI untuk di-*mockup*, perhatikan aturan *styling* ini
 > 3. Tulis *headline* *banner* Anda menggunakan font **Inter Black**.
 > 4. Jika butuh warna aksen menyala (*glowing*), gunakan warna kebesaran kita: **Blue 600** (`#2563EB`).
 
----
 
-## 🌐 Language Policy (CRITICAL)
-- **Primary Language:** The application UI (buttons, text, tooltips, placeholders, error messages, empty states) MUST ALWAYS be written in **English**.
-- **No Indonesian in UI:** Do not use Indonesian or any other language in the application code, regardless of the language used to communicate with the user in the prompt.

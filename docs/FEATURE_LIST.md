@@ -12,7 +12,8 @@ If a feature is checked here, it exists in the codebase and is fully functional.
 - [x] **Smart Timer Mode:** Classic countdown timer.
 - [x] **Pomodoro Chaining:** Automatically play a break after a focus session, and vice versa using the Auto-Play setting.
 - [x] **Stopwatch Mode:** Open-ended count-up timer for flow states.
-- [x] **Smart Routine Banner:** Auto-detects if a scheduled routine is active right now and prompts the user to load it.
+- [x] **Smart Routine Banner:** Dynamic banner that bridges the gap between planned schedules and real focus sessions, calculating exact remaining time for late starts.
+- [x] **Soft Overlap Warning:** Non-intrusive alerts that elegantly warn users if their manual timer duration will bleed into an upcoming scheduled plan.
 - [x] **Tutorial Overlay:** Custom Spotlight onboarding for first-time users.
 - [x] **Completion Gamification:** Highly satisfying animated overlay (spring bounce + haptic feedback) when finishing a session or leveling up.
 

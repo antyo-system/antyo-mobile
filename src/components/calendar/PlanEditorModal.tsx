@@ -9,6 +9,7 @@ import { useTimerStore } from '@/store/useTimerStore';
 import { Feather } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { CalendarPicker } from './CalendarPicker';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface Props {
   visible: boolean;
@@ -37,6 +38,7 @@ const parseTimeInput = (str: string, defaultMins: number) => {
 };
 
 export function PlanEditorModal({ visible, plan, onClose, onSave, onDelete }: Props) {
+  const { t } = useTranslation();
   const { sleepStart, sleepEnd } = useSettingsStore();
   const [title, setTitle] = useState('');
   const [recurrence, setRecurrence] = useState<Recurrence>('none');
@@ -140,7 +142,7 @@ export function PlanEditorModal({ visible, plan, onClose, onSave, onDelete }: Pr
         >
           <View className="flex-row justify-between items-center mb-8">
             <Text className="text-2xl font-black text-gray-900 dark:text-white">
-              {plan && plan.id && plan.title ? 'Edit Plan' : 'New Plan'}
+              {plan && plan.id && plan.title ? t('planEditor.editPlan') : t('planEditor.newPlan')}
             </Text>
             <Pressable onPress={onClose} className="p-2 -mr-2 bg-gray-100 dark:bg-gray-800 rounded-full">
               <Text className="text-gray-500 font-bold px-2">X</Text>
@@ -148,11 +150,11 @@ export function PlanEditorModal({ visible, plan, onClose, onSave, onDelete }: Pr
           </View>
 
           <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
-            <Text className="text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Plan Title</Text>
+            <Text className="text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">{t('planEditor.planTitle')}</Text>
             <TextInput
               value={title}
               onChangeText={setTitle}
-              placeholder="e.g., Deep Work"
+              placeholder={t('planEditor.planTitlePlaceholder')}
               placeholderTextColor="#9ca3af"
               className="bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-4 rounded-2xl text-gray-900 dark:text-white font-bold text-lg mb-6 shadow-sm"
               autoFocus={!plan?.title}
@@ -161,17 +163,17 @@ export function PlanEditorModal({ visible, plan, onClose, onSave, onDelete }: Pr
             {/* Date + All Day + Remind Me row */}
             <View className="flex-row gap-3 mb-4">
               <View style={{ flex: 2 }}>
-                <Text className="text-xs font-bold text-gray-500 dark:text-gray-400 mb-1.5 uppercase tracking-wider">Date</Text>
+                <Text className="text-xs font-bold text-gray-500 dark:text-gray-400 mb-1.5 uppercase tracking-wider">{t('planEditor.date')}</Text>
                 <CalendarPicker selectedDate={planDate} onSelectDate={setPlanDate} />
               </View>
               <View style={{ flex: 1 }}>
-                <Text className="text-[10px] font-bold text-gray-500 dark:text-gray-400 mb-1.5 uppercase tracking-wider text-center">All Day</Text>
+                <Text className="text-[10px] font-bold text-gray-500 dark:text-gray-400 mb-1.5 uppercase tracking-wider text-center">{t('planEditor.allDay')}</Text>
                 <View className="items-center justify-center bg-gray-50 dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 h-[56px]">
                   <Switch value={isAllDay} onValueChange={setIsAllDay} />
                 </View>
               </View>
               <View style={{ flex: 1 }}>
-                <Text className="text-[10px] font-bold text-gray-500 dark:text-gray-400 mb-1.5 uppercase tracking-wider text-center">Remind</Text>
+                <Text className="text-[10px] font-bold text-gray-500 dark:text-gray-400 mb-1.5 uppercase tracking-wider text-center">{t('planEditor.remind')}</Text>
                 <Pressable 
                   onPress={() => setIsReminderEnabled(!isReminderEnabled)}
                   className={`items-center justify-center rounded-2xl border h-[56px] ${
@@ -190,7 +192,7 @@ export function PlanEditorModal({ visible, plan, onClose, onSave, onDelete }: Pr
             {!isAllDay && (
               <View className="flex-row gap-3 mb-4">
                 <View style={{ flex: 1 }}>
-                  <Text className="text-xs font-bold text-gray-500 dark:text-gray-400 mb-1.5 uppercase tracking-wider">Start</Text>
+                  <Text className="text-xs font-bold text-gray-500 dark:text-gray-400 mb-1.5 uppercase tracking-wider">{t('planEditor.start')}</Text>
                   <TextInput
                     value={startTimeStr}
                     onChangeText={(val) => handleTimeInput(val, setStartTimeStr)}
@@ -202,7 +204,7 @@ export function PlanEditorModal({ visible, plan, onClose, onSave, onDelete }: Pr
                   />
                 </View>
                 <View style={{ flex: 1 }}>
-                  <Text className="text-xs font-bold text-gray-500 dark:text-gray-400 mb-1.5 uppercase tracking-wider">End</Text>
+                  <Text className="text-xs font-bold text-gray-500 dark:text-gray-400 mb-1.5 uppercase tracking-wider">{t('planEditor.end')}</Text>
                   <TextInput
                     value={endTimeStr}
                     onChangeText={(val) => handleTimeInput(val, setEndTimeStr)}
@@ -216,7 +218,7 @@ export function PlanEditorModal({ visible, plan, onClose, onSave, onDelete }: Pr
               </View>
             )}
 
-            <Text className="text-xs font-bold text-gray-500 dark:text-gray-400 mb-1.5 uppercase tracking-wider">Color</Text>
+            <Text className="text-xs font-bold text-gray-500 dark:text-gray-400 mb-1.5 uppercase tracking-wider">{t('planEditor.color')}</Text>
             <View className="flex-row justify-between mb-6 bg-gray-50 dark:bg-gray-900 p-3 rounded-2xl border border-gray-200 dark:border-gray-800">
               {PLAN_COLORS.map(c => (
                 <Pressable
@@ -230,7 +232,7 @@ export function PlanEditorModal({ visible, plan, onClose, onSave, onDelete }: Pr
               ))}
             </View>
 
-            <Text className="text-xs font-bold text-gray-500 dark:text-gray-400 mb-1.5 uppercase tracking-wider">Link to Skill (Mastery)</Text>
+            <Text className="text-xs font-bold text-gray-500 dark:text-gray-400 mb-1.5 uppercase tracking-wider">{t('planEditor.linkToSkill')}</Text>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} className="mb-6 -mx-6 px-6">
               <View className="flex-row gap-2 pr-6">
                 <Pressable
@@ -241,7 +243,7 @@ export function PlanEditorModal({ visible, plan, onClose, onSave, onDelete }: Pr
                       : 'bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-800'
                   }`}
                 >
-                  <Text className={`font-bold ${skillId === null ? 'text-white dark:text-gray-900' : 'text-gray-500'}`}>None</Text>
+                  <Text className={`font-bold ${skillId === null ? 'text-white dark:text-gray-900' : 'text-gray-500'}`}>{t('planEditor.none')}</Text>
                 </Pressable>
                 
                 {skills.map(skill => {
@@ -280,7 +282,7 @@ export function PlanEditorModal({ visible, plan, onClose, onSave, onDelete }: Pr
 
             {skillId && skills.find(s => s.id === skillId)?.pillars.length ? (
               <>
-                <Text className="text-xs font-bold text-gray-500 dark:text-gray-400 mb-1.5 uppercase tracking-wider">Link to Subskill (Pillar)</Text>
+                <Text className="text-xs font-bold text-gray-500 dark:text-gray-400 mb-1.5 uppercase tracking-wider">{t('planEditor.linkToSubskill')}</Text>
                 <ScrollView horizontal showsHorizontalScrollIndicator={false} className="mb-6 -mx-6 px-6">
                   <View className="flex-row gap-2 pr-6">
                     <Pressable
@@ -291,7 +293,7 @@ export function PlanEditorModal({ visible, plan, onClose, onSave, onDelete }: Pr
                           : 'bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-800'
                       }`}
                     >
-                      <Text className={`text-xs font-bold ${pillarId === null ? 'text-white dark:text-gray-900' : 'text-gray-500'}`}>None</Text>
+                      <Text className={`text-xs font-bold ${pillarId === null ? 'text-white dark:text-gray-900' : 'text-gray-500'}`}>{t('planEditor.none')}</Text>
                     </Pressable>
                     
                     {skills.find(s => s.id === skillId)?.pillars.map(pillar => {
@@ -317,16 +319,16 @@ export function PlanEditorModal({ visible, plan, onClose, onSave, onDelete }: Pr
               </>
             ) : null}
 
-            <Text className="text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Recurrence</Text>
+            <Text className="text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">{t('planEditor.recurrence')}</Text>
             <View className="flex-row flex-wrap gap-2 mb-4">
               {([
-                { id: 'none', label: 'Once' },
-                { id: 'daily', label: 'Daily' },
-                { id: 'weekdays', label: 'Weekdays' },
-                { id: 'weekly', label: 'Weekly' },
-                { id: 'monthly', label: 'Monthly' },
-                { id: 'annually', label: 'Annually' },
-                { id: 'specific_days', label: 'Custom Days' },
+                { id: 'none', label: t('planEditor.once') },
+                { id: 'daily', label: t('planEditor.daily') },
+                { id: 'weekdays', label: t('planEditor.weekdays') },
+                { id: 'weekly', label: t('planEditor.weekly') },
+                { id: 'monthly', label: t('planEditor.monthly') },
+                { id: 'annually', label: t('planEditor.annually') },
+                { id: 'specific_days', label: t('planEditor.customDays') },
               ] as { id: Recurrence; label: string }[]).map((r) => (
                 <Pressable
                   key={r.id}
@@ -350,7 +352,7 @@ export function PlanEditorModal({ visible, plan, onClose, onSave, onDelete }: Pr
 
             {recurrence === 'specific_days' && (
               <View className="flex-row justify-between mb-8 bg-gray-50 dark:bg-gray-900 p-4 rounded-2xl border border-gray-200 dark:border-gray-800">
-                {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((dayStr, index) => {
+                {t('calendarComp.weekDaysInitial').split(',').map((dayStr, index) => {
                   const isSelected = recurrenceDays.includes(index);
                   return (
                     <Pressable
@@ -377,11 +379,11 @@ export function PlanEditorModal({ visible, plan, onClose, onSave, onDelete }: Pr
               </View>
             )}
 
-            <Text className="text-sm font-bold text-gray-700 dark:text-gray-300 mb-2 mt-4">Notes (Optional)</Text>
+            <Text className="text-sm font-bold text-gray-700 dark:text-gray-300 mb-2 mt-4">{t('planEditor.notes')}</Text>
             <TextInput
               value={notes}
               onChangeText={setNotes}
-              placeholder="Add details or context..."
+              placeholder={t('planEditor.notesPlaceholder')}
               placeholderTextColor="#9ca3af"
               multiline
               textAlignVertical="top"
@@ -464,7 +466,7 @@ export function PlanEditorModal({ visible, plan, onClose, onSave, onDelete }: Pr
               onPress={handleSave}
               className="flex-1 bg-blue-600 py-4 rounded-2xl items-center justify-center shadow-lg shadow-blue-500/30"
             >
-              <Text className="text-white font-black tracking-wider uppercase text-sm">Save Plan</Text>
+              <Text className="text-white font-black tracking-wider uppercase text-sm">{t('planEditor.savePlan')}</Text>
             </Pressable>
           </View>
         </KeyboardAvoidingView>

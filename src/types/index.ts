@@ -13,6 +13,7 @@ export interface Session {
   skillId?: string | null;
   pillarId?: string | null;
   color?: string;
+  notes?: string;
 }
 
 export interface Plan {

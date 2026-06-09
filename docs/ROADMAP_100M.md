@@ -1,72 +1,85 @@
-# ANTYO Focus: Roadmap to 100M Downloads 🚀
+# ANTYO Focus: The "Facebook Strategy" Blueprint 🚀
 
 > "Most productivity apps only know what users planned to do. Pomodoro apps know timer data. Calendar apps know scheduled plans. Neither knows what actually happened. ANTYO Focus solves this by recording focus/distracted durations and visualizing them on a calendar alongside your planned blocks."
 
-Membangun aplikasi dari MVP hingga mencapai *1 juta hingga 100 juta unduhan* membutuhkan transisi fokus dari sekadar **fitur** menjadi **psikologi pengguna (habit-forming)** dan **growth loops (viralitas)**. 
+Strategi **"Facebook"** berarti: **Pertumbuhan Pengguna Terlebih Dahulu, Uang Belakangan.** Jangan kenakan biaya, jangan pasang iklan murahan, dan jangan membatasi fitur inti sampai aplikasi ini menjadi candu yang tidak bisa dilepaskan oleh penggunanya.
 
-Di bawah ini adalah rancangan strategis untuk ANTYO Focus, terbagi menjadi Roadmap Produk dan Strategi Monetisasi, dengan tetap mematuhi prinsip *5-Step Algorithm* (Buang yang tidak perlu, perkuat yang penting).
-
----
-
-## 🗺️ Product Roadmap (Menuju Skala Global)
-
-### Phase 1: The Bulletproof Foundation (Bulan 1-2)
-*Fokus: Retensi D-1 & D-7. Pengguna harus jatuh cinta pada pandangan pertama.*
-* ~~**Polish UI/UX:**~~ ✅ *(Sudah Selesai)* Animasi *micro-interaction* yang sangat memuaskan saat *timer* selesai atau naik level.
-* ~~**Data Robustness:**~~ ✅ *(Sudah Selesai)* Memastikan *local-first storage* (Zustand + expo-file-system) sangat stabil dan tidak pernah kehilangan data sesi pengguna.
-
-### Phase 2: The Hook & Gamification (Bulan 3-5)
-*Fokus: Psikologi Habit 10.000 Jam.*
-* **Milestone Sharing:** Fitur *Share to Instagram Story / TikTok* yang sangat estetik ketika pengguna mencapai "100 Jam di Skill Coding". Ini adalah *growth loop* gratis.
-* ~~**Streaks & Heatmap:**~~ ✅ *(Sudah Selesai di Phase 1)* Kalender seperti GitHub *contributions* untuk memicu FOMO (Fear Of Missing Out) jika pengguna bolong fokus satu hari.
-* ~~**Pillars Expansion:**~~ ✅ *(Sudah Selesai)* Fitur *Skill Tree* visual di mana *Pillars* digambarkan seperti ranting keahlian di *game RPG*.
-
-### Phase 3: Cloud, Sync & Premium (Bulan 6-8)
-*Fokus: Infrastruktur Skala Besar & Monetisasi Awal.*
-* **Widgets & Live Activities:** Mendukung iOS Live Activities & Android Widgets agar *timer* selalu terlihat tanpa membuka aplikasi.
-* **Computer Vision Focus Tracking:** Fitur AI menggunakan kamera depan untuk melacak secara *real-time* waktu fokus asli (jika user ada di depan kamera) dan waktu distraksi (jika absen dari depan kamera). 
-* **Backend Integration:** Implementasi Supabase + Clerk untuk sinkronisasi antar perangkat (Cloud Sync).
-* **Paywall Integration:** Menggunakan RevenueCat untuk meluncurkan ANTYO Pro.
-* **Advanced Analytics (Pro):** Wawasan berbasis data (Jam paling produktif, korelasi hari vs efisiensi).
-
-### Phase 4: Social Proof & B2B (Bulan 9-12+)
-*Fokus: Efek Jaringan & Pertumbuhan Eksponensial (10M+)*
-* **Leaderboards / Squads:** Pengguna bisa membuat grup belajar/kerja bersama teman. "Siapa yang paling fokus minggu ini?"
-* **B2B / Team Dashboard:** Menjual ke perusahaan atau kampus untuk melacak *deep work* karyawan/mahasiswa.
-* **AI Coaching (Pro):** Menggunakan AI untuk menganalisis pola kerja pengguna dan menyarankan jadwal istirahat/fokus yang optimal (mengikuti hukum *Accelerate Cycle Time*).
+Berikut adalah *Master Blueprint* dari MVP hingga menghasilkan ratusan juta per bulan secara pasif.
 
 ---
 
-## 💰 Monetization Strategy (Menghasilkan $1M+ ARR)
+## 📅 Timeline & Eksekusi Bisnis
 
-Model yang terbukti paling sukses untuk aplikasi produktivitas (seperti Forest, Todoist, Notion) adalah **Freemium**. Jangan pernah menaruh fitur inti (*core timer*) di belakang *paywall*.
+### Phase 1: Validasi Mesin & Closed Alpha (Bulan 1 - 2)
+*Status Kita Saat Ini.* Fokus membuktikan bahwa *core loop* (Plan -> Focus -> Stats) berjalan tanpa *bug* fatal.
 
-### 1. ANTYO Pro (B2C Subscription)
-**Harga:** ~$3.99/bulan atau $29.99/tahun (Terapkan *Purchasing Power Parity* per negara).
-**Fitur Premium:**
-* **Cloud Sync:** Sinkronisasi data di HP, Tablet, dan Web.
-* **Unlimited Skills & Pillars:** Gratis maksimal 3 Skill. Pro tanpa batas.
-* **Advanced Statistics:** Ekspor data ke CSV, analitik prediktif, grafik tahunan.
-* **Aesthetic Customization:** Tema eksklusif (Dark Mode OLED, Neon, dll), Ikon Aplikasi Kustom, Suara *White Noise* premium untuk fokus.
+*   **Fitur Produk:** Stabilisasi v1.5.1. Tambahkan fitur penyelamat nyawa: **Local Data Export/Import (JSON)** agar data 10.000 jam user aman meski ganti HP.
+*   **Pengujian Tertutup (Closed Alpha):** Undang 20-50 orang (teman, kerabat, komunitas Discord) via **Apple TestFlight** & **Google Play Internal Testing**. Kumpulkan semua komplain mereka.
+*   **Sistem & Marketing:** 
+    *   Beli domain (contoh: `antyofocus.com` atau `antyo.app`).
+    *   Buat **Landing Page sederhana** (Satu halaman statis). Isinya: *Trailer* estetik aplikasi dan kotak "Join Waitlist / Dapatkan Akses Awal". Kumpulkan email mereka.
+*   **Legal & Administrasi:** Belum perlu mendirikan PT. Cukup beli akun Apple Developer Program ($99/tahun) dan Google Play Console ($25 *sekali bayar*) atas nama pribadi Anda. Buat dokumen *Privacy Policy* standar.
 
-### 2. ANTYO Teams (B2B SaaS)
-**Harga:** $6/user/bulan.
-**Target Pasar:** Agensi kreatif, *startup*, dan kampus.
-**Fitur:**
-* *Shared Leaderboards*, integrasi ke Slack/Discord ("Timur sedang Deep Work, jangan diganggu"), dan laporan produktivitas tim.
+### Phase 2: Open Beta & "The 10,000 Hours Movement" (Bulan 3 - 6)
+Fokus mencapai **10.000 - 50.000 pengguna pertama** secara 100% GRATIS tanpa iklan.
 
-### 3. One-Time Purchases (Micro-transactions)
-* **Planting / Avatar:** Mirip aplikasi Forest. Membeli kosmetik digital (ikon avatar, skin timer) seharga $0.99 - $1.99.
+*   **Rilis Terbuka:** Publikasikan aplikasi secara resmi ke App Store dan Play Store. 
+*   **Fitur Produk:** Rilis fitur **Milestone Social Sharing**. Jika pengguna mencapai "100 Jam Belajar Coding", munculkan kartu estetik yang bisa langsung di-*share* ke Instagram Stories. Ini adalah **Mesin Viralitas Gratis** Anda.
+*   **Marketing (No Budget):**
+    *   **TikTok & IG Reels:** Buat konten *Aesthetic Lo-Fi Study/Work Setup*. Pamerkan layar ANTYO (iPad/iPhone) dengan tren *#StudyTok* atau *#ADHDProductivity*.
+    *   **Product Hunt Launch:** Buat peluncuran resmi. Targetkan menjadi "Product of the Day" agar diliput oleh media *tech* global.
+*   **Feedback Loop:** Pasang tombol besar di Settings aplikasi: *"Bantu Kami Berkembang (Join Discord/Telegram)"*. Jadilah *Founder* yang sangat dekat dengan *user* awal. Dengarkan permintaan mereka.
+
+### Phase 3: The Retention Engine & Legal Foundation (Bulan 7 - 12)
+Anda sudah punya puluhan ribu pengguna yang kecanduan. Sekarang, pastikan mereka tidak pindah aplikasi.
+
+*   **Fitur Produk (Cloud & Widgets):**
+    *   Mulai integrasi **Backend (Supabase + Clerk)** agar data tersinkronisasi antar perangkat (HP & Laptop/Tablet).
+    *   Implementasi **iOS Live Activities & Android Widgets** agar *timer* selalu terpampang di *Lock Screen*.
+*   **Marketing:** SEO. Mulai tulis artikel di *website* Anda seperti "Cara menggunakan kalender untuk penderita ADHD", "Aturan 10.000 jam", agar *traffic* datang dari Google secara pasif.
+*   **Legalitas:** Mulai dirikan **Badan Usaha** (PT Perorangan atau PT Biasa, atau LLC jika Anda mengejar pasar US) untuk persiapan masuknya uang masuk dari *App Store*. Daftarkan **Merek Dagang (HAKI)** "ANTYO Focus" agar tidak diklaim kompetitor.
+
+### Phase 4: "The Switch" (Monetisasi) (Tahun Kedua / Bulan 12+)
+Pengguna sudah mencintai produk Anda, mereka butuh *Cloud Sync*, mereka butuh analitik lanjutan. Inilah saatnya memutar keran *profit*.
+
+*   **Fitur Produk (Premium Paywall):**
+    *   Gunakan **RevenueCat** untuk manajemen langganan (App Store / Play Store).
+    *   Terapkan fitur mahal (*Cloud Sync*, *Advanced Analytics*, dan **Computer Vision Real Focus Tracking**) ke dalam **ANTYO Pro**.
+    *   Biarkan fitur *core timer* & kalender dasar tetap **100% GRATIS selamanya**.
+
+### Phase 5: The ANTYO Ecosystem (Ekspansi & Multi-Apps) (Tahun Kedua/Ketiga)
+*Jangan membangun aplikasi kedua sebelum aplikasi pertama mencapai Product-Market Fit dan Cashflow Positif.* Setelah ANTYO Focus berjalan otomatis dan menghasilkan profit bulanan, saatnya memperluas *brand*.
+
+*   **Aplikasi Baru:** Peluncuran **ANTYO Finance** (Atau ANTYO Health/Sleep). Menggunakan filosofi desain "Out of the box" yang sama (misalnya: *Plan vs Reality* dalam pengeluaran uang, visualisasi interaktif yang mendobrak kebosanan aplikasi *finance* biasa).
+*   **Super-Subscription (Cross-Selling):** Pengguna ANTYO Pro di Focus otomatis mendapat akses premium di ANTYO Finance, menciptakan ekosistem loyal layaknya Apple atau Adobe Creative Cloud.
+*   **Target:** Menguasai vertikal Kehidupan (Waktu, Uang, Kesehatan) di bawah satu *brand* besar: **ANTYO System**.
 
 ---
 
-## 📣 Go-To-Market (Cara Mencapai 100M Download)
+## 💰 Strategi Monetisasi (Financial Projection)
 
-1. **TikTok & Reels (Organik):** Buat konten *Aesthetic Study/Work Setup*. Tunjukkan layar ANTYO Focus di iPad/iPhone dengan *lo-fi music*. Aplikasi produktivitas meledak lewat tren *#StudyTok* dan *#TechTok*.
-2. **Product Hunt Launch:** Persiapkan peluncuran rapi dengan *trailer* estetik. Tuju "Product of the Day" untuk memancing media teknologi menulis tentang Anda.
-3. **App Store Optimization (ASO):** Targetkan kata kunci: *10000 hours, ADHD focus, pomodoro aesthetic, deep work tracker*.
+*   **Model:** Freemium (Langganan B2C). Jangan pernah gunakan iklan banner (AdMob) karena akan merusak estetika premium aplikasi Anda.
+*   **Harga Target:** ~$3.99/bulan atau $29.99/tahun (Sesuaikan secara otomatis per negara / *Purchasing Power Parity*).
+*   **Matematika Profitabilitas (Skala Menengah):**
+    *   Unduhan & Pengguna Aktif (MAU): **100.000 pengguna.**
+    *   *Conversion Rate* Industri (Gratis ke Berbayar): **3%**
+    *   Total Pelanggan Berbayar: **3.000 pengguna.**
+    *   **Pendapatan Bulanan (MRR):** 3.000 x ~$3.00 = **$9,000 USD (± Rp 140 Juta / Bulan) Pasif.**
+*   **Matematika Skala "Forest" (Skala Besar):**
+    *   Jika aplikasi menembus **500.000 MAU**.
+    *   3% konversi = 15.000 pengguna berbayar.
+    *   **Pendapatan Bulanan:** **$45,000 USD (± Rp 700 Juta / Bulan).**
+
+Jika Anda menghasilkan angka ini berturut-turut selama setahun, **Valuasi Startup / Aplikasi Anda** bernilai sekitar 4x dari *Annual Recurring Revenue* (ARR). Artinya, aplikasi ANTYO bisa diakuisisi (dijual) ke perusahaan raksasa seharga **Rp 10 Miliar hingga Rp 30 Miliar**.
 
 ---
 
-## 🧠 Core Identity (Jati Diri Aplikasi)
-Penting untuk selalu diingat oleh pengembang dan AI: **ANTYO Focus bukan sekadar "Focus Timer". ANTYO Focus adalah "Sistem Pelacak Penguasaan (Mastery)"**. Angka sakti "10.000 Jam" adalah senjata utama psikologis kita. Ini tentang mengubah pengguna menjadi "Ahli (Expert)" dalam keahlian mereka.
+## 🧠 Kesimpulan untuk Anda (Sang Founder)
+
+Aplikasi produktivitas sangat brutal, tetapi sangat menguntungkan. Jika Anda langsung menagih uang di bulan pertama saat aplikasi masih gampang "hancur", pengguna akan memberi *review* jelek dan aplikasi Anda akan mati di algoritma *App Store*.
+
+Gunakan strategi Facebook:
+1. Berikan *value* sebesar-besarnya secara gratis.
+2. Tunggu sampai mereka tidak bisa hidup tanpa data 10.000 jam mereka di aplikasi Anda.
+3. Baru jual "Kenyamanan" (*Cloud Sync*, Analitik AI mendalam).
+4. Nikmati *cashflow*.

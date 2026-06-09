@@ -2,8 +2,10 @@ import { View, Text, Pressable, Switch } from 'react-native';
 import { useShallow } from 'zustand/react/shallow';
 import { useTimerStore } from '@/store/useTimerStore';
 import * as Haptics from 'expo-haptics';
+import { useTranslation } from '@/hooks/useTranslation';
 
 export function TimerModeToggle() {
+  const { t } = useTranslation();
   const { mode, setMode, status } = useTimerStore(
     useShallow((s) => ({
       mode: s.mode,
@@ -26,7 +28,7 @@ export function TimerModeToggle() {
         className="active:opacity-60 py-2"
       >
         <Text className={`font-black text-xs tracking-[0.2em] uppercase ${mode === 'timer' ? 'text-blue-600 dark:text-blue-400' : 'text-gray-400 dark:text-gray-600'}`}>
-          Timer
+          {t('timer.timer')}
         </Text>
       </Pressable>
       <View className="w-8" />{/* Spacer instead of Switch */}
@@ -35,7 +37,7 @@ export function TimerModeToggle() {
         className="active:opacity-60 py-2"
       >
         <Text className={`font-black text-xs tracking-[0.2em] uppercase ${mode === 'stopwatch' ? 'text-blue-600 dark:text-blue-400' : 'text-gray-400 dark:text-gray-600'}`}>
-          Stopwatch
+          {t('timer.stopwatch')}
         </Text>
       </Pressable>
     </View>

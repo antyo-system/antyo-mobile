@@ -1,9 +1,10 @@
 import { ScrollView, View, Text, Pressable } from 'react-native';
-import { format, isSameDay, isToday } from 'date-fns';
+import { isSameDay, isToday } from 'date-fns';
 import { useMemo, useRef, useEffect, useState } from 'react';
-import { generateDateRange } from '@/utils/time';
+import { generateDateRange, formatDate } from '@/utils/time';
 import { MonthlyCalendarModal } from './MonthlyCalendarModal';
 import { Feather } from '@expo/vector-icons';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface Props {
   selectedDate: Date;
@@ -14,6 +15,7 @@ interface Props {
 }
 
 export function DateSelector({ selectedDate, onSelectDate, achievedDates, isCompareMode, onToggleCompareMode }: Props) {
+  const { t } = useTranslation();
   const [modalVisible, setModalVisible] = useState(false);
   
   // Generate 14 days in the past and 14 days in the future relative to the *selectedDate* so it updates when jumping months
@@ -34,7 +36,7 @@ export function DateSelector({ selectedDate, onSelectDate, achievedDates, isComp
       <View className="px-5 mb-4 flex-row items-center justify-between">
         <Pressable onPress={() => setModalVisible(true)} className="flex-row items-center flex-1">
           <Text className="text-2xl font-black tracking-tight text-gray-900 dark:text-white mr-1">
-            {format(selectedDate, 'MMMM yyyy')}
+            {formatDate(selectedDate, 'MMMM yyyy')}
           </Text>
           <Text className="text-[10px] text-gray-400 mt-1">▼</Text>
         </Pressable>
@@ -51,7 +53,7 @@ export function DateSelector({ selectedDate, onSelectDate, achievedDates, isComp
             }} 
             className="bg-gray-100 dark:bg-gray-900 px-3 py-1.5 rounded-full border border-gray-200 dark:border-gray-800"
           >
-            <Text className="text-[10px] font-black uppercase tracking-wider text-gray-600 dark:text-gray-400">Today</Text>
+            <Text className="text-[10px] font-black uppercase tracking-wider text-gray-600 dark:text-gray-400">{t('calendarComp.today')}</Text>
           </Pressable>
         </View>
       </View>
@@ -99,10 +101,10 @@ export function DateSelector({ selectedDate, onSelectDate, achievedDates, isComp
               className={`items-center justify-center rounded-2xl w-14 h-[72px] ${bgClass}`}
             >
               <Text className={`text-[10px] font-bold uppercase tracking-wider mb-1 ${textClassDay}`}>
-                {format(date, 'EEE')}
+                {formatDate(date, 'EEE')}
               </Text>
               <Text className={`text-xl font-black ${textClassNum}`}>
-                {format(date, 'd')}
+                {formatDate(date, 'd')}
               </Text>
             </Pressable>
           );

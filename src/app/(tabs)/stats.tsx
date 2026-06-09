@@ -18,8 +18,10 @@ import { LifetimeCountdown } from '@/components/stats/LifetimeCountdown';
 import { getWeeklyPlannedMinutes } from '@/utils/calendar';
 import { useAppStore } from '@/store/useAppStore';
 import { SpotlightOverlay, SpotlightStep, SpotlightCoords } from '@/components/tutorial/SpotlightOverlay';
+import { useTranslation } from '@/hooks/useTranslation';
 
 export default function StatsScreen() {
+  const { t } = useTranslation();
   const sessions = useSessionStore(s => s.sessions);
   const removeSession = useSessionStore(s => s.removeSession);
   
@@ -44,16 +46,16 @@ export default function StatsScreen() {
   useEffect(() => {
     if (!hasSeenStatsTutorial && isFocused) {
       setTutorialSteps([
-        { targetRef: timeWidgetsRef, text: "Step 1: Your Life on a Clock. See exactly how much time you have left today and in your lifetime.", holeType: 'rect', holePadding: 8 },
-        { targetRef: chartRef, text: "Step 2: Weekly Progress. Track your 10,000 hours flight time week by week.", holeType: 'rect', holePadding: 8 },
-        { targetRef: heatmapRef, text: "Step 3: Consistency is everything. Fill this board every single day to build unbreakable momentum.", holeType: 'rect', holePadding: 8 },
+        { targetRef: timeWidgetsRef, text: t('tutorial.stats.step1'), holeType: 'rect', holePadding: 8 },
+        { targetRef: chartRef, text: t('tutorial.stats.step2'), holeType: 'rect', holePadding: 8 },
+        { targetRef: heatmapRef, text: t('tutorial.stats.step3'), holeType: 'rect', holePadding: 8 },
       ]);
       const timeout = setTimeout(() => {
         setTutorialVisible(true);
       }, 500);
       return () => clearTimeout(timeout);
     }
-  }, [hasSeenStatsTutorial, isFocused]);
+  }, [hasSeenStatsTutorial, isFocused, t]);
 
   // Today Stats
   const todaysSessions = sessions.filter(s => isToday(new Date(s.startTime)));
@@ -76,13 +78,13 @@ export default function StatsScreen() {
 
   let coachFeedback = '';
   if (plannedMinutesThisWeek === 0) {
-    coachFeedback = "You haven't scheduled any Mastery Skills this week. Use the calendar to set your targets!";
+    coachFeedback = t('stats.feedbackNoPlan');
   } else if (adherenceScore >= 90) {
-    coachFeedback = "Outstanding! You stuck to your plan perfectly. Keep this momentum.";
+    coachFeedback = t('stats.feedbackOutstanding');
   } else if (adherenceScore >= 70) {
-    coachFeedback = "Good effort! You missed a few planned blocks, but you're largely on track.";
+    coachFeedback = t('stats.feedbackGood');
   } else {
-    coachFeedback = `You planned ${(plannedMinutesThisWeek/60).toFixed(1)} hours but only executed ${(executedMinutesThisWeek/60).toFixed(1)} hours. Let's set more realistic goals next week.`;
+    coachFeedback = t('stats.feedbackMissed').replace('{planned}', (plannedMinutesThisWeek/60).toFixed(1)).replace('{executed}', (executedMinutesThisWeek/60).toFixed(1));
   }
 
   // All-Time Stats
@@ -183,7 +185,7 @@ export default function StatsScreen() {
       <ScrollView ref={scrollViewRef} className="flex-1" contentContainerStyle={{ padding: 24, paddingBottom: 130 }}>
         <View className="flex-row justify-between items-center mb-8 mt-4">
           <Text className="text-3xl font-black tracking-tight text-gray-900 dark:text-white">
-            Statistics
+            {t('stats.title')}
           </Text>
           <View className="flex-row items-center gap-3">
             {currentStreak > 0 && (
@@ -214,7 +216,7 @@ export default function StatsScreen() {
             <Text className={`font-black tracking-widest uppercase text-[10px] mb-2 ${
               timeLeft.sleeping ? 'text-red-600 dark:text-red-500' : 'text-orange-600 dark:text-orange-500'
             }`}>
-              {timeLeft.sleeping ? 'Sleep Debt (Borrowed) 🌙' : 'Time Left Today'}
+              {timeLeft.sleeping ? t('stats.sleepDebt') : t('stats.timeLeftToday')}
             </Text>
             
             <Text className="mt-1 flex-row items-baseline" adjustsFontSizeToFit numberOfLines={1}>
@@ -252,12 +254,12 @@ export default function StatsScreen() {
         <View className="bg-white dark:bg-gray-900 rounded-3xl p-6 shadow-sm border border-gray-100 dark:border-gray-800 mb-8 mt-2">
           <View className="flex-row items-center gap-2 mb-4">
             <Feather name="target" size={20} color="#3B82F6" />
-            <Text className="text-gray-900 dark:text-white font-black text-xl">Plan vs. Reality</Text>
+            <Text className="text-gray-900 dark:text-white font-black text-xl">{t('stats.planVsReality')}</Text>
           </View>
 
           <View className="flex-row items-end justify-between mb-2">
             <View>
-              <Text className="text-gray-500 dark:text-gray-400 font-bold text-xs uppercase tracking-widest mb-1">Discipline Score</Text>
+              <Text className="text-gray-500 dark:text-gray-400 font-bold text-xs uppercase tracking-widest mb-1">{t('stats.disciplineScore')}</Text>
               <View className="flex-row items-baseline gap-1">
                 <Text className={`text-4xl font-black ${adherenceScore >= 70 ? 'text-blue-600 dark:text-blue-500' : 'text-orange-500'}`}>
                   {plannedMinutesThisWeek === 0 && executedMinutesThisWeek === 0 ? '--' : adherenceScore}
@@ -269,7 +271,7 @@ export default function StatsScreen() {
             </View>
             
             <View className="items-end">
-              <Text className="text-gray-500 dark:text-gray-400 text-[10px] font-bold uppercase tracking-wider mb-1">Executed / Planned</Text>
+              <Text className="text-gray-500 dark:text-gray-400 text-[10px] font-bold uppercase tracking-wider mb-1">{t('stats.executedPlanned')}</Text>
               <Text className="text-gray-900 dark:text-white font-black text-lg">
                 {(executedMinutesThisWeek / 60).toFixed(1)} <Text className="text-gray-400 text-sm">/ {(plannedMinutesThisWeek / 60).toFixed(1)} h</Text>
               </Text>
@@ -302,18 +304,18 @@ export default function StatsScreen() {
           <View className="bg-white dark:bg-gray-900 rounded-3xl p-6 shadow-sm border border-gray-100 dark:border-gray-800 mb-8">
             <View className="flex-row items-center gap-2 mb-4">
               <Text className="text-xl">🤖</Text>
-              <Text className="text-gray-900 dark:text-white font-black text-xl">Smart Analytics</Text>
+              <Text className="text-gray-900 dark:text-white font-black text-xl">{t('stats.smartAnalytics')}</Text>
             </View>
             
             <View className="flex-row gap-4 mb-4">
               <View className="flex-1">
-                <Text className="text-green-600 dark:text-green-500 text-[10px] font-black tracking-widest uppercase mb-1">Focused</Text>
+                <Text className="text-green-600 dark:text-green-500 text-[10px] font-black tracking-widest uppercase mb-1">{t('stats.focused')}</Text>
                 <Text className="text-green-600 dark:text-green-400 font-black text-2xl">
                   {formatLongTime(totalFocusDuration)}
                 </Text>
               </View>
               <View className="flex-1 border-l border-gray-100 dark:border-gray-800 pl-4">
-                <Text className="text-red-600 dark:text-red-500 text-[10px] font-black tracking-widest uppercase mb-1">Distracted</Text>
+                <Text className="text-red-600 dark:text-red-500 text-[10px] font-black tracking-widest uppercase mb-1">{t('stats.distracted')}</Text>
                 <Text className="text-red-600 dark:text-red-400 font-black text-2xl">
                   {formatLongTime(totalDistractedDuration)}
                 </Text>
@@ -326,14 +328,14 @@ export default function StatsScreen() {
             </View>
             
             <View className="flex-row justify-between">
-              <Text className="text-gray-500 dark:text-gray-400 font-bold text-xs">{focusPercentage}% Global Focus Score</Text>
-              <Text className="text-gray-500 dark:text-gray-400 font-bold text-xs">{distractedPercentage}% Distracted</Text>
+              <Text className="text-gray-500 dark:text-gray-400 font-bold text-xs">{focusPercentage}% {t('stats.globalFocusScore')}</Text>
+              <Text className="text-gray-500 dark:text-gray-400 font-bold text-xs">{distractedPercentage}% {t('stats.distracted')}</Text>
             </View>
           </View>
         )}
 
         <Text className="text-xl font-bold tracking-tight text-gray-900 dark:text-white mb-4">
-          Recent Sessions
+          {t('stats.recentSessions')}
         </Text>
 
         <View className="gap-3">
@@ -359,14 +361,14 @@ export default function StatsScreen() {
                   onPress={() => removeSession(session.id)}
                   hitSlop={15}
                 >
-                  <Text className="text-[10px] font-bold text-red-500 uppercase tracking-wider">Delete</Text>
+                  <Text className="text-[10px] font-bold text-red-500 uppercase tracking-wider">{t('stats.delete')}</Text>
                 </Pressable>
               </View>
             </View>
           ))}
 
           {sortedSessions.length === 0 && (
-            <Text className="text-center text-gray-500 font-medium my-4">No sessions recorded yet.</Text>
+            <Text className="text-center text-gray-500 font-medium my-4">{t('stats.noSessionsYet')}</Text>
           )}
         </View>
       </ScrollView>

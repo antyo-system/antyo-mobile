@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useMemo } from 'react';
+import { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import { ScrollView, View, PanResponder, Pressable, Text, Image, Platform } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useIsFocused } from '@react-navigation/native';
@@ -27,6 +27,7 @@ import { isSameDay, isToday, addDays, subDays } from 'date-fns';
 import { images } from '@/constants/images';
 import { useAppStore } from '@/store/useAppStore';
 import { SpotlightOverlay, SpotlightStep, SpotlightCoords } from '@/components/tutorial/SpotlightOverlay';
+import { useTranslation } from '@/hooks/useTranslation';
 
 const PIXELS_PER_MINUTE = 1.5;
 
@@ -116,6 +117,7 @@ function calculateLayout<T extends { startMinutes: number; durationMinutes?: num
 }
 
 export default function CalendarScreen() {
+  const { t } = useTranslation();
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [isCompareMode, setIsCompareMode] = useState(true);
   const insets = useSafeAreaInsets();
@@ -142,16 +144,16 @@ export default function CalendarScreen() {
   useEffect(() => {
     if (!hasSeenCalendarTutorial && isFocused) {
       setTutorialSteps([
-        { targetRef: dateRef, text: "Step 1: Your Life Calendar. See the big picture of what you plan vs what you actually execute.", holeType: 'rect', holePadding: 8 },
-        { targetRef: toggleRef, text: "Step 2: Plan vs Reality. Switch to 'Plan' to organize your day, switch to 'Reality' to see what truly happened.\n\nTip: Tap again to switch into Schedule list or Task list views!", holeType: 'rect', holePadding: 8 },
-        { targetRef: fabRef, text: "Step 3: Time Blocking. Tap here to block your focus sessions for tomorrow.", holeType: 'circle', holePadding: 16 },
+        { targetRef: dateRef, text: t('tutorial.calendar.step1'), holeType: 'rect', holePadding: 8 },
+        { targetRef: toggleRef, text: t('tutorial.calendar.step2'), holeType: 'rect', holePadding: 8 },
+        { targetRef: fabRef, text: t('tutorial.calendar.step3'), holeType: 'circle', holePadding: 16 },
       ]);
       const timeout = setTimeout(() => {
         setTutorialVisible(true);
       }, 500);
       return () => clearTimeout(timeout);
     }
-  }, [hasSeenCalendarTutorial, isFocused]);
+  }, [hasSeenCalendarTutorial, isFocused, t]);
 
   // Real Sessions
   const sessions = useSessionStore(s => s.sessions);
@@ -247,10 +249,14 @@ export default function CalendarScreen() {
     setEditorVisible(true);
   };
 
-  const handleEditPress = (plan: Plan) => {
+  const handleEditPress = useCallback((plan: Plan) => {
     setEditingPlan(plan);
     setEditorVisible(true);
-  };
+  }, []);
+
+  const handleSleepBlockPress = useCallback(() => {
+    setQuickSleepVisible(true);
+  }, []);
 
   const handleSavePlan = (data: Partial<Plan>) => {
     // If it exists in the store, update it. Otherwise, add it.
@@ -337,7 +343,7 @@ export default function CalendarScreen() {
           <Text className={`text-[10px] font-black tracking-[0.2em] uppercase ${
             (activeTab === 'plan' || activeTab === 'schedule') ? 'text-yellow-600 dark:text-yellow-500' : 'text-gray-400 dark:text-gray-600'
           }`}>
-            {activeTab === 'schedule' ? 'Schedule' : 'Plan'}
+            {activeTab === 'schedule' ? t('calendar.schedule') : t('calendar.plan')}
           </Text>
         </Pressable>
 
@@ -348,7 +354,7 @@ export default function CalendarScreen() {
           <Text className={`text-[10px] font-black tracking-[0.2em] uppercase ${
             (activeTab === 'real' || activeTab === 'task') ? 'text-blue-600 dark:text-blue-500' : 'text-gray-400 dark:text-gray-600'
           }`}>
-            {activeTab === 'task' ? 'Task' : 'Real'}
+            {activeTab === 'task' ? t('calendar.task') : t('calendar.real')}
           </Text>
         </Pressable>
 
@@ -386,7 +392,7 @@ export default function CalendarScreen() {
             startMinutes={block.start}
             durationMinutes={block.duration}
             pixelsPerMinute={PIXELS_PER_MINUTE}
-            onPress={() => setQuickSleepVisible(true)}
+            onPress={handleSleepBlockPress}
           />
         ))}
 

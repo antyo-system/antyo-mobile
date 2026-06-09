@@ -5,9 +5,23 @@ export interface ChangelogRelease {
   fixes: string[];
 }
 
-export const APP_VERSION = "1.5.1";
+export const APP_VERSION = "1.6.0";
 
 export const CHANGELOG: ChangelogRelease[] = [
+  {
+    version: "1.6.0",
+    date: new Date().toISOString().split('T')[0],
+    features: [
+      "Smart Routine Banner: Dynamic banner now smoothly bridges the gap between planned calendar schedules and real focus sessions.",
+      "Dynamic Time Calculation: Automatically calculates how late you are to a scheduled session and strictly loads the exact remaining time.",
+      "Soft Overlap Warning: Elegantly warns you if your manual timer duration will overlap with an upcoming scheduled plan.",
+      "Mandarin (Simplified) Translation: Full language support for Mandarin."
+    ],
+    fixes: [
+      "Fixed variable interpolation error (%%) in translation string parameters.",
+      "Fixed 'Scheduled Routine Active' UI showing missing or cropped texts."
+    ]
+  },
   {
     version: "1.5.1",
     date: new Date().toISOString().split('T')[0],

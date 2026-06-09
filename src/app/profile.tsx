@@ -8,16 +8,18 @@ import { useColorScheme } from 'react-native';
 import { useMemo, useState, useEffect } from 'react';
 import { ChangelogModal } from '@/components/profile/ChangelogModal';
 import { APP_VERSION } from '@/constants/changelog';
-import * as FileSystem from 'expo-file-system';
+import * as FileSystem from 'expo-file-system/legacy';
 import * as Sharing from 'expo-sharing';
 import { usePlanStore } from '@/store/usePlanStore';
 import { useAppStore } from '@/store/useAppStore';
+import { useTranslation } from '@/hooks/useTranslation';
 
 export default function ProfileScreen() {
   const sessions = useSessionStore(s => s.sessions);
   const plans = usePlanStore(s => s.plans);
   const colorScheme = useColorScheme();
   const isDark = colorScheme === 'dark';
+  const { t } = useTranslation();
 
   const {
     sleepStart, sleepEnd,
@@ -25,6 +27,7 @@ export default function ProfileScreen() {
     dailyFocusTargetHours,
     birthYear, retirementAge,
     appearance,
+    language,
     updateSettings,
   } = useSettingsStore();
 
@@ -62,12 +65,12 @@ export default function ProfileScreen() {
 
   const handleDeleteAllData = () => {
     Alert.alert(
-      'Delete All Data',
-      'This will permanently remove all sessions, plans, and tasks. This action cannot be undone.',
+      t('settings.deleteAllAlertTitle'),
+      t('settings.deleteAllAlertMessage'),
       [
-        { text: 'Cancel', style: 'cancel' },
+        { text: t('settings.cancel'), style: 'cancel' },
         {
-          text: 'Delete Everything',
+          text: t('settings.deleteEverything'),
           style: 'destructive',
           onPress: () => {
             useSessionStore.getState().clearSessions?.();
@@ -107,12 +110,12 @@ export default function ProfileScreen() {
       
       await Sharing.shareAsync(fileUri, {
         mimeType: 'text/plain',
-        dialogTitle: 'Export ANTYO Focus Data',
+        dialogTitle: t('settings.exportDataDialog'),
         UTI: 'public.plain-text'
       });
     } catch (err) {
       console.error('Export failed:', err);
-      Alert.alert('Error', 'Failed to export data.');
+      Alert.alert(t('settings.error'), t('settings.exportFailed'));
     }
   };
 
@@ -146,12 +149,12 @@ export default function ProfileScreen() {
       
       await Sharing.shareAsync(fileUri, {
         mimeType: 'text/csv',
-        dialogTitle: 'Export ANTYO Focus Data (CSV)',
+        dialogTitle: t('settings.exportCsvDialog'),
         UTI: 'public.comma-separated-values-text'
       });
     } catch (err) {
       console.error('CSV Export failed:', err);
-      Alert.alert('Error', 'Failed to export CSV data.');
+      Alert.alert(t('settings.error'), t('settings.exportCsvFailed'));
     }
   };
 
@@ -192,7 +195,7 @@ export default function ProfileScreen() {
         <Pressable onPress={() => router.back()} className="w-10 h-10 items-center justify-center rounded-full bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800">
           <Feather name="x" size={20} color={isDark ? 'white' : 'black'} />
         </Pressable>
-        <Text className="text-lg font-black text-gray-900 dark:text-white">Settings</Text>
+        <Text className="text-lg font-black text-gray-900 dark:text-white">{t('settings.title')}</Text>
         <View className="w-10" />
       </View>
 
@@ -200,7 +203,7 @@ export default function ProfileScreen() {
         
 
         {/* ── 3. Settings ── */}
-        <Text className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 ml-2">Settings</Text>
+        <Text className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 ml-2">{t('settings.groupSettings')}</Text>
         <View className="bg-white dark:bg-gray-900 rounded-2xl overflow-hidden border border-gray-100 dark:border-gray-800 mb-6">
           
           {/* Sleep Time */}
@@ -212,7 +215,7 @@ export default function ProfileScreen() {
               <View className="w-8 h-8 rounded-full bg-indigo-500/10 items-center justify-center">
                 <Feather name="moon" size={16} color="#6366F1" />
               </View>
-              <Text className="text-base font-semibold text-gray-900 dark:text-white">Sleep Time</Text>
+              <Text className="text-base font-semibold text-gray-900 dark:text-white">{t('settings.sleepTime')}</Text>
             </View>
             <View className="flex-row items-center gap-2">
               <Text className="text-sm font-bold text-gray-500 dark:text-gray-400">{sleepStart} – {sleepEnd}</Text>
@@ -224,7 +227,7 @@ export default function ProfileScreen() {
             <View className="px-4 py-4 bg-gray-50 dark:bg-gray-950 border-b border-gray-100 dark:border-gray-800">
               <View className="flex-row gap-4 mb-3">
                 <View className="flex-1">
-                  <Text className="text-[10px] font-bold text-gray-500 dark:text-gray-400 mb-1.5 uppercase tracking-wider">Bedtime</Text>
+                  <Text className="text-[10px] font-bold text-gray-500 dark:text-gray-400 mb-1.5 uppercase tracking-wider">{t('settings.bedtime')}</Text>
                   <TextInput
                     value={localSleepStart}
                     onChangeText={(val) => formatTimeInput(val, setLocalSleepStart)}
@@ -236,7 +239,7 @@ export default function ProfileScreen() {
                   />
                 </View>
                 <View className="flex-1">
-                  <Text className="text-[10px] font-bold text-gray-500 dark:text-gray-400 mb-1.5 uppercase tracking-wider">Wake Up</Text>
+                  <Text className="text-[10px] font-bold text-gray-500 dark:text-gray-400 mb-1.5 uppercase tracking-wider">{t('settings.wakeUp')}</Text>
                   <TextInput
                     value={localSleepEnd}
                     onChangeText={(val) => formatTimeInput(val, setLocalSleepEnd)}
@@ -249,7 +252,7 @@ export default function ProfileScreen() {
                 </View>
               </View>
               <Pressable onPress={saveSleep} className="bg-indigo-600 py-2.5 rounded-xl items-center active:opacity-80">
-                <Text className="text-white font-bold text-sm">Save</Text>
+                <Text className="text-white font-bold text-sm">{t('settings.save')}</Text>
               </Pressable>
             </View>
           )}
@@ -260,7 +263,7 @@ export default function ProfileScreen() {
               <View className="w-8 h-8 rounded-full bg-orange-500/10 items-center justify-center">
                 <Feather name="coffee" size={16} color="#F97316" />
               </View>
-              <Text className="text-base font-semibold text-gray-900 dark:text-white">Break Duration</Text>
+              <Text className="text-base font-semibold text-gray-900 dark:text-white">{t('settings.breakDuration')}</Text>
             </View>
             <View className="flex-row gap-2">
               {breakOptions.map(mins => (
@@ -291,7 +294,7 @@ export default function ProfileScreen() {
               <View className="w-8 h-8 rounded-full bg-red-500/10 items-center justify-center">
                 <Feather name="zap" size={16} color="#EF4444" />
               </View>
-              <Text className="text-base font-semibold text-gray-900 dark:text-white">Daily Focus Target (Streak)</Text>
+              <Text className="text-base font-semibold text-gray-900 dark:text-white">{t('settings.dailyFocusTarget')}</Text>
             </View>
             <View className="flex-row gap-2">
               {[1, 2, 3, 4, 5, 8].map(hours => (
@@ -320,12 +323,12 @@ export default function ProfileScreen() {
               <View className="w-8 h-8 rounded-full bg-emerald-500/10 items-center justify-center">
                 <Feather name="clock" size={16} color="#10B981" />
               </View>
-              <Text className="text-base font-semibold text-gray-900 dark:text-white">Lifetime Analytics</Text>
+              <Text className="text-base font-semibold text-gray-900 dark:text-white">{t('settings.lifetimeAnalytics')}</Text>
             </View>
             
             <View className="flex-row gap-4">
               <View className="flex-1">
-                <Text className="text-xs font-bold text-gray-500 mb-2">Birth Year</Text>
+                <Text className="text-xs font-bold text-gray-500 mb-2">{t('settings.birthYear')}</Text>
                 <TextInput
                   value={localBirthYear}
                   onChangeText={setLocalBirthYear}
@@ -343,7 +346,7 @@ export default function ProfileScreen() {
                 />
               </View>
               <View className="flex-1">
-                <Text className="text-xs font-bold text-gray-500 mb-2">Retirement Age</Text>
+                <Text className="text-xs font-bold text-gray-500 mb-2">{t('settings.retirementAge')}</Text>
                 <TextInput
                   value={localRetirementAge}
                   onChangeText={setLocalRetirementAge}
@@ -364,43 +367,92 @@ export default function ProfileScreen() {
           </View>
         </View>
 
-        {/* ── 4. Appearance ── */}
-        <Text className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 ml-2">Appearance</Text>
-        <View className="bg-white dark:bg-gray-900 rounded-2xl overflow-hidden border border-gray-100 dark:border-gray-800 mb-6 p-4">
-          <View className="flex-row items-center gap-3 mb-4">
-            <View className="w-8 h-8 rounded-full bg-purple-500/10 items-center justify-center">
-              <Feather name={appearance === 'dark' ? 'moon' : 'sun'} size={16} color="#A855F7" />
+        {/* ── 4. Appearance & Language ── */}
+        <Text className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 ml-2">{t('settings.appearance')}</Text>
+        <View className="bg-white dark:bg-gray-900 rounded-2xl overflow-hidden border border-gray-100 dark:border-gray-800 mb-6">
+          <View className="p-4 border-b border-gray-100 dark:border-gray-800">
+            <View className="flex-row items-center gap-3 mb-4">
+              <View className="w-8 h-8 rounded-full bg-purple-500/10 items-center justify-center">
+                <Feather name={appearance === 'dark' ? 'moon' : 'sun'} size={16} color="#A855F7" />
+              </View>
+              <Text className="text-base font-semibold text-gray-900 dark:text-white">{t('settings.theme')}</Text>
             </View>
-            <Text className="text-base font-semibold text-gray-900 dark:text-white">Theme</Text>
+            <View className="flex-row gap-2">
+              {(['system', 'light', 'dark'] as const).map(option => (
+                <Pressable
+                  key={option}
+                  onPress={() => updateSettings({ appearance: option })}
+                  className={`flex-1 py-3 rounded-xl items-center ${
+                    appearance === option
+                      ? 'bg-purple-500'
+                      : 'bg-gray-100 dark:bg-gray-800'
+                  }`}
+                >
+                  <Feather
+                    name={option === 'system' ? 'smartphone' : option === 'light' ? 'sun' : 'moon'}
+                    size={16}
+                    color={appearance === option ? 'white' : isDark ? '#9CA3AF' : '#6B7280'}
+                  />
+                  <Text className={`text-xs font-bold mt-1 capitalize ${
+                    appearance === option
+                      ? 'text-white'
+                      : 'text-gray-600 dark:text-gray-400'
+                  }`}>{option === 'system' ? t('settings.themeSystem') : option === 'light' ? t('settings.themeLight') : t('settings.themeDark')}</Text>
+                </Pressable>
+              ))}
+            </View>
           </View>
-          <View className="flex-row gap-2">
-            {(['system', 'light', 'dark'] as const).map(option => (
+          
+          <View className="p-4">
+            <View className="flex-row items-center gap-3 mb-4">
+              <View className="w-8 h-8 rounded-full bg-blue-500/10 items-center justify-center">
+                <Feather name="globe" size={16} color="#3B82F6" />
+              </View>
+              <Text className="text-base font-semibold text-gray-900 dark:text-white">{t('settings.language')}</Text>
+            </View>
+            <View className="flex-row gap-2">
               <Pressable
-                key={option}
-                onPress={() => updateSettings({ appearance: option })}
+                onPress={() => updateSettings({ language: 'en' })}
                 className={`flex-1 py-3 rounded-xl items-center ${
-                  appearance === option
-                    ? 'bg-purple-500'
+                  language === 'en'
+                    ? 'bg-blue-500'
                     : 'bg-gray-100 dark:bg-gray-800'
                 }`}
               >
-                <Feather
-                  name={option === 'system' ? 'smartphone' : option === 'light' ? 'sun' : 'moon'}
-                  size={16}
-                  color={appearance === option ? 'white' : isDark ? '#9CA3AF' : '#6B7280'}
-                />
-                <Text className={`text-xs font-bold mt-1 capitalize ${
-                  appearance === option
-                    ? 'text-white'
-                    : 'text-gray-600 dark:text-gray-400'
-                }`}>{option === 'system' ? 'System' : option === 'light' ? 'Light' : 'Dark'}</Text>
+                <Text className={`text-sm font-bold ${
+                  language === 'en' ? 'text-white' : 'text-gray-600 dark:text-gray-400'
+                }`}>English</Text>
               </Pressable>
-            ))}
+              <Pressable
+                onPress={() => updateSettings({ language: 'id' })}
+                className={`flex-1 py-3 rounded-xl items-center ${
+                  language === 'id'
+                    ? 'bg-blue-500'
+                    : 'bg-gray-100 dark:bg-gray-800'
+                }`}
+              >
+                <Text className={`text-sm font-bold ${
+                  language === 'id' ? 'text-white' : 'text-gray-600 dark:text-gray-400'
+                }`}>Indonesia</Text>
+              </Pressable>
+              <Pressable
+                onPress={() => updateSettings({ language: 'zh' })}
+                className={`flex-1 py-3 rounded-xl items-center ${
+                  language === 'zh'
+                    ? 'bg-blue-500'
+                    : 'bg-gray-100 dark:bg-gray-800'
+                }`}
+              >
+                <Text className={`text-sm font-bold ${
+                  language === 'zh' ? 'text-white' : 'text-gray-600 dark:text-gray-400'
+                }`}>中文</Text>
+              </Pressable>
+            </View>
           </View>
         </View>
 
         {/* ── 5. About ── */}
-        <Text className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 ml-2">About</Text>
+        <Text className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 ml-2">{t('settings.about')}</Text>
         <View className="bg-white dark:bg-gray-900 rounded-2xl overflow-hidden border border-gray-100 dark:border-gray-800 mb-6">
           
           <Pressable 
@@ -411,7 +463,7 @@ export default function ProfileScreen() {
               <View className="w-8 h-8 rounded-full bg-blue-500/10 items-center justify-center">
                 <Feather name="info" size={16} color="#3B82F6" />
               </View>
-              <Text className="text-base font-semibold text-gray-900 dark:text-white">Version Updates</Text>
+              <Text className="text-base font-semibold text-gray-900 dark:text-white">{t('settings.versionUpdates')}</Text>
             </View>
             <View className="flex-row items-center gap-2">
               <Text className="text-sm font-bold text-gray-400">v{APP_VERSION}</Text>
@@ -427,7 +479,7 @@ export default function ProfileScreen() {
               <View className="w-8 h-8 rounded-full bg-emerald-500/10 items-center justify-center">
                 <Feather name="code" size={16} color="#10B981" />
               </View>
-              <Text className="text-base font-semibold text-gray-900 dark:text-white">Developer</Text>
+              <Text className="text-base font-semibold text-gray-900 dark:text-white">{t('settings.developer')}</Text>
             </View>
             <View className="flex-row items-center gap-2">
               <Text className="text-sm font-bold text-gray-400">Antonius Prasetyo</Text>
@@ -455,28 +507,28 @@ export default function ProfileScreen() {
           <SettingRow
             icon="shield"
             iconBg="bg-blue-500/10"
-            label="Privacy Policy"
+            label={t('settings.privacyPolicy')}
             onPress={() => Linking.openURL('https://antyo-system.github.io/privacy')}
           />
           <SettingRow
             icon="file-text"
             iconBg="bg-yellow-500/10"
-            label="License (MIT)"
+            label={t('settings.license')}
             onPress={() => Linking.openURL('https://github.com/antyo-system/antyo-mobile/blob/main/LICENSE')}
           />
           <SettingRow
             icon="star"
             iconBg="bg-amber-500/10"
-            label="Rate App"
+            label={t('settings.rateApp')}
             isLast
             onPress={() => {
-              Alert.alert('Rate App', 'This will open the store page when the app is published.');
+              Alert.alert(t('settings.rateAppAlertTitle'), t('settings.rateAppAlertMessage'));
             }}
           />
         </View>
 
         {/* ── 6. Data (Danger Zone) ── */}
-        <Text className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 ml-2">Data</Text>
+        <Text className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 ml-2">{t('settings.dataZone')}</Text>
         <View className="bg-white dark:bg-gray-900 rounded-2xl overflow-hidden border border-gray-100 dark:border-gray-800 mb-6">
           <Pressable 
             onPress={() => setExportExpanded(!exportExpanded)}
@@ -486,7 +538,7 @@ export default function ProfileScreen() {
               <View className="w-8 h-8 rounded-full bg-orange-500/10 items-center justify-center">
                 <Feather name="download" size={16} color="#F97316" />
               </View>
-              <Text className="text-base font-semibold text-gray-900 dark:text-white">Export Data</Text>
+              <Text className="text-base font-semibold text-gray-900 dark:text-white">{t('settings.exportData')}</Text>
             </View>
             <View className="flex-row items-center gap-2">
               <Feather name={exportExpanded ? "chevron-up" : "chevron-down"} size={16} color="#9CA3AF" />
@@ -498,13 +550,13 @@ export default function ProfileScreen() {
               <SettingRow
                 icon="file-text"
                 iconBg="bg-gray-500/10"
-                label="Backup Data (TXT)"
+                label={t('settings.backupData')}
                 onPress={handleExportData}
               />
               <SettingRow
                 icon="grid"
                 iconBg="bg-green-500/10"
-                label="Export to Excel (CSV)"
+                label={t('settings.exportCsv')}
                 isLast
                 onPress={handleExportCSV}
               />
@@ -513,22 +565,22 @@ export default function ProfileScreen() {
           <SettingRow
             icon="monitor"
             iconBg="bg-blue-500/10"
-            label="Show Onboarding"
+            label={t('settings.showOnboarding')}
             onPress={() => router.replace('/onboarding' as any)}
           />
           <SettingRow
             icon="refresh-cw"
             iconBg="bg-purple-500/10"
-            label="Reset Tutorials"
+            label={t('settings.resetTutorials')}
             onPress={() => {
               useAppStore.getState().resetTutorials();
-              Alert.alert('Tutorials Reset', 'You will see the tutorials again when you navigate to the tabs.');
+              Alert.alert(t('settings.resetTutorialsTitle'), t('settings.resetTutorialsMessage'));
             }}
           />
           <SettingRow
             icon="trash-2"
             iconBg="bg-red-500/10"
-            label="Delete All Data"
+            label={t('settings.deleteAllData')}
             danger
             isLast
             onPress={handleDeleteAllData}
@@ -537,7 +589,7 @@ export default function ProfileScreen() {
 
         <View className="items-center mb-8">
           <Text className="text-[10px] text-gray-400 font-bold">ANTYO Focus v{APP_VERSION}</Text>
-          <Text className="text-[10px] text-gray-300 dark:text-gray-700 mt-1">Made with ❤️ by Antonius Prasetyo</Text>
+          <Text className="text-[10px] text-gray-300 dark:text-gray-700 mt-1">{t('settings.madeWithLove')}</Text>
         </View>
         </ScrollView>
       </KeyboardAvoidingView>

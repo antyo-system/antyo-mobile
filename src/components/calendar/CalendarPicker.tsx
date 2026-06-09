@@ -1,9 +1,8 @@
 import { useState } from 'react';
 import { View, Text, Pressable, Modal } from 'react-native';
-import { 
-  startOfMonth, endOfMonth, startOfWeek, endOfWeek, 
-  addDays, addMonths, subMonths, format, isSameDay, isSameMonth, isToday 
-} from 'date-fns';
+import { addMonths, endOfMonth, endOfWeek, isSameDay, isSameMonth, isToday, startOfMonth, startOfWeek, subMonths, addDays } from 'date-fns';
+import { formatDate } from '@/utils/time';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface Props {
   selectedDate: Date;
@@ -11,6 +10,7 @@ interface Props {
 }
 
 export function CalendarPicker({ selectedDate, onSelectDate }: Props) {
+  const { t } = useTranslation();
   const [currentMonth, setCurrentMonth] = useState(new Date(selectedDate));
   const [pickerVisible, setPickerVisible] = useState(false);
 
@@ -42,10 +42,10 @@ export function CalendarPicker({ selectedDate, onSelectDate }: Props) {
         onPress={() => setPickerVisible(true)}
         className="flex-row items-center justify-between bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-4 rounded-2xl mb-6"
       >
-        <Text className="text-gray-900 dark:text-white font-bold text-lg">
-          {isToday(selectedDate) ? 'Today' : format(selectedDate, 'MMM d, yyyy')}
+        <Text className="text-gray-900 dark:text-white font-black text-xl mb-4 text-center">
+          {isToday(selectedDate) ? t('calendarComp.today') : formatDate(selectedDate, 'MMM d, yyyy')}
         </Text>
-        <Text className="text-blue-600 dark:text-blue-400 font-bold text-sm">Change</Text>
+        <Text className="text-blue-600 dark:text-blue-400 font-bold text-sm">{t('calendarComp.change')}</Text>
       </Pressable>
 
       <Modal visible={pickerVisible} transparent animationType="fade">
@@ -65,8 +65,8 @@ export function CalendarPicker({ selectedDate, onSelectDate }: Props) {
               >
                 <Text className="text-gray-600 dark:text-gray-300 font-bold text-lg">{'<'}</Text>
               </Pressable>
-              <Text className="text-lg font-black text-gray-900 dark:text-white">
-                {format(currentMonth, 'MMMM yyyy')}
+              <Text className="text-gray-900 dark:text-white font-bold text-lg">
+                {formatDate(currentMonth, 'MMMM yyyy')}
               </Text>
               <Pressable 
                 onPress={() => setCurrentMonth(prev => addMonths(prev, 1))}
@@ -78,7 +78,7 @@ export function CalendarPicker({ selectedDate, onSelectDate }: Props) {
 
             {/* Day-of-week headers */}
             <View className="flex-row mb-2">
-              {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((d, i) => (
+              {t('calendarComp.weekDaysInitial').split(',').map((d, i) => (
                 <View key={i} className="flex-1 items-center">
                   <Text className="text-xs font-black text-gray-400 dark:text-gray-500 uppercase">{d}</Text>
                 </View>
@@ -111,7 +111,7 @@ export function CalendarPicker({ selectedDate, onSelectDate }: Props) {
                               : ''
                         }`}
                       >
-                        <Text className={`text-sm font-bold ${
+                        <Text className={`text-base font-bold ${
                           isSelected 
                             ? 'text-white' 
                             : !isCurrentMonth 
@@ -120,7 +120,7 @@ export function CalendarPicker({ selectedDate, onSelectDate }: Props) {
                                 ? 'text-blue-600 dark:text-blue-400'
                                 : 'text-gray-900 dark:text-white'
                         }`}>
-                          {format(day, 'd')}
+                          {formatDate(day, 'd')}
                         </Text>
                       </View>
                     </Pressable>
@@ -134,7 +134,7 @@ export function CalendarPicker({ selectedDate, onSelectDate }: Props) {
               onPress={() => setPickerVisible(false)}
               className="mt-4 py-3 items-center"
             >
-              <Text className="text-gray-400 font-black text-xs tracking-widest uppercase">Close</Text>
+              <Text className="text-gray-400 font-black text-xs tracking-widest uppercase">{t('calendarComp.close')}</Text>
             </Pressable>
           </Pressable>
         </Pressable>

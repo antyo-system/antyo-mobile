@@ -2,8 +2,10 @@ import { View, Text } from 'react-native';
 import { useMemo, useEffect, useState } from 'react';
 import { differenceInDays, differenceInWeeks, startOfDay } from 'date-fns';
 import { useSettingsStore } from '@/store/useSettingsStore';
+import { useTranslation } from '@/hooks/useTranslation';
 
 export function LifetimeCountdown() {
+  const { t } = useTranslation();
   const { birthYear, retirementAge } = useSettingsStore();
   const [now, setNow] = useState(new Date());
 
@@ -35,7 +37,7 @@ export function LifetimeCountdown() {
   return (
     <View className="flex-1 bg-gray-900 dark:bg-black rounded-3xl p-5 shadow-sm border border-gray-800 justify-center">
       <Text className="font-black tracking-widest uppercase text-[9px] mb-2 text-emerald-500">
-        Lifetime
+        {t('statsComp.lifetime')}
       </Text>
       
       <View className="items-start">
@@ -47,13 +49,13 @@ export function LifetimeCountdown() {
           {daysLeft.toLocaleString()}
         </Text>
         <Text className="text-[10px] font-bold text-gray-400 mt-1 uppercase tracking-widest">
-          Days Left
+          {t('statsComp.daysLeft')}
         </Text>
       </View>
 
       <View className="mt-3 bg-emerald-500/10 px-2 py-1 rounded-md self-start">
         <Text className="text-[9px] font-bold text-emerald-400">
-          ≈ {weeksLeft.toLocaleString()} WEEKS
+          ≈ {weeksLeft.toLocaleString()} {t('statsComp.weeks')}
         </Text>
       </View>
     </View>

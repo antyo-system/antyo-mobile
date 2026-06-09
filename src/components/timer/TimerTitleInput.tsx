@@ -1,8 +1,10 @@
 import { TextInput, View } from 'react-native';
 import { useShallow } from 'zustand/react/shallow';
 import { useTimerStore } from '@/store/useTimerStore';
+import { useTranslation } from '@/hooks/useTranslation';
 
 export function TimerTitleInput() {
+  const { t } = useTranslation();
   const { currentTitle, setTitle, status } = useTimerStore(
     useShallow((s) => ({
       currentTitle: s.currentTitle,
@@ -17,7 +19,7 @@ export function TimerTitleInput() {
         value={currentTitle}
         onChangeText={setTitle}
         editable={status === 'idle'}
-        placeholder="FOCUS"
+        placeholder={t('timer.focus')}
         placeholderTextColor="#9CA3AF" // Tailwind gray-400
         className="w-full text-center text-base font-black tracking-wider text-black dark:text-white uppercase py-2"
         maxLength={30}

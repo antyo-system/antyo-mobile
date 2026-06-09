@@ -1,4 +1,6 @@
+import { memo } from 'react';
 import { View, Text, Pressable } from 'react-native';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface Props {
   startMinutes: number;
@@ -7,7 +9,8 @@ interface Props {
   onPress?: () => void;
 }
 
-export function SleepBlock({ startMinutes, durationMinutes, pixelsPerMinute, onPress }: Props) {
+export const SleepBlock = memo(function SleepBlock({ startMinutes, durationMinutes, pixelsPerMinute, onPress }: Props) {
+  const { t } = useTranslation();
   const top = startMinutes * pixelsPerMinute;
   const height = durationMinutes * pixelsPerMinute;
 
@@ -19,8 +22,8 @@ export function SleepBlock({ startMinutes, durationMinutes, pixelsPerMinute, onP
     >
       <View className="flex-row items-center gap-2 opacity-50">
         <Text className="text-sm">🌙</Text>
-        <Text className="text-[10px] font-black tracking-widest uppercase text-gray-500 dark:text-gray-400">Sleep Time</Text>
+        <Text className="text-[10px] font-black tracking-widest uppercase text-gray-500 dark:text-gray-400">{t('calendarComp.sleepTime')}</Text>
       </View>
     </Pressable>
   );
-}
+});

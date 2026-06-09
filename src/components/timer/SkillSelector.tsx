@@ -4,8 +4,10 @@ import { Feather } from '@expo/vector-icons';
 import { useMasteryStore, Skill } from '@/store/useMasteryStore';
 import { useTimerStore } from '@/store/useTimerStore';
 import { getMasteryProgress } from '@/utils/mastery';
+import { useTranslation } from '@/hooks/useTranslation';
 
 export function SkillSelector() {
+  const { t } = useTranslation();
   const isDark = useColorScheme() === 'dark';
   const { skills, addSkill, updateSkill, deleteSkill } = useMasteryStore();
   const selectedSkillId = useTimerStore(s => s.selectedSkillId);
@@ -39,7 +41,7 @@ export function SkillSelector() {
       <View className="flex-row items-center gap-1.5 bg-gray-100 dark:bg-gray-900 px-3 py-1.5 rounded-full border border-dashed border-gray-300 dark:border-gray-700">
         <Feather name="target" size={12} color={isDark ? '#9CA3AF' : '#6B7280'} />
         <Text className="text-xs font-semibold text-gray-500 dark:text-gray-400">
-          Assign Skill
+          {t('timer.assignSkill')}
         </Text>
       </View>
     );
@@ -114,7 +116,7 @@ export function SkillSelector() {
           <View className="bg-white dark:bg-gray-900 rounded-t-3xl h-[75%]">
             {/* Header */}
             <View className="flex-row items-center justify-between p-6 border-b border-gray-100 dark:border-gray-800">
-              <Text className="text-xl font-black text-gray-900 dark:text-white">Assign Skill</Text>
+              <Text className="text-xl font-black text-gray-900 dark:text-white">{t('timer.assignSkill')}</Text>
               <View className="flex-row items-center gap-3">
                 <Pressable 
                   onPress={() => {
@@ -152,7 +154,7 @@ export function SkillSelector() {
                   <Text className={`text-base font-bold ${
                     selectedSkillId === null ? 'text-blue-600 dark:text-blue-400' : 'text-gray-900 dark:text-white'
                   }`}>
-                    No Skill (General Focus)
+                    {t('timer.noSkill')}
                   </Text>
                 </Pressable>
               )}
@@ -215,7 +217,7 @@ export function SkillSelector() {
                         </Text>
                         {!isManageMode && (
                           <Text className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                            {progress.currentLevel.level} • {progress.currentLevel.icon}
+                            {t(`levels.${progress.currentLevel.level.toLowerCase()}` as any)} • {progress.currentLevel.icon}
                           </Text>
                         )}
                       </View>
@@ -306,7 +308,7 @@ export function SkillSelector() {
                   className="flex-row items-center justify-center p-4 rounded-2xl border border-dashed border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 mb-8"
                 >
                   <Feather name="plus" size={18} color={isDark ? '#9CA3AF' : '#6B7280'} />
-                  <Text className="text-sm font-bold text-gray-500 dark:text-gray-400 ml-2">Add New Skill</Text>
+                  <Text className="text-sm font-bold text-gray-500 dark:text-gray-400 ml-2">{t('timer.addNewSkill')}</Text>
                 </Pressable>
               )}
               

@@ -4,6 +4,7 @@ import { Feather } from '@expo/vector-icons';
 import { useState } from 'react';
 import { KeyboardAvoidingView, Modal, Platform, Pressable, ScrollView, Switch, Text, TextInput, useColorScheme, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface Props {
   visible: boolean;
@@ -21,6 +22,7 @@ const parseTimeInput = (str: string, defaultMins: number) => {
 };
 
 export function NewSkillModal({ visible, onClose }: Props) {
+  const { t } = useTranslation();
   const isDark = useColorScheme() === 'dark';
   const addSkill = useMasteryStore(s => s.addSkill);
   const addPlan = usePlanStore(s => s.addPlan);
@@ -122,7 +124,7 @@ export function NewSkillModal({ visible, onClose }: Props) {
           className="flex-1 px-6 pt-4 pb-6"
         >
           <View className="flex-row justify-between items-center mb-6">
-            <Text className="text-2xl font-black text-gray-900 dark:text-white">New Skill</Text>
+            <Text className="text-2xl font-black text-gray-900 dark:text-white">{t('newSkill.newSkill')}</Text>
             <Pressable onPress={onClose} className="p-2 -mr-2 bg-gray-100 dark:bg-gray-800 rounded-full">
               <Text className="text-gray-500 font-bold px-2">X</Text>
             </Pressable>
@@ -135,34 +137,34 @@ export function NewSkillModal({ visible, onClose }: Props) {
             contentContainerStyle={{ paddingBottom: 120 }}
           >
             {/* Skill Name */}
-            <Text className="text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Skill Name</Text>
+            <Text className="text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">{t('newSkill.skillName')}</Text>
             <TextInput
               value={skillName}
               onChangeText={setSkillName}
-              placeholder="e.g. Coding, Guitar, Writing..."
+              placeholder={t('newSkill.skillNamePlaceholder')}
               placeholderTextColor="#9ca3af"
               className="bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-4 rounded-2xl text-gray-900 dark:text-white font-bold text-lg mb-6 shadow-sm"
               autoFocus
             />
 
             {/* Daily Target */}
-            <Text className="text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Daily Target (Minutes)</Text>
+            <Text className="text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">{t('newSkill.dailyTarget')}</Text>
             <TextInput
               value={dailyTarget}
               onChangeText={setDailyTarget}
-              placeholder="e.g. 60"
+              placeholder={t('newSkill.dailyTargetPlaceholder')}
               placeholderTextColor="#9ca3af"
               keyboardType="numeric"
               className="bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-4 rounded-2xl text-gray-900 dark:text-white font-bold text-lg mb-6 shadow-sm"
             />
 
             {/* Subskills (Pillars) */}
-            <Text className="text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Subskills / Pillars (Optional)</Text>
+            <Text className="text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">{t('newSkill.subskills')}</Text>
             <View className="flex-row gap-2 mb-3">
               <TextInput
                 value={pillarInput}
                 onChangeText={setPillarInput}
-                placeholder="e.g. React Native, CSS..."
+                placeholder={t('newSkill.subskillsPlaceholder')}
                 placeholderTextColor="#9ca3af"
                 className="flex-1 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-3 rounded-xl text-gray-900 dark:text-white font-medium shadow-sm"
                 onSubmitEditing={handleAddPillar}
@@ -192,8 +194,8 @@ export function NewSkillModal({ visible, onClose }: Props) {
             {/* Routine Section */}
             <View className="flex-row justify-between items-center bg-gray-50 dark:bg-gray-900 p-4 rounded-2xl border border-gray-200 dark:border-gray-800 mb-4">
               <View>
-                <Text className="text-base font-bold text-gray-900 dark:text-white">Create Routine</Text>
-                <Text className="text-xs font-medium text-gray-500">Automatically schedule this skill</Text>
+                <Text className="text-base font-bold text-gray-900 dark:text-white">{t('newSkill.createRoutine')}</Text>
+                <Text className="text-xs font-medium text-gray-500">{t('newSkill.createRoutineDesc')}</Text>
               </View>
               <Switch value={enableRoutine} onValueChange={setEnableRoutine} />
             </View>
@@ -202,7 +204,7 @@ export function NewSkillModal({ visible, onClose }: Props) {
               <View className="bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-4 rounded-2xl mb-8">
                 <View className="flex-row gap-3 mb-4">
                   <View style={{ flex: 1 }}>
-                    <Text className="text-xs font-bold text-gray-500 dark:text-gray-400 mb-1.5 uppercase tracking-wider">Start</Text>
+                    <Text className="text-xs font-bold text-gray-500 dark:text-gray-400 mb-1.5 uppercase tracking-wider">{t('newSkill.start')}</Text>
                     <TextInput
                       value={startTimeStr}
                       onChangeText={(val) => handleTimeInput(val, setStartTimeStr)}
@@ -214,7 +216,7 @@ export function NewSkillModal({ visible, onClose }: Props) {
                     />
                   </View>
                   <View style={{ flex: 1 }}>
-                    <Text className="text-xs font-bold text-gray-500 dark:text-gray-400 mb-1.5 uppercase tracking-wider">End</Text>
+                    <Text className="text-xs font-bold text-gray-500 dark:text-gray-400 mb-1.5 uppercase tracking-wider">{t('newSkill.end')}</Text>
                     <TextInput
                       value={endTimeStr}
                       onChangeText={(val) => handleTimeInput(val, setEndTimeStr)}
@@ -227,13 +229,13 @@ export function NewSkillModal({ visible, onClose }: Props) {
                   </View>
                 </View>
 
-                <Text className="text-xs font-bold text-gray-500 dark:text-gray-400 mb-2 uppercase tracking-wider">Recurrence</Text>
+                <Text className="text-xs font-bold text-gray-500 dark:text-gray-400 mb-2 uppercase tracking-wider">{t('newSkill.recurrence')}</Text>
                 <View className="flex-row flex-wrap gap-2 mb-4">
                   {([
-                    { id: 'daily', label: 'Daily' },
-                    { id: 'weekdays', label: 'Weekdays' },
-                    { id: 'weekly', label: 'Weekly' },
-                    { id: 'specific_days', label: 'Custom' },
+                    { id: 'daily', label: t('newSkill.daily') },
+                    { id: 'weekdays', label: t('newSkill.weekdays') },
+                    { id: 'weekly', label: t('newSkill.weekly') },
+                    { id: 'specific_days', label: t('newSkill.custom') },
                   ] as { id: Recurrence; label: string }[]).map((r) => (
                     <Pressable
                       key={r.id}
@@ -257,7 +259,7 @@ export function NewSkillModal({ visible, onClose }: Props) {
 
                 {recurrence === 'specific_days' && (
                   <View className="flex-row justify-between bg-white dark:bg-gray-800 p-3 rounded-xl border border-gray-200 dark:border-gray-700">
-                    {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((dayStr, index) => {
+                    {t('calendarComp.weekDaysInitial').split(',').map((dayStr, index) => {
                       const isSelected = recurrenceDays.includes(index);
                       return (
                         <Pressable
@@ -294,7 +296,7 @@ export function NewSkillModal({ visible, onClose }: Props) {
               className={`py-4 rounded-2xl items-center shadow-sm ${skillName.trim() ? 'bg-blue-600' : 'bg-gray-300 dark:bg-gray-800'}`}
               disabled={!skillName.trim()}
             >
-              <Text className="text-white font-black tracking-wider uppercase text-sm">Create Skill</Text>
+              <Text className="text-white font-black tracking-wider uppercase text-sm">{t('newSkill.createSkillBtn')}</Text>
             </Pressable>
           </View>
         </KeyboardAvoidingView>

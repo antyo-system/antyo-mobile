@@ -163,7 +163,7 @@ Use `StyleSheet.create` or inline styles ONLY for the following where NativeWind
 - **Architecture:** Ask for permission before making significant modifications to the core architecture.
 - **Proactive suggestions:** Proactively suggest better approaches if something is unclear.
 - **CRITICAL:** Do NOT install new libraries without explicit user approval.
-- **Language Policy (CRITICAL):** ALWAYS use **English** for the UI language of the application being built (buttons, text, tooltips, placeholders, error messages), regardless of the language used to communicate in the prompt. Do not use Indonesian in the UI.
+
 
 ---
 
