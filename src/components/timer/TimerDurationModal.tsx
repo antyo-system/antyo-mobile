@@ -4,8 +4,10 @@ import { useTimerStore } from '@/store/useTimerStore';
 import * as Haptics from 'expo-haptics';
 import { Feather } from '@expo/vector-icons';
 import { useShallow } from 'zustand/react/shallow';
+import { useTranslation } from '@/hooks/useTranslation';
 
 export function TimerDurationModal({ visible, onClose }: { visible: boolean, onClose: () => void }) {
+  const { t } = useTranslation();
   const { duration, breakDuration, autoPlay, setDuration, setBreakDuration, setAutoPlay } = useTimerStore(
     useShallow(s => ({
       duration: s.duration,
@@ -78,7 +80,7 @@ export function TimerDurationModal({ visible, onClose }: { visible: boolean, onC
           <View className="bg-gray-50 dark:bg-gray-950 rounded-t-3xl overflow-hidden max-h-[95%] pt-2 shadow-2xl">
             {/* Header */}
             <View className="flex-row items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 shadow-sm z-10">
-              <Text className="text-lg font-black text-gray-900 dark:text-white">Timer Settings</Text>
+              <Text className="text-lg font-black text-gray-900 dark:text-white">{t('timerSettings.title')}</Text>
               <Pressable onPress={onClose} className="p-2 -mr-2 rounded-full bg-gray-100 dark:bg-gray-800 active:opacity-70">
                 <Feather name="x" size={18} color={isDark ? 'white' : 'black'} />
               </Pressable>
@@ -87,7 +89,7 @@ export function TimerDurationModal({ visible, onClose }: { visible: boolean, onC
           <ScrollView bounces={false} className="bg-gray-50 dark:bg-gray-950" contentContainerStyle={{ paddingBottom: 32, paddingTop: 16 }}>
             {/* Focus Duration */}
             <View className="px-6 mb-5">
-              <Text className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-2">Focus Duration</Text>
+              <Text className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-2">{t('timerSettings.focusDuration')}</Text>
               
               <View className="flex-row items-center justify-between bg-white dark:bg-gray-900 rounded-2xl p-3 border border-gray-200 dark:border-gray-800 shadow-sm">
                 <Pressable onPress={() => handleFocusChange(-5)} className="w-12 h-12 bg-gray-100 dark:bg-gray-800 rounded-xl items-center justify-center active:opacity-70">
@@ -104,7 +106,7 @@ export function TimerDurationModal({ visible, onClose }: { visible: boolean, onC
                     style={{ minWidth: 50 }}
                     selectionColor={isDark ? '#3b82f6' : '#2563eb'}
                   />
-                  <Text className="text-base font-bold text-gray-400 dark:text-gray-500 ml-1">mins</Text>
+                  <Text className="text-base font-bold text-gray-400 dark:text-gray-500 ml-1">{t('timerSettings.mins')}</Text>
                 </View>
 
                 <Pressable onPress={() => handleFocusChange(5)} className="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-xl items-center justify-center active:opacity-70">
@@ -115,7 +117,7 @@ export function TimerDurationModal({ visible, onClose }: { visible: boolean, onC
 
             {/* Break Duration */}
             <View className="px-6 mb-6">
-              <Text className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-2">Break Duration</Text>
+              <Text className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-2">{t('timerSettings.breakDuration')}</Text>
               
               <View className="flex-row items-center justify-between bg-white dark:bg-gray-900 rounded-2xl p-3 border border-gray-200 dark:border-gray-800 shadow-sm">
                 <Pressable onPress={() => handleBreakChange(-5)} className="w-12 h-12 bg-gray-100 dark:bg-gray-800 rounded-xl items-center justify-center active:opacity-70">
@@ -132,7 +134,7 @@ export function TimerDurationModal({ visible, onClose }: { visible: boolean, onC
                     style={{ minWidth: 50 }}
                     selectionColor={isDark ? '#10b981' : '#059669'}
                   />
-                  <Text className="text-base font-bold text-gray-400 dark:text-gray-500 ml-1">mins</Text>
+                  <Text className="text-base font-bold text-gray-400 dark:text-gray-500 ml-1">{t('timerSettings.mins')}</Text>
                 </View>
 
                 <Pressable onPress={() => handleBreakChange(5)} className="w-12 h-12 bg-emerald-100 dark:bg-emerald-900/30 rounded-xl items-center justify-center active:opacity-70">
@@ -146,9 +148,9 @@ export function TimerDurationModal({ visible, onClose }: { visible: boolean, onC
             {/* Auto Play Setting */}
             <View className="px-6 py-2 flex-row items-center justify-between mb-6">
               <View className="flex-1 pr-4">
-                <Text className="text-base font-bold text-gray-900 dark:text-white mb-1">Auto-Play Sessions</Text>
+                <Text className="text-base font-bold text-gray-900 dark:text-white mb-1">{t('timerSettings.autoPlay')}</Text>
                 <Text className="text-xs text-gray-500 dark:text-gray-400 leading-tight">
-                  Automatically start breaks after focus sessions, and focus sessions after breaks.
+                  {t('timerSettings.autoPlayDesc')}
                 </Text>
               </View>
               <Switch
@@ -169,7 +171,7 @@ export function TimerDurationModal({ visible, onClose }: { visible: boolean, onC
                 onPress={handleSave}
                 className="w-full bg-gray-900 dark:bg-white rounded-xl py-4 items-center justify-center shadow-md active:opacity-80"
               >
-                <Text className="text-white dark:text-black font-black text-base uppercase tracking-wider">Save Changes</Text>
+                <Text className="text-white dark:text-black font-black text-base uppercase tracking-wider">{t('timerSettings.saveChanges')}</Text>
               </Pressable>
             </View>
           </ScrollView>

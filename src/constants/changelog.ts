@@ -5,9 +5,20 @@ export interface ChangelogRelease {
   fixes: string[];
 }
 
-export const APP_VERSION = "1.6.0";
+export const APP_VERSION = "1.6.1";
 
 export const CHANGELOG: ChangelogRelease[] = [
+  {
+    version: "1.6.1",
+    date: new Date().toISOString().split('T')[0],
+    features: [],
+    fixes: [
+      "Fixed timer pausing when device goes to sleep. Keep-awake is now enabled on the focus screen.",
+      "Fixed timer drift when the app goes to the background using exact time delta calculations.",
+      "Fixed text wrapping UI issue on the Smart Routine Banner for smaller devices.",
+      "Added missing translations for the Timer Settings modal."
+    ]
+  },
   {
     version: "1.6.0",
     date: new Date().toISOString().split('T')[0],

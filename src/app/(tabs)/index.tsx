@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
-import { View, Text, Pressable, Switch, KeyboardAvoidingView, Platform, Animated } from 'react-native';
+import { View, Text, Pressable, Switch, KeyboardAvoidingView, Platform, Animated, AppState } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { useIsFocused } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -20,9 +20,11 @@ import { SpotlightOverlay, SpotlightStep, SpotlightCoords } from '@/components/t
 import { SessionCompleteOverlay } from '@/components/timer/SessionCompleteOverlay';
 import { getMasteryProgress } from '@/utils/mastery';
 import { useTranslation } from '@/hooks/useTranslation';
+import { useKeepAwake } from 'expo-keep-awake';
 
 export default function TimerScreen() {
   const { t } = useTranslation();
+  useKeepAwake();
   const { 
     status, mode, timeLeft, timeElapsed, tick, currentTitle, duration, 
     sessionType, autoPlay, setSessionType, startTimer, stopTimer, sessionStartTime, selectedSkillId, selectedPillarId 
@@ -252,6 +254,28 @@ export default function TimerScreen() {
     return () => clearInterval(interval);
   }, [status, tick]);
 
+  // AppState listener to handle background/foreground timer drift
+  const lastActiveTimeRef = useRef<number | null>(null);
+  useEffect(() => {
+    const subscription = AppState.addEventListener('change', (nextAppState) => {
+      if (nextAppState === 'active') {
+        if (lastActiveTimeRef.current && useTimerStore.getState().status === 'running') {
+          const now = Date.now();
+          const deltaSeconds = Math.floor((now - lastActiveTimeRef.current) / 1000);
+          
+          if (deltaSeconds > 0) {
+            useTimerStore.getState().fastForward(deltaSeconds);
+          }
+        }
+        lastActiveTimeRef.current = null;
+      } else if (nextAppState === 'background' || nextAppState === 'inactive') {
+        lastActiveTimeRef.current = Date.now();
+      }
+    });
+
+    return () => subscription.remove();
+  }, []);
+
   // Manual save for Stopwatch mode or early stop
   const handleSaveAndStop = () => {
     if (sessionStartTime) {
@@ -347,7 +371,11 @@ export default function TimerScreen() {
                       <Text className="text-blue-100 font-bold text-xs mt-0.5">
                         {formatTimeBlock(activeRoutine.startMinutes, activeRoutine.durationMinutes)}
                       </Text>
-                      <Text className="text-blue-200 font-bold text-[10px] uppercase tracking-wider mt-0.5">
+                      <Text 
+                        className="text-blue-200 font-bold text-[10px] uppercase tracking-wider mt-0.5"
+                        numberOfLines={1} 
+                        adjustsFontSizeToFit
+                      >
                         {currentMins > activeRoutine.startMinutes 
                           ? t('focus.remainingTimeLate', { late: currentMins - activeRoutine.startMinutes, remain: (activeRoutine.startMinutes + activeRoutine.durationMinutes) - currentMins })
                           : t('focus.remainingTime', { remain: activeRoutine.durationMinutes })}

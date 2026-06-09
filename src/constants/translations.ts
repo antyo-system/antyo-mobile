@@ -9,9 +9,18 @@ const en = {
       scheduledRoutineActive: 'Scheduled Routine Active',
       load: 'Load',
       overlapWarning: '⚠️ Overlaps with "%{plan}" at %{time}',
-      remainingTimeLate: 'Late %{late} mins • Remaining: %{remain} mins',
-      remainingTime: 'Remaining: %{remain} mins',
+      remainingTimeLate: 'Late %{late} min • Remaining: %{remain} min',
+      remainingTime: 'Remaining: %{remain} min',
       switchSession: 'Switch Session'
+    },
+    timerSettings: {
+      title: 'Timer Settings',
+      focusDuration: 'Focus Duration',
+      breakDuration: 'Break Duration',
+      mins: 'mins',
+      autoPlay: 'Auto-Play Sessions',
+      autoPlayDesc: 'Automatically start breaks after focus sessions, and focus sessions after breaks.',
+      saveChanges: 'Save Changes'
     },
     calendar: {
       plan: 'Plan',
@@ -284,6 +293,15 @@ const id: TranslationDictionary = {
       remainingTime: 'Sisa: %{remain} mnt',
       switchSession: 'Beralih Sesi'
     },
+    timerSettings: {
+      title: 'Pengaturan Timer',
+      focusDuration: 'Durasi Fokus',
+      breakDuration: 'Durasi Istirahat',
+      mins: 'mnt',
+      autoPlay: 'Sesi Otomatis (Auto-Play)',
+      autoPlayDesc: 'Mulai istirahat otomatis setelah sesi fokus, dan sebaliknya.',
+      saveChanges: 'Simpan Perubahan'
+    },
     calendar: {
       plan: 'Rencana',
       schedule: 'Jadwal',
@@ -554,6 +572,15 @@ const zh: TranslationDictionary = {
     remainingTimeLate: '迟到 %{late} 分钟 • 剩余: %{remain} 分钟',
     remainingTime: '剩余: %{remain} 分钟',
     switchSession: '切换会话'
+  },
+  timerSettings: {
+    title: '计时器设置',
+    focusDuration: '专注时长',
+    breakDuration: '休息时长',
+    mins: '分钟',
+    autoPlay: '自动连播',
+    autoPlayDesc: '专注结束后自动开始休息，休息结束后自动开始专注。',
+    saveChanges: '保存更改'
   },
   calendar: {
     plan: '计划',

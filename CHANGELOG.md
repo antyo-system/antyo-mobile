@@ -12,6 +12,7 @@
 | 2026-06-05 | Navigation Bugfix | Fixed Android `KeyboardAvoidingView` crashes in Mastery and Focus modals. |
 | 2026-06-05 | Inline Skill CRUD | Added Manage Mode in Focus tab's Assign Skill modal to Create, Edit, and Delete skills inline. |
 | 2026-06-05 | ProGuard/R8 Enabled | Added `expo-build-properties` to shrink app size and generate mapping files for Google Play |
+| 2026-06-09 | v1.6.1 Release | Bugfixes: Fixed background timer drift, screen sleep pausing timer (`expo-keep-awake`), banner text wrapping, and missing translation keys. |
 | 2026-06-09 | v1.6.0 Release | Smart Routine Banner with Dynamic Time Calculation and Soft Overlap Warnings for Plan vs Reality sync. Fixed Translation hook issues. |
 | 2026-06-07 | v1.5.1 Release | Timer Settings UI tweaks: Bottom sheet naturally expands without scrolling and scales perfectly on all devices. |
 | 2026-06-07 | v1.5.0 Release | Pomodoro Chaining, Session Auto-Play, Redesigned Timer Settings Bottom Sheet, and Session Complete Animated Overlays. |

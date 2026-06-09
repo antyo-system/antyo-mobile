@@ -31,6 +31,7 @@ interface TimerState {
   pauseTimer: () => void;
   stopTimer: () => void;
   tick: () => void;
+  fastForward: (seconds: number) => void;
 }
 
 export const useTimerStore = create<TimerState>((set, get) => ({
@@ -121,6 +122,17 @@ export const useTimerStore = create<TimerState>((set, get) => ({
         }
       } else if (mode === 'stopwatch') {
         set({ timeElapsed: timeElapsed + 1 });
+      }
+    }
+  },
+
+  fastForward: (seconds) => {
+    const { status, mode, timeLeft, timeElapsed } = get();
+    if (status === 'running') {
+      if (mode === 'timer') {
+        set({ timeLeft: Math.max(0, timeLeft - seconds) });
+      } else if (mode === 'stopwatch') {
+        set({ timeElapsed: timeElapsed + seconds });
       }
     }
   },
