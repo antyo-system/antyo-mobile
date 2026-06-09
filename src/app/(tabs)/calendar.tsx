@@ -301,8 +301,8 @@ export default function CalendarScreen() {
   const handleTimelinePress = (e: any) => {
     if (isLocked) return;
     
-    // Capture the Y coordinate to determine the time tapped
-    const y = e.nativeEvent.locationY;
+    // Capture the Y coordinate to determine the time tapped (support both native and web)
+    const y = e.nativeEvent.locationY ?? e.nativeEvent.offsetY ?? 0;
     let clickedMinutes = Math.round(y / PIXELS_PER_MINUTE);
     clickedMinutes = Math.floor(clickedMinutes / 15) * 15; // Snap down to nearest 15 mins block
     

@@ -51,7 +51,7 @@ export function PlanQuickActionModal({ visible, plan, onClose, onStartTimer, onM
             {planTasks.length > 0 && (
               <View className="bg-gray-50 dark:bg-gray-800/50 rounded-2xl p-4 mb-4 border border-gray-100 dark:border-gray-800">
                 <Text className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">
-                  {t('Linked Tasks', 'Tugas Tertaut')}
+                  {t('To-Do List', 'Daftar Tugas')}
                 </Text>
                 <View className="gap-3">
                   {planTasks.map(task => (
