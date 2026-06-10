@@ -24,7 +24,9 @@ If a feature is checked here, it exists in the codebase and is fully functional.
 - [x] **Life Logging (Mark as Done):** Non-skill plans can be instantly logged with one click (no timer needed).
 - [x] **Manual Session Editing:** Ability to add or edit past 'Real' sessions directly from the calendar.
 - [x] **Lock Mode:** A padlock toggle to freeze the calendar and prevent accidental dragging/editing.
-- [x] **Task & To-Do List:** Switch to 'Task' mode to manage project-based tasks (`useTaskStore`).
+- [x] **Task & To-Do List:** Switch to 'Task' mode to manage project-based tasks (`useTaskStore`) and seamlessly schedule them into the calendar.
+- [x] **Strict Real Tracking:** The Real column is read-only for manual creation, enforcing the Mastery philosophy that real sessions must be earned via the timer or by completing a plan.
+- [x] **Zen Mode (Curtain):** Toggle the calendar grid to collapse and focus entirely on the daily timeline.
 
 ## 📊 4. Gamification & Statistics
 - [x] **Global Streaks (🔥):** Calculates consecutive days where the global `dailyFocusTargetHours` is met. Displayed in the Stats tab header.

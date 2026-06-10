@@ -331,7 +331,15 @@ export default function ProfileScreen() {
                 <Text className="text-xs font-bold text-gray-500 mb-2">{t('settings.birthYear')}</Text>
                 <TextInput
                   value={localBirthYear}
-                  onChangeText={setLocalBirthYear}
+                  onChangeText={(val) => {
+                    setLocalBirthYear(val);
+                    if (val.length === 4) {
+                      const year = parseInt(val);
+                      if (!isNaN(year) && year > 1900 && year < 2100) {
+                        updateSettings({ birthYear: year });
+                      }
+                    }
+                  }}
                   onEndEditing={() => {
                     const year = parseInt(localBirthYear);
                     if (!isNaN(year) && year > 1900 && year < 2100) {
@@ -349,7 +357,15 @@ export default function ProfileScreen() {
                 <Text className="text-xs font-bold text-gray-500 mb-2">{t('settings.retirementAge')}</Text>
                 <TextInput
                   value={localRetirementAge}
-                  onChangeText={setLocalRetirementAge}
+                  onChangeText={(val) => {
+                    setLocalRetirementAge(val);
+                    if (val.length >= 2) {
+                      const age = parseInt(val);
+                      if (!isNaN(age) && age > 0 && age < 150) {
+                        updateSettings({ retirementAge: age });
+                      }
+                    }
+                  }}
                   onEndEditing={() => {
                     const age = parseInt(localRetirementAge);
                     if (!isNaN(age) && age > 0 && age < 150) {

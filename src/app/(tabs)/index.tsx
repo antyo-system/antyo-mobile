@@ -14,17 +14,55 @@ import { useShallow } from 'zustand/react/shallow';
 import { useSessionStore } from '@/store/useSessionStore';
 import { useMasteryStore } from '@/store/useMasteryStore';
 import { usePlanStore, Plan } from '@/store/usePlanStore';
+import { useSettingsStore } from '@/store/useSettingsStore';
 import { useAppStore } from '@/store/useAppStore';
 import { SkillSelector } from '@/components/timer/SkillSelector';
 import { SpotlightOverlay, SpotlightStep, SpotlightCoords } from '@/components/tutorial/SpotlightOverlay';
 import { SessionCompleteOverlay } from '@/components/timer/SessionCompleteOverlay';
 import { getMasteryProgress } from '@/utils/mastery';
 import { useTranslation } from '@/hooks/useTranslation';
-import { useKeepAwake } from 'expo-keep-awake';
+import { activateKeepAwakeAsync, deactivateKeepAwake } from 'expo-keep-awake';
 
 export default function TimerScreen() {
   const { t } = useTranslation();
-  useKeepAwake();
+  
+  useEffect(() => {
+    const activate = async () => {
+      try {
+        if (Platform.OS === 'web') {
+          if (typeof document !== 'undefined' && document.visibilityState === 'visible') {
+            await activateKeepAwakeAsync();
+          }
+        } else {
+          await activateKeepAwakeAsync();
+        }
+      } catch (e) {
+        // Ignore keep awake errors
+      }
+    };
+
+    activate();
+
+    let visibilityHandler: () => void;
+    if (Platform.OS === 'web' && typeof document !== 'undefined') {
+      visibilityHandler = () => {
+        if (document.visibilityState === 'visible') {
+          activate();
+        }
+      };
+      document.addEventListener('visibilitychange', visibilityHandler);
+    }
+
+    return () => {
+      if (Platform.OS === 'web' && typeof document !== 'undefined' && visibilityHandler) {
+        document.removeEventListener('visibilitychange', visibilityHandler);
+      }
+      try {
+        deactivateKeepAwake().catch(() => {});
+      } catch (e) {}
+    };
+  }, []);
+
   const { 
     status, mode, timeLeft, timeElapsed, tick, currentTitle, duration, 
     sessionType, autoPlay, setSessionType, startTimer, stopTimer, sessionStartTime, selectedSkillId, selectedPillarId 
@@ -48,6 +86,13 @@ export default function TimerScreen() {
     }))
   );
   const addSession = useSessionStore((s: any) => s.addSession);
+  const defaultBreakMinutes = useSettingsStore(s => s.defaultBreakMinutes);
+  const setBreakDuration = useTimerStore(s => s.setBreakDuration);
+
+  useEffect(() => {
+    setBreakDuration(defaultBreakMinutes * 60);
+  }, [defaultBreakMinutes, setBreakDuration]);
+
   const [durationModalVisible, setDurationModalVisible] = useState(false);
   const plans = usePlanStore(s => s.plans);
   const [currentMins, setCurrentMins] = useState(() => {

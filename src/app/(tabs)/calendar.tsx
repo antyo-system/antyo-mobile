@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useMemo, useCallback } from 'react';
-import { ScrollView, View, PanResponder, Pressable, Text, Image, Platform } from 'react-native';
+import { ScrollView, View, PanResponder, Pressable, Text, Image, Platform, Dimensions, Alert } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useIsFocused } from '@react-navigation/native';
 import { Tabs, useNavigation } from 'expo-router';
@@ -301,38 +301,41 @@ export default function CalendarScreen() {
   const handleTimelinePress = (e: any) => {
     if (isLocked) return;
     
-    // Capture the Y coordinate to determine the time tapped (support both native and web)
     const y = e.nativeEvent.locationY ?? e.nativeEvent.offsetY ?? 0;
+    const x = e.nativeEvent.locationX ?? e.nativeEvent.offsetX ?? 0;
+    const screenWidth = Dimensions.get('window').width;
+
     let clickedMinutes = Math.round(y / PIXELS_PER_MINUTE);
     clickedMinutes = Math.floor(clickedMinutes / 15) * 15; // Snap down to nearest 15 mins block
     
-    if (activeTab === 'real') {
-       const manualDate = new Date(selectedDate);
-       manualDate.setHours(Math.floor(clickedMinutes / 60), clickedMinutes % 60, 0, 0);
-       
-       setEditingRealSession({
-         id: Date.now().toString(),
-         title: '',
-         startTime: manualDate.toISOString(),
-         durationSeconds: 30 * 60,
-         focusDurationSeconds: 30 * 60,
-         distractedDurationSeconds: 0,
-         isSmartMode: false,
-         color: '#3B82F6',
-       } as any);
-       setRealEditorVisible(true);
-    } else {
-      // Auto-create a new 30 minute plan at that exact time
-      setEditingPlan({
-        id: Date.now().toString(),
-        title: '',
-        startMinutes: clickedMinutes,
-        durationMinutes: 30,
-        recurrence: 'none',
-        baseDate: selectedDate.toISOString(),
-      });
-      setEditorVisible(true);
+    let isTappingReal = activeTab === 'real';
+
+    if (isCompareMode) {
+      if (x > screenWidth / 2) {
+        isTappingReal = true;
+      } else {
+        isTappingReal = false;
+      }
     }
+
+    if (isTappingReal) {
+      Alert.alert(
+        t('calendarComp.strictRealTitle') || 'Strict Tracking',
+        t('calendarComp.strictRealMessage') || 'Real sessions can only be logged using the Focus Timer or by completing a Plan. Stay honest to the Mastery process!'
+      );
+      return;
+    }
+
+    // Auto-create a new 30 minute plan at that exact time
+    setEditingPlan({
+      id: Date.now().toString(),
+      title: '',
+      startMinutes: clickedMinutes,
+      durationMinutes: 30,
+      recurrence: 'none',
+      baseDate: selectedDate.toISOString(),
+    });
+    setEditorVisible(true);
   };
 
   const [linkedTaskId, setLinkedTaskId] = useState<string | null>(null);
@@ -380,8 +383,6 @@ export default function CalendarScreen() {
             selectedDate={selectedDate} 
             onSelectDate={setSelectedDate} 
             achievedDates={achievedDates}
-            isCompareMode={isCompareMode}
-            onToggleCompareMode={() => setIsCompareMode(p => !p)}
           />
         </View>
       )}
@@ -422,13 +423,23 @@ export default function CalendarScreen() {
           <Feather name={isHeaderVisible ? "chevron-up" : "chevron-down"} size={14} color="#9CA3AF" />
         </Pressable>
 
-        {/* Lock Toggle */}
-        <Pressable 
-          onPress={() => setIsLocked(p => !p)}
-          className="absolute right-4 top-2.5 px-3 py-1 items-center justify-center rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-100 dark:border-gray-800"
-        >
-          <Feather name={isLocked ? "lock" : "unlock"} size={14} color={isLocked ? "#F59E0B" : "#9CA3AF"} />
-        </Pressable>
+        <View className="absolute right-4 top-2.5 flex-row gap-2">
+          {/* Compare Toggle */}
+          <Pressable 
+            onPress={() => setIsCompareMode(p => !p)}
+            className={`px-3 py-1 items-center justify-center rounded-xl border ${isCompareMode ? 'bg-blue-50 border-blue-200 dark:bg-blue-900/30 dark:border-blue-800' : 'bg-gray-50 border-gray-100 dark:bg-gray-900 dark:border-gray-800'}`}
+          >
+            <Feather name={isCompareMode ? "eye" : "eye-off"} size={14} color={isCompareMode ? "#3b82f6" : "#9CA3AF"} />
+          </Pressable>
+
+          {/* Lock Toggle */}
+          <Pressable 
+            onPress={() => setIsLocked(p => !p)}
+            className="px-3 py-1 items-center justify-center rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-100 dark:border-gray-800"
+          >
+            <Feather name={isLocked ? "lock" : "unlock"} size={14} color={isLocked ? "#F59E0B" : "#9CA3AF"} />
+          </Pressable>
+        </View>
       </View>
 
       {activeTab === 'schedule' && <ScheduleFeedView selectedDate={selectedDate} />}

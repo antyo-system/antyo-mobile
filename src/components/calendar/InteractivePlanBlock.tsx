@@ -49,6 +49,7 @@ export const InteractivePlanBlock = memo(function InteractivePlanBlock({ plan, p
         if (newStart < 0) newStart = 0;
         onUpdatePlan(plan.id, { startMinutes: newStart });
       },
+      onPanResponderTerminate: () => latestProps.current.setScrollEnabled(true),
     })
   ).current;
 
@@ -72,6 +73,7 @@ export const InteractivePlanBlock = memo(function InteractivePlanBlock({ plan, p
         if (newDuration < 15) newDuration = 15;
         onUpdatePlan(plan.id, { durationMinutes: newDuration });
       },
+      onPanResponderTerminate: () => latestProps.current.setScrollEnabled(true),
     })
   ).current;
 

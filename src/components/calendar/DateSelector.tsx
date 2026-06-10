@@ -10,11 +10,9 @@ interface Props {
   selectedDate: Date;
   onSelectDate: (date: Date) => void;
   achievedDates: Date[];
-  isCompareMode: boolean;
-  onToggleCompareMode: () => void;
 }
 
-export function DateSelector({ selectedDate, onSelectDate, achievedDates, isCompareMode, onToggleCompareMode }: Props) {
+export function DateSelector({ selectedDate, onSelectDate, achievedDates }: Props) {
   const { t } = useTranslation();
   const [modalVisible, setModalVisible] = useState(false);
   
@@ -41,12 +39,6 @@ export function DateSelector({ selectedDate, onSelectDate, achievedDates, isComp
           <Text className="text-[10px] text-gray-400 mt-1">▼</Text>
         </Pressable>
         <View className="flex-row items-center gap-2">
-          <Pressable 
-            onPress={onToggleCompareMode}
-            className={`w-8 h-8 items-center justify-center rounded-full border ${isCompareMode ? 'bg-blue-50 border-blue-200 dark:bg-blue-900/30 dark:border-blue-800' : 'bg-gray-50 border-gray-200 dark:bg-gray-900 dark:border-gray-800'}`}
-          >
-            <Feather name={isCompareMode ? "eye" : "eye-off"} size={14} color={isCompareMode ? "#3b82f6" : "#9ca3af"} />
-          </Pressable>
           <Pressable 
             onPress={() => {
               onSelectDate(new Date());

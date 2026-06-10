@@ -5,9 +5,22 @@ export interface ChangelogRelease {
   fixes: string[];
 }
 
-export const APP_VERSION = "1.7.0";
+export const APP_VERSION = "1.7.1";
 
 export const CHANGELOG: ChangelogRelease[] = [
+  {
+    version: "1.7.1",
+    date: new Date().toISOString().split('T')[0],
+    features: [
+      "Strict Tracking UX: The REAL calendar column is now strictly read-only for manual creation, enforcing the Mastery 10,000 Hours rule philosophy.",
+      "Sticky Compare Toggle: Moved the 'Eye' compare toggle from the header to the sticky bottom bar for easier access when the calendar is collapsed."
+    ],
+    fixes: [
+      "Fixed critical calendar freeze bug where the screen could not be scrolled after dragging a time block.",
+      "Fixed missing bottom Navbar on web/localhost by adjusting z-index stacking.",
+      "Fixed logic where tapping the calendar in compare mode incorrectly created plan vs real sessions."
+    ]
+  },
   {
     version: "1.7.0",
     date: new Date().toISOString().split('T')[0],

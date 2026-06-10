@@ -79,7 +79,7 @@ export function ContributionHeatmap({ sessions }: Props) {
   const totalSecondsAllTime = sessions.reduce((acc, curr) => acc + curr.durationSeconds, 0);
 
   return (
-    <View className="bg-white dark:bg-gray-900 rounded-3xl p-6 shadow-sm border border-gray-100 dark:border-gray-800 mb-6">
+    <View className="mb-6">
       
       <View className="flex-row items-center justify-between mb-2">
         <Text className="text-gray-900 dark:text-white font-black text-xl tracking-tight flex-1 mr-2" numberOfLines={1} adjustsFontSizeToFit>{t('statsComp.masteryJourney')}</Text>

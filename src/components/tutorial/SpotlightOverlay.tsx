@@ -119,8 +119,8 @@ export function SpotlightOverlay({
       
       // On web, we use resize listener. On Native, we use short delays.
       // We add a 400ms delay for both to guarantee scroll animations (like scrollToEnd) have finished.
-      let timeoutId: NodeJS.Timeout;
-      let timeoutId2: NodeJS.Timeout;
+      let timeoutId: ReturnType<typeof setTimeout>;
+      let timeoutId2: ReturnType<typeof setTimeout>;
       
       if (Platform.OS === 'web') {
         window.addEventListener('resize', measure);

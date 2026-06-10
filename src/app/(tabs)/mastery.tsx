@@ -221,7 +221,8 @@ export default function MasteryScreen() {
       setTutorialSteps([
         { targetRef: addRef, text: t('tutorial.mastery.step1'), holeType: 'circle', holePadding: 12 },
         { targetRef: listRef, text: t('tutorial.mastery.step2'), holeType: 'rect', holePadding: 8 },
-        { targetRef: infoRef, text: t('tutorial.mastery.step3'), holeType: 'rect', holePadding: 8 },
+        { targetRef: listRef, text: t('tutorial.mastery.step3'), holeType: 'rect', holePadding: 8 },
+        { targetRef: listRef, text: t('tutorial.mastery.step4'), holeType: 'rect', holePadding: 8 },
       ]);
       const timeout = setTimeout(() => {
         setTutorialVisible(true);

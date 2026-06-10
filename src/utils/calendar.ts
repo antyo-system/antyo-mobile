@@ -50,11 +50,27 @@ export function getWeeklyPlannedMinutes(plans: Plan[], currentDate: Date = new D
     const plansForDay = getPlansForDate(plans, day);
     
     for (const p of plansForDay) {
-      // ONLY count plans that are attached to a Mastery Skill
-      // Generic life events (dinner, sleep, break) without a skillId are ignored
-      if (p.skillId) {
-        totalMinutes += p.durationMinutes;
-      }
+      // Count ALL plans towards the target minutes.
+      // Even if skillId is null ('None'), it's still a planned focus session.
+      totalMinutes += p.durationMinutes;
+    }
+  }
+
+  return totalMinutes;
+}
+
+/**
+ * Calculates the total planned duration (in minutes) for an arbitrary period.
+ */
+export function getPlannedMinutes(plans: Plan[], startDate: Date, days: number): number {
+  let totalMinutes = 0;
+
+  for (let i = 0; i < days; i++) {
+    const day = addDays(startDate, i);
+    const plansForDay = getPlansForDate(plans, day);
+    
+    for (const p of plansForDay) {
+      totalMinutes += p.durationMinutes;
     }
   }
 

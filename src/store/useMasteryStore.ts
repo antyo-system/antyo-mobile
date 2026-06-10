@@ -26,7 +26,7 @@ export interface Skill {
 
 interface MasteryState {
   skills: Skill[];
-  addSkill: (skill: Omit<Skill, 'totalSeconds' | 'createdAt' | 'pillars'> & { id?: string; initialPillars?: string[] }) => void;
+  addSkill: (skill: Omit<Skill, 'id' | 'totalSeconds' | 'createdAt' | 'pillars'> & { id?: string; initialPillars?: string[] }) => void;
   updateSkill: (id: string, updates: Partial<Skill>) => void;
   deleteSkill: (id: string) => void;
   addTimeToSkill: (id: string, pillarId: string | null, seconds: number) => void;

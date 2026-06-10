@@ -27,6 +27,8 @@ const en = {
       schedule: 'Schedule',
       real: 'Real',
       task: 'Task',
+      strictRealTitle: 'Read-Only Area',
+      strictRealMessage: 'Real sessions can only be logged using the Focus Timer or by completing a Plan. Stay honest to the Mastery process!',
     },
     mastery: {
       title: 'Mastery',
@@ -47,16 +49,27 @@ const en = {
     },
     stats: {
       title: 'Statistics',
+      day: 'Day',
+      week: 'Week',
+      month: 'Month',
+      year: 'Year',
+      timeLeft: 'Time Left',
       sleepDebt: 'Sleep Debt (Borrowed) 🌙',
       timeLeftToday: 'Time Left Today',
       planVsReality: 'Plan vs. Reality',
       disciplineScore: 'Discipline Score',
+      actual: 'Executed',
+      target: 'Planned',
+      lifeDays: 'Lifetime',
+      daysLeft: 'Days Left',
       executedPlanned: 'Executed / Planned',
       smartAnalytics: 'Smart Analytics',
       focused: 'Focused',
       distracted: 'Distracted',
       globalFocusScore: 'Global Focus Score',
       recentSessions: 'Recent Sessions',
+      viewHistory: 'View Session History',
+      history: 'Session History',
       delete: 'Delete',
       noSessionsYet: 'No sessions recorded yet.',
       feedbackNoPlan: "You haven't scheduled any Mastery Skills this week. Use the calendar to set your targets!",
@@ -153,9 +166,11 @@ const en = {
       daysLeft: 'Days Left',
       weeks: 'WEEKS',
       hrs: 'hrs',
+      noDataToday: 'No Focus Yet',
     },
     planEditor: {
       newPlan: 'New Plan',
+      unnamedPlan: 'Unnamed Plan',
       editPlan: 'Edit Plan',
       planTitle: 'Plan Title',
       planTitlePlaceholder: 'e.g., Deep Work',
@@ -166,7 +181,7 @@ const en = {
       end: 'End',
       color: 'Color',
       linkToSkill: 'Select Skill',
-      none: 'General',
+      none: 'None',
       linkToSubskill: 'Select Subskill',
       recurrence: 'Recurrence',
       savePlan: 'Save',
@@ -253,22 +268,51 @@ const en = {
       legend: 'Legend',
       mythic: 'Mythic',
     },
+    insights: {
+      distraction: {
+        title: 'High Distraction Rate',
+        desc: 'You lost over {{value}} minutes to distractions recently. Consider silencing your phone.'
+      },
+      overplanning: {
+        title: 'Overplanning Alert',
+        desc: 'You executed {{value}}% of what you planned today. Try setting lighter, more realistic goals tomorrow.'
+      },
+      underplanning: {
+        title: 'Hidden Potential',
+        desc: 'You worked far more than planned today! Consider planning these sessions ahead to build momentum.'
+      },
+      primeTime: {
+        title: 'Prime Time Discovered',
+        descMorning: 'You are most productive in the Morning. Schedule your hardest tasks then!',
+        descAfternoon: 'You are most productive in the Afternoon. Schedule your hardest tasks then!',
+        descEvening: 'You are most productive in the Evening. Schedule your hardest tasks then!'
+      },
+      momentum: {
+        title: 'Building Momentum',
+        desc: 'You have logged focus sessions for {{value}} days recently. Keep the streak alive!'
+      },
+      empty: {
+        title: 'Not enough data',
+        desc: 'Complete more focus sessions to unlock personalized productivity insights.'
+      }
+    },
     tutorial: {
       stats: {
-        step1: "Step 1: Your Life on a Clock. See exactly how much time you have left today and in your lifetime.",
-        step2: "Step 2: Weekly Progress. Track your 10,000 hours flight time week by week.",
-        step3: "Step 3: Consistency is everything. Fill this board every single day to build unbreakable momentum."
+        step1: "Your Life on a Clock. See exactly how much time you have left.",
+        step2: "Track your 10,000 hours flight time week by week.",
+        step3: "Consistency is everything. Fill this board every single day."
       },
       mastery: {
-        step1: "Step 1: Your Focus Areas. Tap here to create a Skill you want to master.",
-        step2: "Step 2: The 10,000 Hours Journey. Watch your level grow here as you record focused time.",
-        step3: "Step 3: Keep going. Every session brings you closer to world-class mastery."
+        step1: "Tap here to create a Skill you want to master.",
+        step2: "Watch your level grow as you record focused time.",
+        step3: "Click 'Set Target' to define your daily goal.",
+        step4: "Click 'Create Routine' to schedule your learning."
       },
       timer: {
-        step1: "Step 1: Define your mission. Type the specific task you want to conquer today.",
-        step2: "Step 2: Link your effort to a Skill. This is crucial to track your 10,000 hours journey.",
-        step3: "Step 3: Set your boundaries. Use Timer for strict blocks, or Stopwatch for open-ended flow.",
-        step4: "Step 4: Ignite your engine. No distractions. Just pure execution."
+        step1: "Define your mission. What will you conquer today?",
+        step2: "Link to a Skill to track your 10,000 hours journey.",
+        step3: "Tap the time to set your focus duration.",
+        step4: "Press start when you're ready to focus."
       },
       calendar: {
         step1: "Select a date to plan your future.",
@@ -310,6 +354,8 @@ const id: TranslationDictionary = {
       schedule: 'Jadwal',
       real: 'Nyata',
       task: 'Tugas',
+      strictRealTitle: 'Area Terkunci (Read-Only)',
+      strictRealMessage: 'Sesi real hanya bisa dicatat menggunakan Timer Focus atau dengan menyelesaikan Rencana (Mark as Done). Tetap jujur pada proses Mastery Anda!',
     },
     mastery: {
       title: 'Keahlian',
@@ -330,16 +376,27 @@ const id: TranslationDictionary = {
     },
     stats: {
       title: 'Statistik',
+      day: 'Hari',
+      week: 'Minggu',
+      month: 'Bulan',
+      year: 'Tahun',
+      timeLeft: 'Waktu Tersisa',
       sleepDebt: 'Hutang Tidur (Dipinjam) 🌙',
       timeLeftToday: 'Waktu Tersisa Hari Ini',
       planVsReality: 'Rencana vs Nyata',
       disciplineScore: 'Skor Disiplin',
-      executedPlanned: 'Dilaksanakan / Direncanakan',
+      actual: 'Dieksekusi',
+      target: 'Direncanakan',
+      lifeDays: 'Seumur Hidup',
+      daysLeft: 'Hari Tersisa',
+      executedPlanned: 'Dieksekusi / Direncanakan',
       smartAnalytics: 'Analitik Cerdas',
       focused: 'Fokus',
       distracted: 'Teralihkan',
       globalFocusScore: 'Skor Fokus Global',
       recentSessions: 'Sesi Terbaru',
+      viewHistory: 'Lihat Riwayat Sesi',
+      history: 'Riwayat Sesi',
       delete: 'Hapus',
       noSessionsYet: 'Belum ada sesi yang direkam.',
       feedbackNoPlan: "Anda belum menjadwalkan Keahlian apa pun minggu ini. Gunakan kalender untuk mengatur target Anda!",
@@ -436,9 +493,11 @@ const id: TranslationDictionary = {
       daysLeft: 'Sisa Hari',
       weeks: 'MINGGU',
       hrs: 'jam',
+      noDataToday: 'Belum Ada Fokus',
     },
     planEditor: {
       newPlan: 'Rencana Baru',
+      unnamedPlan: 'Plan Tanpa Nama',
       editPlan: 'Edit Rencana',
       planTitle: 'Judul Rencana',
       planTitlePlaceholder: 'misal: Kerja Fokus',
@@ -449,7 +508,7 @@ const id: TranslationDictionary = {
       end: 'Selesai',
       color: 'Warna',
       linkToSkill: 'Pilih Keterampilan',
-      none: 'Umum',
+      none: 'Tidak Ada',
       linkToSubskill: 'Pilih Sub-keterampilan',
       recurrence: 'Pengulangan',
       savePlan: 'Simpan',
@@ -536,22 +595,51 @@ const id: TranslationDictionary = {
       legend: 'Legenda',
       mythic: 'Mitos',
     },
+    insights: {
+      distraction: {
+        title: 'Tingkat Gangguan Tinggi',
+        desc: 'Anda kehilangan lebih dari {{value}} menit karena gangguan belakangan ini. Coba heningkan ponsel Anda.'
+      },
+      overplanning: {
+        title: 'Peringatan Overplanning',
+        desc: 'Anda mengeksekusi {{value}}% dari rencana hari ini. Coba pasang target yang lebih realistis besok.'
+      },
+      underplanning: {
+        title: 'Potensi Tersembunyi',
+        desc: 'Anda bekerja jauh melebihi rencana hari ini! Coba jadwalkan sesi ini agar momentum lebih terjaga.'
+      },
+      primeTime: {
+        title: 'Waktu Emas Ditemukan',
+        descMorning: 'Anda paling produktif di Pagi hari. Jadwalkan tugas terberat Anda di waktu ini!',
+        descAfternoon: 'Anda paling produktif di Siang/Sore hari. Jadwalkan tugas terberat Anda di waktu ini!',
+        descEvening: 'Anda paling produktif di Malam hari. Jadwalkan tugas terberat Anda di waktu ini!'
+      },
+      momentum: {
+        title: 'Membangun Momentum',
+        desc: 'Anda telah mencatat sesi fokus selama {{value}} hari belakangan ini. Pertahankan rekor ini!'
+      },
+      empty: {
+        title: 'Data belum cukup',
+        desc: 'Selesaikan lebih banyak sesi fokus untuk membuka wawasan produktivitas personal Anda.'
+      }
+    },
     tutorial: {
       stats: {
-        step1: "Langkah 1: Hidup Anda dalam Jam. Lihat dengan tepat sisa waktu Anda hari ini dan seumur hidup.",
-        step2: "Langkah 2: Kemajuan Mingguan. Lacak jam terbang 10.000 jam Anda minggu demi minggu.",
-        step3: "Langkah 3: Konsistensi adalah segalanya. Penuhi papan ini setiap hari untuk membangun momentum yang tak terhentikan."
+        step1: "Hidup Anda dalam Jam. Lihat sisa waktu Anda hari ini dan seumur hidup.",
+        step2: "Lacak jam terbang 10.000 jam Anda minggu demi minggu.",
+        step3: "Konsistensi adalah segalanya. Penuhi papan ini setiap hari."
       },
       mastery: {
-        step1: "Langkah 1: Area Fokus. Ketuk di sini untuk membuat Keterampilan yang ingin Anda kuasai.",
-        step2: "Langkah 2: Perjalanan 10.000 Jam. Saksikan level Anda naik di sini saat Anda mencatat waktu fokus.",
-        step3: "Langkah 3: Terus melangkah. Setiap sesi membawa Anda lebih dekat pada penguasaan tingkat dunia."
+        step1: "Ketuk di sini untuk membuat Keterampilan baru.",
+        step2: "Saksikan level Anda naik saat mencatat waktu fokus.",
+        step3: "Ketuk 'Tentukan Target' untuk mengatur target harian.",
+        step4: "Ketuk 'Buat Rutinitas' untuk menjadwalkan sesi Anda."
       },
       timer: {
-        step1: "Langkah 1: Tentukan misi Anda. Ketik tugas spesifik yang ingin Anda taklukkan hari ini.",
-        step2: "Langkah 2: Hubungkan upaya Anda dengan Keterampilan. Ini penting untuk melacak perjalanan 10.000 jam Anda.",
-        step3: "Langkah 3: Tetapkan batasan. Gunakan Timer untuk blok waktu yang ketat, atau Stopwatch untuk aliran terbuka.",
-        step4: "Langkah 4: Nyalakan mesin Anda. Tanpa gangguan. Murni eksekusi."
+        step1: "Tentukan misi Anda. Apa yang ingin ditaklukkan hari ini?",
+        step2: "Pilih keterampilan untuk melacak 10.000 jam Anda.",
+        step3: "Ketuk angka waktu untuk mengatur durasi fokus.",
+        step4: "Tekan mulai saat Anda siap untuk fokus."
       },
       calendar: {
         step1: "Pilih tanggal untuk merencanakan masa depan.",
@@ -613,16 +701,27 @@ const zh: TranslationDictionary = {
   },
   stats: {
     title: '统计数据',
+    day: '日',
+    week: '周',
+    month: '月',
+    year: '年',
+    timeLeft: '剩余时间',
     sleepDebt: '睡眠负债 (借用) 🌙',
     timeLeftToday: '今日剩余时间',
     planVsReality: '计划与实际',
     disciplineScore: '自律得分',
-    executedPlanned: '已执行 / 已计划',
+    actual: '已执行',
+    target: '计划中',
+    lifeDays: '终身',
+    daysLeft: '剩余天数',
+    executedPlanned: '已执行 / 计划中',
     smartAnalytics: '智能分析',
     focused: '专注',
     distracted: '分心',
     globalFocusScore: '全局专注得分',
     recentSessions: '最近的会话',
+    viewHistory: '查看历史记录',
+    history: '会话历史',
     delete: '删除',
     noSessionsYet: '尚未记录任何会话。',
     feedbackNoPlan: '您本周尚未安排任何精通技能。使用日历来设定您的目标！',
@@ -719,6 +818,7 @@ const zh: TranslationDictionary = {
     daysLeft: '剩余天数',
     weeks: '周',
     hrs: '小时',
+    noDataToday: '暂无专注',
   },
   planEditor: {
     newPlan: '新计划',
@@ -732,7 +832,7 @@ const zh: TranslationDictionary = {
     end: '结束',
     color: '颜色',
     linkToSkill: '选择技能',
-    none: '通用',
+    none: '无',
     linkToSubskill: '选择子技能',
     recurrence: '重复',
     savePlan: '保存',
@@ -819,22 +919,51 @@ const zh: TranslationDictionary = {
     legend: '传奇',
     mythic: '神话',
   },
+  insights: {
+    distraction: {
+      title: '分心率高',
+      desc: '您最近因分心损失了超过 {{value}} 分钟。考虑将手机静音。'
+    },
+    overplanning: {
+      title: '过度计划警告',
+      desc: '您今天执行了计划的 {{value}}%。尝试在明天设定更轻松、更现实的目标。'
+    },
+    underplanning: {
+      title: '隐藏潜力',
+      desc: '您今天的工作量远超计划！考虑提前计划这些会话以建立动力。'
+    },
+    primeTime: {
+      title: '发现黄金时间',
+      descMorning: '您在早上最高效。将最困难的任务安排在那个时候！',
+      descAfternoon: '您在下午最高效。将最困难的任务安排在那个时候！',
+      descEvening: '您在晚上最高效。将最困难的任务安排在那个时候！'
+    },
+    momentum: {
+      title: '建立动力',
+      desc: '您最近有 {{value}} 天记录了专注会话。保持连胜！'
+    },
+    empty: {
+      title: '数据不足',
+      desc: '完成更多专注会话以解锁个性化的生产力洞察。'
+    }
+  },
   tutorial: {
     stats: {
-      step1: "步骤 1：时钟上的人生。准确查看您今天和一生中还剩多少时间。",
-      step2: "步骤 2：每周进度。逐周跟踪您的 10,000 小时飞行时间。",
-      step3: "步骤 3：一致性就是一切。每天填满这个板，建立不可阻挡的动力。"
+      step1: "时钟上的人生。准确查看您的剩余时间。",
+      step2: "每周进度。逐周跟踪您的 10,000 小时飞行时间。",
+      step3: "一致性就是一切。每天填满这个板以建立动力。"
     },
     mastery: {
-      step1: "步骤 1：您的重点领域。点击此处创建您想精通的技能。",
-      step2: "步骤 2：10,000 小时之旅。在这里记录专注时间，看着您的级别成长。",
-      step3: "步骤 3：继续前进。每次会话都让您离世界级精通更近一步。"
+      step1: "点击此处创建您想精通的技能。",
+      step2: "在这里记录专注时间，看着您的级别成长。",
+      step3: "点击“设置目标”来定义每日目标。",
+      step4: "点击“创建常规”来安排您的学习日程。"
     },
     timer: {
-      step1: "步骤 1：定义您的任务。输入您今天想要征服的具体任务。",
-      step2: "步骤 2：将您的努力链接到技能。这对跟踪您的 10,000 小时之旅至关重要。",
-      step3: "步骤 3：设定界限。使用计时器进行严格的计划，或使用秒表进行无限制的沉浸。",
-      step4: "步骤 4：点燃您的引擎。没有干扰。纯粹的执行。"
+      step1: "定义您的任务。今天想征服什么？",
+      step2: "链接到一项技能，记录您的 10,000 小时之旅。",
+      step3: "点击时间以设置您的专注时长。",
+      step4: "准备好后，点击开始。"
     },
     calendar: {
       step1: "选择一个日期来规划你的未来。",
