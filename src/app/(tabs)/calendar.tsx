@@ -320,8 +320,8 @@ export default function CalendarScreen() {
 
     if (isTappingReal) {
       Alert.alert(
-        t('calendarComp.strictRealTitle') || 'Strict Tracking',
-        t('calendarComp.strictRealMessage') || 'Real sessions can only be logged using the Focus Timer or by completing a Plan. Stay honest to the Mastery process!'
+        t('calendar.strictRealTitle') || 'Strict Tracking',
+        t('calendar.strictRealMessage') || 'Real sessions can only be logged using the Focus Timer or by completing a Plan. Stay honest to the Mastery process!'
       );
       return;
     }

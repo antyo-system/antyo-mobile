@@ -5,9 +5,18 @@ export interface ChangelogRelease {
   fixes: string[];
 }
 
-export const APP_VERSION = "1.7.1";
+export const APP_VERSION = "1.7.2";
 
 export const CHANGELOG: ChangelogRelease[] = [
+  {
+    version: "1.7.2",
+    date: new Date().toISOString().split('T')[0],
+    features: [],
+    fixes: [
+      "Fixed Donut chart rendering artifacts (SVG path parsing issues) on Android release builds.",
+      "Fixed missing translation types."
+    ]
+  },
   {
     version: "1.7.1",
     date: new Date().toISOString().split('T')[0],

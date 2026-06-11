@@ -8,6 +8,7 @@
 ## ✨ New Features & Fixes
 | Date | Feature | Notes |
 |---|---|---|
+| 2026-06-11 | v1.7.2 Release | Bugfixes: Fixed Donut chart SVG rendering artifacts on Android release builds and missing translation types. |
 | 2026-06-10 | v1.7.1 Release | Strict Tracking UX: The REAL calendar column is now read-only for manual creation. Moved 'Eye' compare toggle to the sticky bottom bar. Fixed calendar freeze bug after dragging timeblocks. Fixed missing bottom Navbar on web/localhost. |
 | 2026-06-09 | v1.7.0 Release | Added Task/To-Do list feed in Calendar. Added one-tap Task Scheduling Modal. Added Zen Mode (curtain toggle). Added interactive calendar tutorial. Refined translations for 'All Day' and 'Link to Skill'. Fixed PlanEditor UI alignments. |
 | 2026-06-05 | UI Simplification | Removed CircularTimer for a cleaner Focus UI. |

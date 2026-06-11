@@ -681,6 +681,8 @@ const zh: TranslationDictionary = {
     schedule: '日程',
     real: '实际',
     task: '任务',
+    strictRealTitle: '只读区域',
+    strictRealMessage: '实际会话只能使用专注计时器或完成计划来记录。对您的精通之旅保持诚实！',
   },
   mastery: {
     title: '精通',
@@ -822,6 +824,7 @@ const zh: TranslationDictionary = {
   },
   planEditor: {
     newPlan: '新计划',
+    unnamedPlan: '未命名计划',
     editPlan: '编辑计划',
     planTitle: '计划标题',
     planTitlePlaceholder: '例如：深度工作',

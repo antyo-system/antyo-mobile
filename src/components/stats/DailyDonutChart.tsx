@@ -54,9 +54,9 @@ export function DailyDonutChart({ sessions }: Props) {
                 r={radius}
                 stroke="#E5E7EB" // gray-200
                 strokeWidth={strokeWidth}
-                strokeDasharray={`${halfCircumference} ${circumference}`}
+                strokeDasharray={[halfCircumference, circumference]}
                 strokeLinecap="round"
-                fill="transparent"
+                fill="none"
               />
             </G>
           </Svg>
@@ -88,9 +88,9 @@ export function DailyDonutChart({ sessions }: Props) {
               r={radius}
               stroke="#E5E7EB" // gray-200
               strokeWidth={strokeWidth}
-              strokeDasharray={`${halfCircumference} ${circumference}`}
+              strokeDasharray={[halfCircumference, circumference]}
               strokeLinecap="round"
-              fill="transparent"
+              fill="none"
             />
             {data.map((item, index) => {
               const strokeLength = (item.duration / totalDuration) * halfCircumference;
@@ -109,9 +109,9 @@ export function DailyDonutChart({ sessions }: Props) {
                   r={radius}
                   stroke={item.color}
                   strokeWidth={strokeWidth}
-                  strokeDasharray={`${adjustedLength} ${circumference}`}
+                  strokeDasharray={[adjustedLength, circumference]}
                   strokeDashoffset={0}
-                  fill="transparent"
+                  fill="none"
                   strokeLinecap="round"
                   transform={`rotate(${angle} ${center} ${center})`}
                 />
