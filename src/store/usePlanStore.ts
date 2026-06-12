@@ -19,6 +19,7 @@ export interface Plan {
   color?: string;
   skillId?: string | null;
   pillarId?: string | null;
+  isPriority?: boolean; // NEW: Priority star
 }
 
 interface PlanState {

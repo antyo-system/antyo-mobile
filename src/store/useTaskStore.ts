@@ -30,6 +30,7 @@ export interface Task {
   projectId?: string;
   milestoneId?: string; // Relation to a Milestone within a Project
   planId?: string; // Relation to Timeblock (Plan)
+  isPriority?: boolean; // NEW: Priority star
 }
 
 interface TaskState {
@@ -38,6 +39,7 @@ interface TaskState {
   milestones: Milestone[];
   addTask: (task: Omit<Task, 'id' | 'completed' | 'createdAt'>) => void;
   toggleTask: (id: string) => void;
+  toggleTaskPriority: (id: string) => void;
   updateTask: (id: string, title: string) => void;
   deleteTask: (id: string) => void;
   addProject: (name: string, color: string, skillId?: string, targetDate?: string) => void;
@@ -91,6 +93,12 @@ export const useTaskStore = create<TaskState>()(
       toggleTask: (id) => set((state) => ({
         tasks: state.tasks.map(t => 
           t.id === id ? { ...t, completed: !t.completed } : t
+        )
+      })),
+
+      toggleTaskPriority: (id) => set((state) => ({
+        tasks: state.tasks.map(t => 
+          t.id === id ? { ...t, isPriority: !t.isPriority } : t
         )
       })),
 

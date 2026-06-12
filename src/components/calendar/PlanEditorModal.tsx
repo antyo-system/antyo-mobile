@@ -10,6 +10,7 @@ import { Feather } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { CalendarPicker } from './CalendarPicker';
 import { useTranslation } from '@/hooks/useTranslation';
+import * as Haptics from 'expo-haptics';
 
 interface Props {
   visible: boolean;
@@ -52,6 +53,7 @@ export function PlanEditorModal({ visible, plan, onClose, onSave, onDelete }: Pr
   const [planDate, setPlanDate] = useState(new Date());
   const [skillId, setSkillId] = useState<string | null>(null);
   const [pillarId, setPillarId] = useState<string | null>(null);
+  const [isPriority, setIsPriority] = useState(false);
 
   const skills = useMasteryStore(s => s.skills);
 
@@ -60,6 +62,7 @@ export function PlanEditorModal({ visible, plan, onClose, onSave, onDelete }: Pr
     setRecurrence(plan?.recurrence || 'none');
     setRecurrenceDays(plan?.recurrenceDays || []);
     setIsAllDay(plan?.isAllDay || false);
+    setIsPriority(plan?.isPriority || false);
     setNotes(plan?.notes || '');
     setIsReminderEnabled(plan?.isReminderEnabled ?? true);
     setColor(plan?.color || PLAN_COLORS[2]);
@@ -127,7 +130,8 @@ export function PlanEditorModal({ visible, plan, onClose, onSave, onDelete }: Pr
       color,
       baseDate,
       skillId,
-      pillarId
+      pillarId,
+      isPriority
     });
   };
 
@@ -159,6 +163,32 @@ export function PlanEditorModal({ visible, plan, onClose, onSave, onDelete }: Pr
               className="bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-4 rounded-2xl text-gray-900 dark:text-white font-bold text-lg mb-6 shadow-sm"
               autoFocus={!plan?.title}
             />
+
+            <Pressable 
+              onPress={() => {
+                Haptics.selectionAsync();
+                setIsPriority(!isPriority);
+              }}
+              className={`flex-row items-center p-4 rounded-2xl mb-6 border ${
+                isPriority 
+                  ? 'bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800' 
+                  : 'bg-gray-50 dark:bg-gray-900 border-gray-200 dark:border-gray-800'
+              }`}
+            >
+              <View className={`w-10 h-10 rounded-full items-center justify-center mr-4 ${
+                isPriority ? 'bg-amber-200 dark:bg-amber-700' : 'bg-gray-200 dark:bg-gray-800'
+              }`}>
+                <Feather name="star" size={20} color={isPriority ? '#D97706' : '#9CA3AF'} fill={isPriority ? '#F59E0B' : 'transparent'} />
+              </View>
+              <View className="flex-1">
+                <Text className={`font-black text-base ${isPriority ? 'text-amber-700 dark:text-amber-500' : 'text-gray-900 dark:text-white'}`}>
+                  Top Priority
+                </Text>
+                <Text className="text-gray-500 text-xs font-bold">
+                  Mark as the most important task of the day
+                </Text>
+              </View>
+            </Pressable>
 
             {/* Date + All Day + Remind Me row */}
             <View className="flex-row gap-3 mb-4">

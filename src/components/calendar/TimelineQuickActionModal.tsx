@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Modal, View, Text, Pressable, useColorScheme, ScrollView, TextInput } from 'react-native';
 import { useTaskStore, Milestone } from '@/store/useTaskStore';
-import { Plan } from '@/store/usePlanStore';
+import { Plan, usePlanStore } from '@/store/usePlanStore';
 import { Feather } from '@expo/vector-icons';
 import { useTranslation } from '@/hooks/useTranslation';
 import * as Haptics from 'expo-haptics';
@@ -16,6 +16,7 @@ export interface TimelineRenderedPlan {
   _left: number;
   _width: number;
   isCompleted: boolean;
+  isPriority?: boolean;
   raw: Milestone | Plan;
 }
 
@@ -35,6 +36,7 @@ export function TimelineQuickActionModal({ visible, plan, onClose, onMarkDone, o
   const tasks = useTaskStore(s => s.tasks);
   const toggleTask = useTaskStore(s => s.toggleTask);
   const addTask = useTaskStore(s => s.addTask);
+  const updatePlan = usePlanStore(s => s.updatePlan);
   
   const planTasks = plan 
     ? tasks.filter(t => plan.type === 'milestone' ? t.milestoneId === plan.id : t.planId === plan.id) 
@@ -81,9 +83,22 @@ export function TimelineQuickActionModal({ visible, plan, onClose, onMarkDone, o
                 {plan.type === 'allday' ? t('All Day Plan', 'Rencana Seharian') : t('Timeline Milestone', 'Milestone Project')}
               </Text>
             </View>
-            <Pressable onPress={onClose} className="p-2 -mr-2 rounded-full bg-gray-100 dark:bg-gray-800">
-              <Feather name="x" size={18} color={isDark ? 'white' : 'black'} />
-            </Pressable>
+            <View className="flex-row items-center gap-2">
+              {plan.type === 'allday' && (
+                <Pressable 
+                  onPress={() => {
+                    Haptics.selectionAsync();
+                    updatePlan(plan.id, { isPriority: !plan.isPriority });
+                  }} 
+                  className={`p-2 rounded-full ${plan.isPriority ? 'bg-amber-100 dark:bg-amber-900/30' : 'bg-gray-100 dark:bg-gray-800'}`}
+                >
+                  <Feather name="star" size={18} color={plan.isPriority ? '#F59E0B' : (isDark ? 'white' : 'black')} fill={plan.isPriority ? '#F59E0B' : 'transparent'} />
+                </Pressable>
+              )}
+              <Pressable onPress={onClose} className="p-2 -mr-2 rounded-full bg-gray-100 dark:bg-gray-800">
+                <Feather name="x" size={18} color={isDark ? 'white' : 'black'} />
+              </Pressable>
+            </View>
           </View>
           
           <ScrollView contentContainerStyle={{ padding: 24, gap: 12, paddingBottom: 40 }}>

@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect, useMemo, useCallback } from 'react';
-import { ScrollView, View, PanResponder, Pressable, Text, Image, Platform, Dimensions, Alert } from 'react-native';
+import { View, PanResponder, Pressable, Text, Image, Platform, Dimensions, Alert } from 'react-native';
+import { PinchGestureHandler, State, ScrollView } from 'react-native-gesture-handler';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useIsFocused } from '@react-navigation/native';
 import { Tabs, useNavigation } from 'expo-router';
@@ -40,7 +41,6 @@ import { useAppStore } from '@/store/useAppStore';
 import { SpotlightOverlay, SpotlightStep, SpotlightCoords } from '@/components/tutorial/SpotlightOverlay';
 import { useTranslation } from '@/hooks/useTranslation';
 
-const PIXELS_PER_MINUTE = 1.5;
 
 function calculateLayout<T extends { startMinutes: number; durationMinutes?: number; durationSeconds?: number }>(items: T[]) {
   const sorted = [...items].sort((a, b) => {
@@ -128,11 +128,30 @@ function calculateLayout<T extends { startMinutes: number; durationMinutes?: num
 }
 
 export default function CalendarScreen() {
-  const { t } = useTranslation();
+  const { t, language } = useTranslation();
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [isCompareMode, setIsCompareMode] = useState(true);
   const insets = useSafeAreaInsets();
   const navigation = useNavigation();
+  
+  // Zoom state
+  const [baseScale, setBaseScale] = useState(1);
+  const [pinchScale, setPinchScale] = useState(1);
+  const zoomScale = Math.min(Math.max(0.5, baseScale * pinchScale), 3);
+
+  const PIXELS_PER_MINUTE = 1.5 * zoomScale;
+  const PIXELS_PER_DAY = 150 * zoomScale;
+
+  const onPinchGestureEvent = useCallback((event: any) => {
+    setPinchScale(event.nativeEvent.scale);
+  }, []);
+
+  const onPinchHandlerStateChange = useCallback((event: any) => {
+    if (event.nativeEvent.state === State.END) {
+      setBaseScale(prev => Math.min(Math.max(0.5, prev * event.nativeEvent.scale), 3));
+      setPinchScale(1);
+    }
+  }, []);
   
   // Tutorial State
   const { hasSeenCalendarTutorial, setTutorialSeen } = useAppStore();
@@ -204,6 +223,7 @@ export default function CalendarScreen() {
   const addMilestone = useTaskStore(s => s.addMilestone);
   const updateMilestone = useTaskStore(s => s.updateMilestone);
   const deleteMilestone = useTaskStore(s => s.deleteMilestone);
+  const tasks = useTaskStore(s => s.tasks);
   
   const verticalScrollRef = useRef<ScrollView>(null);
   
@@ -232,6 +252,17 @@ export default function CalendarScreen() {
   const dailyPlansRaw = useMemo(() => getPlansForDate(plans, selectedDate), [plans, selectedDate]);
   
   const dailyPlans = useMemo(() => calculateLayout(dailyPlansRaw), [dailyPlansRaw]);
+
+  const topPriorityItem = useMemo(() => {
+    const selectedDateString = selectedDate.toISOString().split('T')[0];
+    const topTask = tasks.find(t => t.baseDate === selectedDateString && t.isPriority && !t.completed);
+    if (topTask) return { type: 'task', title: topTask.title };
+    
+    const topPlan = dailyPlansRaw.find(p => p.isPriority);
+    if (topPlan) return { type: 'plan', title: topPlan.title };
+    
+    return null;
+  }, [tasks, dailyPlansRaw, selectedDate]);
   
   const dailySessionsWithStartMins = useMemo(() => 
     dailySessions.map(s => ({
@@ -245,7 +276,6 @@ export default function CalendarScreen() {
   const isSelectedToday = isToday(selectedDate);
 
   // --- TIMELINE MODE LOGIC ---
-  const PIXELS_PER_DAY = 150;
   const timelineDays = useMemo(() => {
     const start = startOfMonth(selectedDate);
     const end = endOfMonth(selectedDate);
@@ -287,6 +317,7 @@ export default function CalendarScreen() {
         top,
         height,
         isCompleted: m.isCompleted,
+        isPriority: false, // Milestones don't have priority yet
         raw: m
       };
     });
@@ -311,6 +342,7 @@ export default function CalendarScreen() {
         top,
         height,
         isCompleted: false, // Or map to a state if we have one
+        isPriority: p.isPriority,
         raw: p
       };
     });
@@ -363,6 +395,8 @@ export default function CalendarScreen() {
   const panResponder = useRef(
     PanResponder.create({
       onMoveShouldSetPanResponder: (evt, gestureState) => {
+        // Prevent pan responder from killing pinch gesture
+        if (evt.nativeEvent.touches && evt.nativeEvent.touches.length > 1) return false;
         // Only capture horizontal swipes to avoid blocking the vertical scroll
         return Math.abs(gestureState.dx) > 30 && Math.abs(gestureState.dx) > Math.abs(gestureState.dy);
       },
@@ -621,14 +655,33 @@ export default function CalendarScreen() {
 
       <View className="px-4 pt-4 z-10">
         <OnTheRadar />
+        {topPriorityItem && (
+          <View className="mt-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl p-3 flex-row items-center shadow-sm">
+            <View className="w-8 h-8 rounded-full bg-amber-100 dark:bg-amber-800/50 items-center justify-center mr-3">
+              <Feather name="star" size={16} color="#D97706" fill="#F59E0B" />
+            </View>
+            <View className="flex-1">
+              <Text className="text-[10px] font-bold text-amber-600 dark:text-amber-500 uppercase tracking-wider mb-0.5">
+                {language === 'id' ? 'Prioritas Utama Hari Ini' : 'Top Priority Today'}
+              </Text>
+              <Text className="text-sm font-black text-gray-900 dark:text-white" numberOfLines={1}>
+                {topPriorityItem.title}
+              </Text>
+            </View>
+          </View>
+        )}
       </View>
 
       {activeTab === 'task' && <TaskListView selectedDate={selectedDate} onScheduleTask={handleScheduleTask} />}
 
       {(activeTab === 'plan' || activeTab === 'real' || activeTab === 'timeline') && (
-        <View className="flex-1" {...panResponder.panHandlers} ref={bodyRef} collapsable={false}>
-        <ScrollView 
-          ref={verticalScrollRef}
+        <PinchGestureHandler
+          onGestureEvent={onPinchGestureEvent}
+          onHandlerStateChange={onPinchHandlerStateChange}
+        >
+          <View className="flex-1" {...panResponder.panHandlers} ref={bodyRef} collapsable={false}>
+          <ScrollView 
+            ref={verticalScrollRef}
           className="flex-1"
           scrollEnabled={isScrollEnabled}
           contentContainerStyle={{ paddingTop: 20, paddingBottom: 150 }}
@@ -722,35 +775,61 @@ export default function CalendarScreen() {
         {/* Render Real Sessions */}
         <View className="absolute top-0 bottom-0 left-16 right-4" pointerEvents="box-none">
           {activeTab === 'timeline' ? (
-            timelineSessionsLayout.map((session, i) => {
-              if (!isCompareMode && activeTab !== 'timeline') return null;
-              return (
-                <View 
-                  key={`real-${session.id}-${i}`}
-                  style={{ 
-                    position: 'absolute',
-                    top: session.top,
-                    height: session.height,
-                    left: isCompareMode ? '51%' : '0%', 
-                    width: isCompareMode ? '49%' : '100%',
-                    backgroundColor: `${session.color}20`,
-                    borderLeftWidth: 3,
-                    borderLeftColor: session.color,
-                    borderRadius: 6,
-                    padding: 6,
-                    opacity: isCompareMode ? 1 : 1 
-                  }}
-                  pointerEvents="none"
-                >
-                  <Text numberOfLines={1} style={{ fontSize: 11, fontWeight: '800', color: session.color }}>
-                    {session.title}
-                  </Text>
-                  <Text style={{ fontSize: 9, fontWeight: '700', color: session.color, opacity: 0.8, marginTop: 2 }}>
-                    {session.duration} min
-                  </Text>
-                </View>
-              );
-            })
+            <>
+              {timelineSessionsLayout.map((session, i) => {
+                if (!isCompareMode && activeTab !== 'timeline') return null;
+                return (
+                  <View 
+                    key={`real-${session.id}-${i}`}
+                    style={{ 
+                      position: 'absolute',
+                      top: session.top,
+                      height: session.height,
+                      left: isCompareMode ? '51%' : '0%', 
+                      width: isCompareMode ? '49%' : '100%',
+                      backgroundColor: session.color,
+                      borderRadius: 6,
+                      padding: 6,
+                      opacity: 1 
+                    }}
+                    pointerEvents="none"
+                  >
+                    <Text numberOfLines={1} style={{ fontSize: 11, fontWeight: '800', color: 'white' }}>
+                      {session.title}
+                    </Text>
+                    <Text style={{ fontSize: 9, fontWeight: '700', color: 'white', opacity: 0.8, marginTop: 2 }}>
+                      {session.duration} min
+                    </Text>
+                  </View>
+                );
+              })}
+              {timelinePlans.filter(p => p.isCompleted).map((plan, i) => {
+                if (!isCompareMode && activeTab !== 'timeline') return null;
+                return (
+                  <View 
+                    key={`real-completed-plan-${plan.id}-${i}`}
+                    style={{ 
+                      position: 'absolute',
+                      top: plan.top,
+                      height: plan.height,
+                      left: isCompareMode ? '51%' : '0%', 
+                      width: isCompareMode ? '49%' : '100%',
+                      backgroundColor: plan.color,
+                      borderRadius: 6,
+                      padding: 6,
+                    }}
+                    pointerEvents="none"
+                  >
+                    <Text numberOfLines={1} style={{ fontSize: 11, fontWeight: '800', color: 'white' }}>
+                      {plan.title}
+                    </Text>
+                    <Text style={{ fontSize: 9, fontWeight: '700', color: 'white', opacity: 0.9, marginTop: 2 }}>
+                      {plan.type === 'allday' ? 'ALL DAY' : 'COMPLETED'}
+                    </Text>
+                  </View>
+                );
+              })}
+            </>
           ) : (
             dailySessionsLayout.map(session => {
               if (!isCompareMode && activeTab !== 'real') return null;
@@ -825,7 +904,8 @@ export default function CalendarScreen() {
         )}
           </Pressable>
         </ScrollView>
-      </View>
+        </View>
+      </PinchGestureHandler>
       )}
 
       {/* Floating Action Button (FAB) */}

@@ -18,6 +18,13 @@ interface TimerState {
   selectedSkillId: string | null;
   selectedPillarId: string | null;
 
+  // Cycle Mode
+  targetDurationSeconds?: number;
+  cyclesCompleted: number;
+  totalCycles: number;
+  totalFocusElapsed: number;
+  cycleMode: boolean;
+
   // Actions
   setTitle: (title: string) => void;
   setSelectedSkillId: (id: string | null) => void;
@@ -32,6 +39,13 @@ interface TimerState {
   stopTimer: () => void;
   tick: () => void;
   fastForward: (seconds: number) => void;
+  
+  // Cycle Actions
+  loadTargetSession: (targetSeconds: number, focusSeconds: number, breakSeconds: number) => void;
+  setStandardMode: (focusSeconds: number, breakSeconds: number) => void;
+  addFocusElapsed: (seconds: number) => void;
+  incrementCycle: () => void;
+  advanceCycle: (nextType: SessionType) => void;
 }
 
 export const useTimerStore = create<TimerState>((set, get) => ({
@@ -47,6 +61,12 @@ export const useTimerStore = create<TimerState>((set, get) => ({
   currentTitle: '',
   selectedSkillId: null,
   selectedPillarId: null,
+
+  targetDurationSeconds: undefined,
+  cyclesCompleted: 0,
+  totalCycles: 0,
+  totalFocusElapsed: 0,
+  cycleMode: false,
 
   setTitle: (title) => set({ currentTitle: title }),
   setSelectedSkillId: (id) => set({ selectedSkillId: id, selectedPillarId: null }),
@@ -110,6 +130,11 @@ export const useTimerStore = create<TimerState>((set, get) => ({
       currentTitle: '',
       selectedSkillId: null,
       selectedPillarId: null,
+      targetDurationSeconds: undefined,
+      cyclesCompleted: 0,
+      totalCycles: 0,
+      totalFocusElapsed: 0,
+      cycleMode: false,
     });
   },
 
@@ -135,5 +160,59 @@ export const useTimerStore = create<TimerState>((set, get) => ({
         set({ timeElapsed: timeElapsed + seconds });
       }
     }
+  },
+
+  loadTargetSession: (targetSeconds, focusSeconds, breakSeconds) => {
+    const { status } = get();
+    if (status === 'idle') {
+      const cycleDuration = focusSeconds + breakSeconds;
+      const cycles = Math.ceil(targetSeconds / cycleDuration) || 1;
+      set({
+        targetDurationSeconds: targetSeconds,
+        duration: focusSeconds,
+        breakDuration: breakSeconds,
+        timeLeft: focusSeconds,
+        cyclesCompleted: 0,
+        totalCycles: cycles,
+        totalFocusElapsed: 0,
+        cycleMode: true,
+        sessionType: 'focus'
+      });
+    }
+  },
+
+  setStandardMode: (focusSeconds, breakSeconds) => {
+    const { status } = get();
+    if (status === 'idle') {
+      set({
+        duration: focusSeconds,
+        breakDuration: breakSeconds,
+        timeLeft: focusSeconds,
+        targetDurationSeconds: undefined,
+        cyclesCompleted: 0,
+        totalCycles: 0,
+        totalFocusElapsed: 0,
+        cycleMode: false,
+        sessionType: 'focus'
+      });
+    }
+  },
+
+  addFocusElapsed: (seconds) => {
+    set((state) => ({ totalFocusElapsed: state.totalFocusElapsed + seconds }));
+  },
+
+  incrementCycle: () => {
+    set((state) => ({ cyclesCompleted: state.cyclesCompleted + 1 }));
+  },
+
+  advanceCycle: (nextType) => {
+    const { duration, breakDuration, cyclesCompleted } = get();
+    set({
+      status: 'idle',
+      sessionType: nextType,
+      timeLeft: nextType === 'focus' ? duration : breakDuration,
+      cyclesCompleted: nextType === 'focus' ? cyclesCompleted + 1 : cyclesCompleted,
+    });
   },
 }));

@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect, memo } from 'react';
 import { View, Text, PanResponder, Pressable } from 'react-native';
+import { Feather } from '@expo/vector-icons';
 import { TimelineRenderedPlan } from './TimelineQuickActionModal';
 
 interface Props {
@@ -32,8 +33,8 @@ export const InteractiveTimelineBlock = memo(function InteractiveTimelineBlock({
 
   const moveResponder = useRef(
     PanResponder.create({
-      onStartShouldSetPanResponder: () => false,
-      onMoveShouldSetPanResponderCapture: (evt, gestureState) => !latestProps.current.isLocked && Math.abs(gestureState.dy) > 5,
+      onStartShouldSetPanResponder: (evt) => !latestProps.current.isLocked && evt.nativeEvent.touches.length === 1,
+      onMoveShouldSetPanResponderCapture: (evt, gestureState) => !latestProps.current.isLocked && evt.nativeEvent.touches.length === 1 && Math.abs(gestureState.dy) > 5,
       onPanResponderGrant: () => latestProps.current.setScrollEnabled(false),
       onPanResponderMove: (evt, gestureState) => {
         const { plan } = latestProps.current;
@@ -55,7 +56,7 @@ export const InteractiveTimelineBlock = memo(function InteractiveTimelineBlock({
 
   const resizeResponder = useRef(
     PanResponder.create({
-      onStartShouldSetPanResponder: () => !latestProps.current.isLocked,
+      onStartShouldSetPanResponder: (evt) => !latestProps.current.isLocked && evt.nativeEvent.touches.length === 1,
       onPanResponderGrant: () => latestProps.current.setScrollEnabled(false),
       onPanResponderMove: (evt, gestureState) => {
         const { plan, pixelsPerDay } = latestProps.current;
@@ -82,26 +83,46 @@ export const InteractiveTimelineBlock = memo(function InteractiveTimelineBlock({
 
   const color = plan.color || '#3B82F6';
 
+  const isPriority = plan.isPriority;
+
   return (
     <View 
-      className="absolute bg-white dark:bg-gray-900 border-l-4 rounded-md shadow-sm z-10 flex-col"
+      className="absolute bg-white dark:bg-gray-900 border-l-4 rounded-md z-10 flex-col"
       style={{ 
         top: tempTop, 
         height: Math.max(tempHeight, pixelsPerDay), 
         width: '100%',
-        borderLeftColor: color,
-        backgroundColor: `${color}20` // 20% opacity for background
+        borderLeftColor: isPriority ? '#F59E0B' : color,
+        backgroundColor: `${isPriority ? '#F59E0B' : color}20`,
+        ...(isPriority ? {
+          borderWidth: 1,
+          borderColor: '#F59E0B',
+          shadowColor: "#F59E0B",
+          shadowOffset: { width: 0, height: 0 },
+          shadowOpacity: 0.5,
+          shadowRadius: 8,
+          elevation: 5,
+        } : {
+          shadowColor: "#000",
+          shadowOffset: { width: 0, height: 1 },
+          shadowOpacity: 0.05,
+          shadowRadius: 2,
+          elevation: 1,
+        })
       }}
     >
       <View {...moveResponder.panHandlers} className="flex-1">
         <Pressable onPress={() => onEditPress(plan)} className="flex-1 px-2 pt-2 pb-4">
-          <Text 
-            className="text-xs font-bold dark:text-gray-100 pr-4" 
-            style={{ color, textDecorationLine: plan.isCompleted ? 'line-through' : 'none' }} 
-            numberOfLines={1}
-          >
-            {plan.title}
-          </Text>
+          <View className="flex-row items-center pr-2">
+            {isPriority && <Feather name="star" size={10} color="#F59E0B" fill="#F59E0B" style={{ marginRight: 4 }} />}
+            <Text 
+              className="text-xs font-bold dark:text-gray-100" 
+              style={{ color: isPriority ? '#F59E0B' : color, textDecorationLine: plan.isCompleted ? 'line-through' : 'none' }} 
+              numberOfLines={1}
+            >
+              {plan.title}
+            </Text>
+          </View>
           {plan.type === 'allday' && (
             <Text style={{ fontSize: 9, fontWeight: '700', color: plan.color, opacity: 0.8, marginTop: 2 }}>
               ALL DAY

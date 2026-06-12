@@ -29,6 +29,7 @@ export function TaskListView({ selectedDate, onScheduleTask }: Props) {
   const addTask = useTaskStore(s => s.addTask);
   const toggleTask = useTaskStore(s => s.toggleTask);
   const deleteTask = useTaskStore(s => s.deleteTask);
+  const toggleTaskPriority = useTaskStore(s => s.toggleTaskPriority);
   const addProject = useTaskStore(s => s.addProject);
   const deleteProject = useTaskStore(s => s.deleteProject);
   const assignTaskToMilestone = useTaskStore(s => s.assignTaskToMilestone);
@@ -58,8 +59,16 @@ export function TaskListView({ selectedDate, onScheduleTask }: Props) {
     (activeProjectId === 'all' || t.projectId === activeProjectId) &&
     (activeMilestoneId === null || t.milestoneId === activeMilestoneId)
   );
-  const activeTasks = dailyTasks.filter(t => !t.completed).sort((a, b) => b.createdAt - a.createdAt);
-  const completedTasks = dailyTasks.filter(t => t.completed).sort((a, b) => b.createdAt - a.createdAt);
+  const activeTasks = dailyTasks.filter(t => !t.completed).sort((a, b) => {
+    if (a.isPriority && !b.isPriority) return -1;
+    if (!a.isPriority && b.isPriority) return 1;
+    return b.createdAt - a.createdAt;
+  });
+  const completedTasks = dailyTasks.filter(t => t.completed).sort((a, b) => {
+    if (a.isPriority && !b.isPriority) return -1;
+    if (!a.isPriority && b.isPriority) return 1;
+    return b.createdAt - a.createdAt;
+  });
 
   const isSelectedDateToday = isToday(selectedDate);
   const currentMins = getMinutesFromMidnight(new Date().toISOString());
@@ -90,6 +99,11 @@ export function TaskListView({ selectedDate, onScheduleTask }: Props) {
   const handleToggle = (id: string) => {
     Haptics.selectionAsync();
     toggleTask(id);
+  };
+
+  const handleTogglePriority = (id: string) => {
+    Haptics.selectionAsync();
+    toggleTaskPriority(id);
   };
 
   const activeProject = projects.find(p => p.id === activeProjectId);
@@ -321,6 +335,12 @@ export function TaskListView({ selectedDate, onScheduleTask }: Props) {
                       className="p-2 opacity-70 active:opacity-100 border border-gray-200 dark:border-gray-800 rounded-lg"
                     >
                       <Feather name="calendar" size={16} color="#3B82F6" />
+                    </Pressable>
+                    <Pressable
+                      onPress={() => handleTogglePriority(task.id)}
+                      className="p-2 active:opacity-70"
+                    >
+                      <Feather name="star" size={18} color={task.isPriority ? "#F59E0B" : (isDark ? "#4B5563" : "#D1D5DB")} fill={task.isPriority ? "#F59E0B" : "transparent"} />
                     </Pressable>
                     <Pressable onPress={() => deleteTask(task.id)} className="p-2 opacity-50 active:opacity-100">
                       <Feather name="trash-2" size={16} color="#EF4444" />

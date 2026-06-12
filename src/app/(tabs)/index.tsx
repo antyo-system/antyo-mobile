@@ -65,7 +65,8 @@ export default function TimerScreen() {
 
   const { 
     status, mode, timeLeft, timeElapsed, tick, currentTitle, duration, 
-    sessionType, autoPlay, setSessionType, startTimer, stopTimer, sessionStartTime, selectedSkillId, selectedPillarId 
+    sessionType, autoPlay, setSessionType, startTimer, stopTimer, sessionStartTime, selectedSkillId, selectedPillarId,
+    targetDurationSeconds, cyclesCompleted, totalCycles, totalFocusElapsed, cycleMode, addFocusElapsed, incrementCycle, advanceCycle
   } = useTimerStore(
     useShallow((s) => ({
       status: s.status,
@@ -83,6 +84,14 @@ export default function TimerScreen() {
       sessionStartTime: s.sessionStartTime,
       selectedSkillId: s.selectedSkillId,
       selectedPillarId: s.selectedPillarId,
+      targetDurationSeconds: s.targetDurationSeconds,
+      cyclesCompleted: s.cyclesCompleted,
+      totalCycles: s.totalCycles,
+      totalFocusElapsed: s.totalFocusElapsed,
+      cycleMode: s.cycleMode,
+      addFocusElapsed: s.addFocusElapsed,
+      incrementCycle: s.incrementCycle,
+      advanceCycle: s.advanceCycle,
     }))
   );
   const addSession = useSessionStore((s: any) => s.addSession);
@@ -241,43 +250,46 @@ export default function TimerScreen() {
   useEffect(() => {
     if (status === 'running' && mode === 'timer' && timeLeft === 0 && sessionStartTime) {
       if (sessionType === 'focus') {
-        const totalDuration = duration;
+        const isLastCycle = cycleMode && (cyclesCompleted + 1 >= totalCycles);
         
-        addSession({
-          id: Date.now().toString(),
-          title: currentTitle || 'Focus Session',
-          durationSeconds: totalDuration,
-          startTime: sessionStartTime,
-          endTime: new Date().toISOString(),
-          isSmartMode: false,
-          focusDurationSeconds: undefined,
-          distractedDurationSeconds: undefined,
-          skillId: selectedSkillId,
-          pillarId: selectedPillarId,
-        });
-        
-        triggerOverlay(totalDuration);
-        
-        // Transition to Break
-        stopTimer(); // First reset to idle
-        setSessionType('break'); // Set to break mode (this will set timeLeft to breakDuration)
-        
-        if (autoPlay) {
-          // Add a tiny delay to let UI breathe before auto-starting break
-          setTimeout(() => {
-            startTimer();
-          }, 100);
+        if (!cycleMode || isLastCycle) {
+          // Finish the whole session
+          const finalDuration = cycleMode ? totalFocusElapsed + duration : duration;
+          
+          addSession({
+            id: Date.now().toString(),
+            title: currentTitle || 'Focus Session',
+            durationSeconds: finalDuration,
+            startTime: sessionStartTime,
+            endTime: new Date().toISOString(),
+            isSmartMode: false,
+            focusDurationSeconds: undefined,
+            distractedDurationSeconds: undefined,
+            skillId: selectedSkillId,
+            pillarId: selectedPillarId,
+          });
+          
+          triggerOverlay(finalDuration);
+          stopTimer(); // Resets everything
+        } else {
+          // Not the last cycle -> Transition to Break
+          addFocusElapsed(duration);
+          advanceCycle('break');
+          
+          if (autoPlay) {
+            setTimeout(() => {
+              startTimer();
+            }, 100);
+          }
         }
       } else if (sessionType === 'break') {
         // Break finished. Untracked. 
-        // Just trigger Haptic
         import('expo-haptics').then(Haptics => {
           Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
         });
 
         // Transition back to Focus
-        stopTimer();
-        setSessionType('focus');
+        advanceCycle('focus');
 
         if (autoPlay) {
           setTimeout(() => {
@@ -286,7 +298,7 @@ export default function TimerScreen() {
         }
       }
     }
-  }, [timeLeft, status, mode, sessionType, autoPlay, sessionStartTime, duration, currentTitle, selectedSkillId, selectedPillarId, addSession, stopTimer, setSessionType, startTimer]);
+  }, [timeLeft, status, mode, sessionType, autoPlay, sessionStartTime, duration, currentTitle, selectedSkillId, selectedPillarId, addSession, stopTimer, startTimer, cycleMode, cyclesCompleted, totalCycles, totalFocusElapsed, addFocusElapsed, advanceCycle]);
 
   // Tick interval
   useEffect(() => {
@@ -325,19 +337,21 @@ export default function TimerScreen() {
   const handleSaveAndStop = () => {
     if (sessionStartTime) {
       if (sessionType === 'focus') {
-        let totalDuration = duration;
+        let currentChunkDuration = duration;
         if (mode === 'stopwatch') {
-          totalDuration = timeElapsed;
+          currentChunkDuration = timeElapsed;
         } else {
-          totalDuration = duration - timeLeft;
+          currentChunkDuration = duration - timeLeft;
         }
         
+        const finalDuration = cycleMode ? totalFocusElapsed + currentChunkDuration : currentChunkDuration;
+
         // Don't save if it was incredibly short (less than 10 seconds)
-        if (totalDuration > 10) {
+        if (finalDuration > 10) {
           addSession({
             id: Date.now().toString(),
             title: currentTitle || 'Focus Session',
-            durationSeconds: totalDuration,
+            durationSeconds: finalDuration,
             startTime: sessionStartTime,
             endTime: new Date().toISOString(),
             isSmartMode: false,
@@ -347,8 +361,23 @@ export default function TimerScreen() {
             pillarId: selectedPillarId,
           });
           
-          triggerOverlay(totalDuration);
+          triggerOverlay(finalDuration);
         }
+      } else if (sessionType === 'break' && cycleMode && totalFocusElapsed > 10) {
+        addSession({
+          id: Date.now().toString(),
+          title: currentTitle || 'Focus Session',
+          durationSeconds: totalFocusElapsed,
+          startTime: sessionStartTime,
+          endTime: new Date().toISOString(),
+          isSmartMode: false,
+          focusDurationSeconds: undefined,
+          distractedDurationSeconds: undefined,
+          skillId: selectedSkillId,
+          pillarId: selectedPillarId,
+        });
+        
+        triggerOverlay(totalFocusElapsed);
       }
     }
     stopTimer();
@@ -395,10 +424,17 @@ export default function TimerScreen() {
                     const targetDurationSeconds = Math.max(1, remainingMins) * 60;
                     
                     const store = useTimerStore.getState();
+                    const settings = useSettingsStore.getState();
+                    
                     store.setSelectedSkillId(activeRoutine.skillId || null);
                     if (activeRoutine.pillarId) store.setSelectedPillarId(activeRoutine.pillarId);
-                    store.setDuration(targetDurationSeconds);
                     if (activeRoutine.title) store.setTitle(activeRoutine.title);
+                    
+                    store.loadTargetSession(
+                      targetDurationSeconds,
+                      settings.defaultFocusMinutes * 60,
+                      settings.defaultBreakMinutes * 60
+                    );
                     
                     // Give a tiny delay for state to settle, then start
                     setTimeout(() => {

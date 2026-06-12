@@ -6,15 +6,18 @@ import { formatTime } from '@/utils/time';
 import { TimerDurationModal } from './TimerDurationModal';
 
 export function TimerDisplay({ onOpenModal }: { onOpenModal?: () => void }) {
-  const { mode, timeLeft, timeElapsed, status, sessionType } = useTimerStore(
-    useShallow((s) => ({
-      mode: s.mode,
-      timeLeft: s.timeLeft,
-      timeElapsed: s.timeElapsed,
-      status: s.status,
-      sessionType: s.sessionType,
-    }))
-  );
+    const { mode, timeLeft, timeElapsed, status, sessionType, cycleMode, cyclesCompleted, totalCycles } = useTimerStore(
+      useShallow((s) => ({
+        mode: s.mode,
+        timeLeft: s.timeLeft,
+        timeElapsed: s.timeElapsed,
+        status: s.status,
+        sessionType: s.sessionType,
+        cycleMode: s.cycleMode,
+        cyclesCompleted: s.cyclesCompleted,
+        totalCycles: s.totalCycles,
+      }))
+    );
 
   const displayTime = mode === 'timer' ? timeLeft : timeElapsed;
 
@@ -39,6 +42,14 @@ export function TimerDisplay({ onOpenModal }: { onOpenModal?: () => void }) {
           {formatTime(displayTime)}
         </Text>
       </Pressable>
+      
+      {cycleMode && (
+        <View className="mt-2 bg-blue-100 dark:bg-blue-900/30 px-3 py-1 rounded-full">
+          <Text className="text-blue-700 dark:text-blue-400 font-bold text-[10px] uppercase tracking-widest">
+            Session {cyclesCompleted + 1} of {totalCycles}
+          </Text>
+        </View>
+      )}
     </View>
   );
 }

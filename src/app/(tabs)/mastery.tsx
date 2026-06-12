@@ -326,13 +326,13 @@ export default function MasteryScreen() {
               onPress={() => setActiveTab('skills')}
               className={`flex-1 py-2 items-center rounded-xl ${activeTab === 'skills' ? 'bg-white dark:bg-gray-700 shadow-sm' : ''}`}
             >
-              <Text className={`font-bold ${activeTab === 'skills' ? 'text-gray-900 dark:text-white' : 'text-gray-500 dark:text-gray-400'}`}>Skills (Infinite)</Text>
+              <Text className={`font-bold ${activeTab === 'skills' ? 'text-gray-900 dark:text-white' : 'text-gray-500 dark:text-gray-400'}`}>Skills</Text>
             </Pressable>
             <Pressable 
               onPress={() => setActiveTab('projects')}
               className={`flex-1 py-2 items-center rounded-xl ${activeTab === 'projects' ? 'bg-white dark:bg-gray-700 shadow-sm' : ''}`}
             >
-              <Text className={`font-bold ${activeTab === 'projects' ? 'text-gray-900 dark:text-white' : 'text-gray-500 dark:text-gray-400'}`}>Projects (Finite)</Text>
+              <Text className={`font-bold ${activeTab === 'projects' ? 'text-gray-900 dark:text-white' : 'text-gray-500 dark:text-gray-400'}`}>Projects</Text>
             </Pressable>
           </View>
 

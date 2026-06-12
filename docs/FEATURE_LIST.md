@@ -13,6 +13,8 @@ If a feature is checked here, it exists in the codebase and is fully functional.
 - [x] **Smart Timer Mode:** Classic countdown timer.
 - [x] **Pomodoro Chaining:** Automatically play a break after a focus session, and vice versa using the Auto-Play setting.
 - [x] **Stopwatch Mode:** Open-ended count-up timer for flow states.
+- [x] **Smart Timer Split System (Pomodoro Cycle):** Automatically breaks down long calendar sessions into manageable focus and break cycles.
+- [x] **Custom Pomodoro Target Mode:** Manually configure custom cycles (e.g., 4 sessions of 25 mins) from the Timer Settings modal.
 - [x] **Smart Routine Banner:** Dynamic banner that bridges the gap between planned schedules and real focus sessions, calculating exact remaining time for late starts.
 - [x] **Soft Overlap Warning:** Non-intrusive alerts that elegantly warn users if their manual timer duration will bleed into an upcoming scheduled plan.
 - [x] **Tutorial Overlay:** Custom Spotlight onboarding for first-time users.
@@ -31,6 +33,8 @@ If a feature is checked here, it exists in the codebase and is fully functional.
 - [x] **Zen Mode (Curtain):** Toggle the calendar grid to collapse and focus entirely on the daily timeline.
 - [x] **On the Radar (Early Warning System):** A dynamic carousel displaying upcoming project milestones within 14 days to drive daily urgency.
 - [x] **Timeline Parity:** Full synchronization of tools between Daily Plan and Timeline modes, including drag-and-drop date shifting, Quick Actions Modal, and side-by-side 'Eye' mode comparison.
+- [x] **Priority System:** Star priority tasks to emphasize importance, visually highlighted with stars in the Timeline and Calendar.
+- [x] **Pinch-to-Zoom:** Smooth Pinch-to-Zoom gesture on the Timeline and Calendar to expand or compress time scales dynamically.
 
 ## 📊 4. Gamification & Statistics
 - [x] **Global Streaks (🔥):** Calculates consecutive days where the global `dailyFocusTargetHours` is met. Displayed in the Stats tab header.

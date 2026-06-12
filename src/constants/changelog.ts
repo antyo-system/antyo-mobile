@@ -5,9 +5,20 @@ export interface ChangelogRelease {
   fixes: string[];
 }
 
-export const APP_VERSION = "1.9.0";
+export const APP_VERSION = "1.10.0";
 
 export const CHANGELOG: ChangelogRelease[] = [
+  {
+    version: "1.10.0",
+    date: "2026-06-12",
+    features: [
+      "Smart Timer Split System (Pomodoro Cycle): Automatically breaks down long calendar sessions into manageable focus and break cycles.",
+      "Custom Pomodoro Target Mode: Manually configure custom cycles (e.g. 4 sessions of 25 mins) from the Timer Settings modal.",
+      "Priority System: Star priority tasks to emphasize importance, visually highlighted with stars in the Timeline and Calendar.",
+      "Pinch-to-Zoom: Added smooth Pinch-to-Zoom gesture on the Timeline view to expand or compress time scales dynamically."
+    ],
+    fixes: []
+  },
   {
     version: "1.9.0",
     date: "2026-06-12",
