@@ -32,11 +32,34 @@ This stack is optimized for **AI tooling support**, **documentation quality**, a
 * **Alternative considered:** Moment.js or Day.js.
 * **Tradeoffs:** Moment is deprecated. Day.js is great but relies on plugins which can be annoying to configure. `date-fns` allows importing only what you need (e.g., `import { format, differenceInMinutes } from 'date-fns'`), keeping the bundle small.
 
-## Summary of External Dependencies (7 total)
-1. `expo`
-2. `expo-router`
-3. `zustand`
-4. `expo-file-system`
-5. `react-native-safe-area-context`
-6. `nativewind`
-7. `date-fns`
+## Summary of External Dependencies (Categorized)
+
+### Core Framework & Navigation
+- `expo` (and native dependencies)
+- `react` & `react-dom`
+- `react-native` & `react-native-web`
+- `expo-router` & `@react-navigation/native`
+- `react-native-screens` & `react-native-safe-area-context`
+
+### State & Storage
+- `zustand`
+- `expo-file-system` (used for our 100% data-safe custom local JSON store adapter)
+- `react-native-mmkv`
+
+### Styling & Visuals
+- `nativewind` & `tailwindcss`
+- `react-native-css-interop`
+- `react-native-svg` (for vector charts and visuals)
+- `@gorhom/bottom-sheet` & `react-native-gesture-handler`
+- `react-native-reanimated`
+
+### Utilities & Device Integration
+- `date-fns` (for complex date/time calculations)
+- `expo-notifications` (for plan reminders and triggers)
+- `expo-haptics` (for interactive, tactile feedback)
+- `expo-keep-awake` (prevent screen sleep during active focus sessions)
+- `expo-sharing` & `expo-document-picker` (data export and backup)
+- `expo-localization` & `expo-constants`
+- `expo-device` & `expo-image`
+- `expo-splash-screen`, `expo-status-bar`, `expo-symbols`, `expo-system-ui`, `expo-web-browser`
+

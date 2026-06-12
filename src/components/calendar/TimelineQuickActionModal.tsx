@@ -1,21 +1,33 @@
 import React, { useState } from 'react';
 import { Modal, View, Text, Pressable, useColorScheme, ScrollView, TextInput } from 'react-native';
+import { useTaskStore, Milestone } from '@/store/useTaskStore';
 import { Plan } from '@/store/usePlanStore';
-import { useTaskStore } from '@/store/useTaskStore';
 import { Feather } from '@expo/vector-icons';
 import { useTranslation } from '@/hooks/useTranslation';
 import * as Haptics from 'expo-haptics';
 
+export interface TimelineRenderedPlan {
+  id: string;
+  type: 'milestone' | 'allday';
+  title: string;
+  color: string;
+  top: number;
+  height: number;
+  _left: number;
+  _width: number;
+  isCompleted: boolean;
+  raw: Milestone | Plan;
+}
+
 interface Props {
   visible: boolean;
-  plan: Plan | null;
+  plan: TimelineRenderedPlan | null;
   onClose: () => void;
-  onStartTimer: () => void;
   onMarkDone: () => void;
   onEdit: () => void;
 }
 
-export function PlanQuickActionModal({ visible, plan, onClose, onStartTimer, onMarkDone, onEdit }: Props) {
+export function TimelineQuickActionModal({ visible, plan, onClose, onMarkDone, onEdit }: Props) {
   const { language } = useTranslation();
   const colorScheme = useColorScheme();
   const isDark = colorScheme === 'dark';
@@ -23,7 +35,10 @@ export function PlanQuickActionModal({ visible, plan, onClose, onStartTimer, onM
   const tasks = useTaskStore(s => s.tasks);
   const toggleTask = useTaskStore(s => s.toggleTask);
   const addTask = useTaskStore(s => s.addTask);
-  const planTasks = plan ? tasks.filter(t => t.planId === plan.id) : [];
+  
+  const planTasks = plan 
+    ? tasks.filter(t => plan.type === 'milestone' ? t.milestoneId === plan.id : t.planId === plan.id) 
+    : [];
 
   const [newTaskTitle, setNewTaskTitle] = useState('');
 
@@ -38,10 +53,18 @@ export function PlanQuickActionModal({ visible, plan, onClose, onStartTimer, onM
 
   const handleAddTask = () => {
     if (!newTaskTitle.trim() || !plan) return;
+    
+    // For milestone, baseDate should be the current date or start date
+    const baseDate = plan.type === 'allday' 
+      ? (plan.raw as Plan).baseDate 
+      : ((plan.raw as Milestone).startDate || (plan.raw as Milestone).date);
+
     addTask({
       title: newTaskTitle.trim(),
-      baseDate: plan.baseDate,
-      planId: plan.id,
+      baseDate: baseDate,
+      milestoneId: plan.type === 'milestone' ? plan.id : undefined,
+      planId: plan.type === 'allday' ? plan.id : undefined,
+      projectId: plan.type === 'milestone' ? (plan.raw as Milestone).projectId : undefined,
     });
     setNewTaskTitle('');
   };
@@ -54,7 +77,9 @@ export function PlanQuickActionModal({ visible, plan, onClose, onStartTimer, onM
           <View className="flex-row items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-gray-800">
             <View className="flex-1 pr-4">
               <Text className="text-lg font-black text-gray-900 dark:text-white" numberOfLines={1}>{plan.title}</Text>
-              <Text className="text-xs font-bold text-gray-500">{plan.durationMinutes} {t('min', 'mnt')}</Text>
+              <Text className="text-xs font-bold text-gray-500">
+                {plan.type === 'allday' ? t('All Day Plan', 'Rencana Seharian') : t('Timeline Milestone', 'Milestone Project')}
+              </Text>
             </View>
             <Pressable onPress={onClose} className="p-2 -mr-2 rounded-full bg-gray-100 dark:bg-gray-800">
               <Feather name="x" size={18} color={isDark ? 'white' : 'black'} />
@@ -114,46 +139,31 @@ export function PlanQuickActionModal({ visible, plan, onClose, onStartTimer, onM
                 </Pressable>
               </View>
             </View>
-            {plan.skillId && (
-              <Pressable 
-                onPress={onStartTimer}
-                className="flex-row items-center bg-blue-600 p-4 rounded-2xl"
-              >
-                <View className="w-10 h-10 bg-white/20 rounded-full items-center justify-center mr-4">
-                  <Feather name="play" size={20} color="white" />
-                </View>
-                <View>
-                  <Text className="text-white font-black text-base">{t('Start Timer Now', 'Mulai Timer Sekarang')}</Text>
-                  <Text className="text-blue-100 text-xs font-bold">{t('Focus tracking with dynamic time', 'Lacak fokus dengan waktu dinamis')}</Text>
-                </View>
-              </Pressable>
-            )}
-
-            {!plan.skillId && (
-              <Pressable 
-                onPress={onStartTimer}
-                className="flex-row items-center bg-blue-600 p-4 rounded-2xl opacity-50"
-              >
-                <View className="w-10 h-10 bg-white/20 rounded-full items-center justify-center mr-4">
-                  <Feather name="play" size={20} color="white" />
-                </View>
-                <View>
-                  <Text className="text-white font-black text-base">{t('Start Timer Now', 'Mulai Timer Sekarang')}</Text>
-                  <Text className="text-blue-100 text-xs font-bold">{t('Requires assigned skill', 'Harus pasang skill dulu')}</Text>
-                </View>
-              </Pressable>
-            )}
 
             <Pressable 
               onPress={onMarkDone}
-              className="flex-row items-center bg-teal-50 dark:bg-teal-900/20 border border-teal-100 dark:border-teal-900/50 p-4 rounded-2xl"
+              className={`flex-row items-center p-4 rounded-2xl ${
+                plan.isCompleted 
+                  ? 'bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700' 
+                  : 'bg-teal-50 dark:bg-teal-900/20 border border-teal-100 dark:border-teal-900/50'
+              }`}
             >
-              <View className="w-10 h-10 bg-teal-100 dark:bg-teal-900/50 rounded-full items-center justify-center mr-4">
-                <Feather name="check" size={20} color="#0D9488" />
+              <View className={`w-10 h-10 rounded-full items-center justify-center mr-4 ${
+                plan.isCompleted ? 'bg-gray-200 dark:bg-gray-700' : 'bg-teal-100 dark:bg-teal-900/50'
+              }`}>
+                {plan.isCompleted ? (
+                  <Feather name="x" size={20} color="#6B7280" />
+                ) : (
+                  <Feather name="check" size={20} color="#0D9488" />
+                )}
               </View>
               <View>
-                <Text className="text-teal-700 dark:text-teal-400 font-black text-base">{t('Mark as Done', 'Tandai Selesai')}</Text>
-                <Text className="text-teal-600/70 dark:text-teal-500/70 text-xs font-bold">{t('Instant log without timer', 'Catat instan tanpa timer')}</Text>
+                <Text className={`font-black text-base ${plan.isCompleted ? 'text-gray-700 dark:text-gray-300' : 'text-teal-700 dark:text-teal-400'}`}>
+                  {plan.isCompleted ? t('Mark as Undone', 'Tandai Belum Selesai') : t('Mark as Done', 'Tandai Selesai')}
+                </Text>
+                <Text className={`text-xs font-bold ${plan.isCompleted ? 'text-gray-500' : 'text-teal-600/70 dark:text-teal-500/70'}`}>
+                  {plan.isCompleted ? t('Re-open milestone', 'Buka kembali milestone ini') : t('Complete this milestone', 'Selesaikan milestone ini')}
+                </Text>
               </View>
             </Pressable>
 

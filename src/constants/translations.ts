@@ -2,7 +2,7 @@ const en = {
     tabs: {
       focus: 'Focus',
       calendar: 'Calendar',
-      mastery: 'Mastery',
+      mastery: 'Goals',
       stats: 'Stats'
     },
     focus: {
@@ -31,7 +31,7 @@ const en = {
       strictRealMessage: 'Real sessions can only be logged using the Focus Timer or by completing a Plan. Stay honest to the Mastery process!',
     },
     mastery: {
-      title: 'Mastery',
+      title: 'Goals',
       subtitle: 'The journey to 10,000 hours of deep work.',
       hours: 'Hours',
       dailyTarget: 'Daily Target',
@@ -329,7 +329,7 @@ const id: TranslationDictionary = {
     tabs: {
       focus: 'Fokus',
       calendar: 'Kalender',
-      mastery: 'Keahlian',
+      mastery: 'Goals',
       stats: 'Statistik'
     },
     focus: {
@@ -358,7 +358,7 @@ const id: TranslationDictionary = {
       strictRealMessage: 'Sesi real hanya bisa dicatat menggunakan Timer Focus atau dengan menyelesaikan Rencana (Mark as Done). Tetap jujur pada proses Mastery Anda!',
     },
     mastery: {
-      title: 'Keahlian',
+      title: 'Goals',
       subtitle: 'Perjalanan menuju 10.000 jam kerja mendalam.',
       hours: 'Jam',
       dailyTarget: 'Target Harian',
@@ -656,7 +656,7 @@ const zh: TranslationDictionary = {
   tabs: {
     focus: '专注',
     calendar: '日历',
-    mastery: '精通',
+    mastery: '目标',
     stats: '统计',
   },
   focus: {
@@ -685,7 +685,7 @@ const zh: TranslationDictionary = {
     strictRealMessage: '实际会话只能使用专注计时器或完成计划来记录。对您的精通之旅保持诚实！',
   },
   mastery: {
-    title: '精通',
+    title: '目标',
     subtitle: '通向一万小时深度工作的旅程。',
     hours: '小时',
     dailyTarget: '每日目标',

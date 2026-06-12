@@ -1,5 +1,6 @@
 import { PlanEditorModal } from '@/components/calendar/PlanEditorModal';
 import { NewSkillModal } from '@/components/mastery/NewSkillModal';
+import { ProjectList } from '@/components/mastery/ProjectList';
 import { SkillTargetModal } from '@/components/mastery/SkillTargetModal';
 import { SpotlightOverlay, SpotlightStep } from '@/components/tutorial/SpotlightOverlay';
 import { useAppStore } from '@/store/useAppStore';
@@ -196,7 +197,7 @@ export default function MasteryScreen() {
   const { hasCompletedTutorial, completeTutorial } = useAppStore();
 
   const [modalVisible, setModalVisible] = useState(false);
-  const [showInfo, setShowInfo] = useState(false);
+  const [activeTab, setActiveTab] = useState<'skills' | 'projects'>('skills');
 
   // Tutorial State
   const { hasSeenMasteryTutorial, setTutorialSeen } = useAppStore();
@@ -206,7 +207,6 @@ export default function MasteryScreen() {
 
   const addRef = useRef<View>(null);
   const listRef = useRef<View>(null);
-  const infoRef = useRef<View>(null);
   const rootRef = useRef<View>(null);
   const scrollViewRef = useRef<ScrollView>(null);
 
@@ -306,22 +306,38 @@ export default function MasteryScreen() {
               {t('mastery.title')}
             </Text>
             <View className="flex-row items-center gap-3">
-              <View ref={addRef} collapsable={false}>
-                <Pressable
-                  onPress={() => setModalVisible(true)}
-                  className="w-10 h-10 items-center justify-center bg-gray-200 dark:bg-gray-800 rounded-full"
-                >
-                  <Feather name="plus" size={20} color="#6B7280" />
-                </Pressable>
-              </View>
+              {activeTab === 'skills' && (
+                <View ref={addRef} collapsable={false}>
+                  <Pressable
+                    onPress={() => setModalVisible(true)}
+                    className="w-10 h-10 items-center justify-center bg-gray-200 dark:bg-gray-800 rounded-full"
+                  >
+                    <Feather name="plus" size={20} color="#6B7280" />
+                  </Pressable>
+                </View>
+              )}
             </View>
           </View>
 
-          <Text className="text-sm font-bold text-gray-500 dark:text-gray-400 mb-8">
-            {t('mastery.subtitle')}
-          </Text>
 
-          <View className="gap-2" ref={listRef} collapsable={false} onLayout={handleLayout(1)}>
+          {/* Segmented Control */}
+          <View className="flex-row p-1 bg-gray-200 dark:bg-gray-800 rounded-2xl mb-6">
+            <Pressable 
+              onPress={() => setActiveTab('skills')}
+              className={`flex-1 py-2 items-center rounded-xl ${activeTab === 'skills' ? 'bg-white dark:bg-gray-700 shadow-sm' : ''}`}
+            >
+              <Text className={`font-bold ${activeTab === 'skills' ? 'text-gray-900 dark:text-white' : 'text-gray-500 dark:text-gray-400'}`}>Skills (Infinite)</Text>
+            </Pressable>
+            <Pressable 
+              onPress={() => setActiveTab('projects')}
+              className={`flex-1 py-2 items-center rounded-xl ${activeTab === 'projects' ? 'bg-white dark:bg-gray-700 shadow-sm' : ''}`}
+            >
+              <Text className={`font-bold ${activeTab === 'projects' ? 'text-gray-900 dark:text-white' : 'text-gray-500 dark:text-gray-400'}`}>Projects (Finite)</Text>
+            </Pressable>
+          </View>
+
+          {activeTab === 'skills' ? (
+            <View className="gap-2" ref={listRef} collapsable={false} onLayout={handleLayout(1)}>
             {[...skills].sort((a, b) => b.totalSeconds - a.totalSeconds).map(skill => (
               <SkillCard
                 key={skill.id}
@@ -338,24 +354,11 @@ export default function MasteryScreen() {
               </View>
             )}
           </View>
+          ) : (
+            <ProjectList />
+          )}
 
-          <Pressable 
-            onPress={() => setShowInfo(!showInfo)}
-            className="mt-6 mb-8 p-6 bg-blue-50 dark:bg-blue-900/20 rounded-3xl border border-blue-100 dark:border-blue-900/30" 
-            ref={infoRef} 
-            collapsable={false} 
-            onLayout={handleLayout(2)}
-          >
-            <View className="flex-row items-center justify-between">
-              <Text className="text-sm font-bold text-blue-800 dark:text-blue-300">{t('mastery.why10kHours')}</Text>
-              <Feather name={showInfo ? "chevron-up" : "chevron-down"} size={16} color={isDark ? "#93C5FD" : "#1E3A8A"} />
-            </View>
-            {showInfo && (
-              <Text className="text-xs font-semibold text-blue-600 dark:text-blue-400 leading-relaxed mt-3">
-                {t('mastery.why10kHoursDesc')}
-              </Text>
-            )}
-          </Pressable>
+
         </ScrollView>
 
         {/* Add Skill Modal */}

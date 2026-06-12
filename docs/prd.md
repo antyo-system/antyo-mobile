@@ -104,9 +104,11 @@ The MVP prioritizes core loop functionality: Timer → Session Record → Calend
 - **Framework:** Expo (React Native)
 - **Routing:** Expo Router (File-based navigation)
 - **State Management:** Zustand (Lightweight global state)
-- **Persistence:** react-native-mmkv (High-performance local storage)
-- **Date Handling:** date-fns (Modular date utilities)
-- **Styling:** React Native `StyleSheet` (Zero-dependency, simple and scalable)
+- **Persistence:** Custom JSON storage adapter built on `expo-file-system` (to ensure 100% data safety and compatibility across Expo Go and bare native workflows, avoiding AsyncStorage/MMKV native module issues in Expo Go)
+- **Date Handling:** `date-fns` (modular utility library)
+- **Styling:** NativeWind (Tailwind CSS for React Native)
+- **Notifications:** `expo-notifications` (for scheduling local alerts and reminders)
+
 
 ## 9. Success Metrics (KPIs for MVP)
 - **Retention:** Day 1 and Day 7 retention rates.

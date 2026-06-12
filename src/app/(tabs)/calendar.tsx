@@ -10,6 +10,7 @@ import { useTaskStore } from '@/store/useTaskStore';
 import { useTimerStore } from '@/store/useTimerStore';
 import { useSettingsStore } from '@/store/useSettingsStore';
 import { Session } from '@/types';
+import { TimelineDateMarkers } from '@/components/calendar/TimelineDateMarkers';
 import { TimelineHourMarkers } from '@/components/calendar/TimelineHourMarkers';
 import { TimelineBlock } from '@/components/calendar/TimelineBlock';
 import { InteractivePlanBlock } from '@/components/calendar/InteractivePlanBlock';
@@ -17,17 +18,23 @@ import { PlanEditorModal } from '@/components/calendar/PlanEditorModal';
 import { PlanQuickActionModal } from '@/components/calendar/PlanQuickActionModal';
 import { TaskScheduleModal } from '@/components/calendar/TaskScheduleModal';
 import { RealSessionEditorModal } from '@/components/calendar/RealSessionEditorModal';
+import { MonthlyCalendarModal } from '@/components/calendar/MonthlyCalendarModal';
 import { QuickSleepEditorModal } from '@/components/calendar/QuickSleepEditorModal';
+import { TimelineEditorModal } from '@/components/calendar/TimelineEditorModal';
+import { TimelineQuickActionModal, TimelineRenderedPlan } from '@/components/calendar/TimelineQuickActionModal';
+import { InteractiveTimelineBlock } from '@/components/calendar/InteractiveTimelineBlock';
 import { useMasteryStore } from '@/store/useMasteryStore';
+import { Milestone } from '@/store/useTaskStore';
 import { SleepBlock } from '@/components/calendar/SleepBlock';
 import { TimelineNowIndicator } from '@/components/calendar/TimelineNowIndicator';
 import { DateSelector } from '@/components/calendar/DateSelector';
+import { OnTheRadar } from '@/components/calendar/OnTheRadar';
 import { calculateStreak } from '@/utils/streak';
 import { ScheduleFeedView } from '@/components/calendar/ScheduleFeedView';
 import { TaskListView } from '@/components/calendar/TaskListView';
 import { getMinutesFromMidnight } from '@/utils/time';
 import { getPlansForDate } from '@/utils/calendar';
-import { isSameDay, isToday, addDays, subDays } from 'date-fns';
+import { isSameDay, isToday, addDays, subDays, startOfWeek, endOfWeek, eachDayOfInterval, startOfDay, differenceInDays, startOfMonth, endOfMonth } from 'date-fns';
 import { images } from '@/constants/images';
 import { useAppStore } from '@/store/useAppStore';
 import { SpotlightOverlay, SpotlightStep, SpotlightCoords } from '@/components/tutorial/SpotlightOverlay';
@@ -173,7 +180,7 @@ export default function CalendarScreen() {
   const updatePlan = usePlanStore(s => s.updatePlan);
   const deletePlan = usePlanStore(s => s.deletePlan);
 
-  const [activeTab, setActiveTab] = useState<'plan' | 'schedule' | 'real' | 'task'>('plan');
+  const [activeTab, setActiveTab] = useState<'plan' | 'timeline' | 'real' | 'task'>('plan');
   const [isLocked, setIsLocked] = useState(false);
   const [isHeaderVisible, setIsHeaderVisible] = useState(true);
   const [isScrollEnabled, setIsScrollEnabled] = useState(true);
@@ -187,6 +194,16 @@ export default function CalendarScreen() {
   const [realEditorVisible, setRealEditorVisible] = useState(false);
   const [quickSleepVisible, setQuickSleepVisible] = useState(false);
   const [editingRealSession, setEditingRealSession] = useState<Session | null>(null);
+
+  const [timelineEditorVisible, setTimelineEditorVisible] = useState(false);
+  const [editingMilestone, setEditingMilestone] = useState<Milestone | null>(null);
+  
+  const [timelineQuickActionVisible, setTimelineQuickActionVisible] = useState(false);
+  const [timelineQuickActionPlan, setTimelineQuickActionPlan] = useState<TimelineRenderedPlan | null>(null);
+  
+  const addMilestone = useTaskStore(s => s.addMilestone);
+  const updateMilestone = useTaskStore(s => s.updateMilestone);
+  const deleteMilestone = useTaskStore(s => s.deleteMilestone);
   
   const verticalScrollRef = useRef<ScrollView>(null);
   
@@ -227,6 +244,121 @@ export default function CalendarScreen() {
   
   const isSelectedToday = isToday(selectedDate);
 
+  // --- TIMELINE MODE LOGIC ---
+  const PIXELS_PER_DAY = 150;
+  const timelineDays = useMemo(() => {
+    const start = startOfMonth(selectedDate);
+    const end = endOfMonth(selectedDate);
+    return eachDayOfInterval({ start, end });
+  }, [selectedDate]);
+  
+  const timelineStart = timelineDays[0];
+  const milestones = useTaskStore(s => s.milestones);
+  const projects = useTaskStore(s => s.projects);
+  const projectMap = useMemo(() => new Map(projects.map(p => [p.id, p])), [projects]);
+
+  const timelinePlans = useMemo(() => {
+    if (activeTab !== 'timeline') return [];
+    
+    const mappedMilestones = milestones.filter(m => {
+      if (!m.date || !m.projectId) return false;
+      const endDate = startOfDay(new Date(m.date));
+      const startDate = m.startDate ? startOfDay(new Date(m.startDate)) : endDate;
+      return endDate >= timelineDays[0] && startDate <= timelineDays[timelineDays.length - 1];
+    }).map(m => {
+      const p = projectMap.get(m.projectId!);
+      const endDate = startOfDay(new Date(m.date));
+      const startDate = m.startDate ? startOfDay(new Date(m.startDate)) : endDate;
+      
+      const startDayIndex = differenceInDays(startDate, timelineStart);
+      const endDayIndex = differenceInDays(endDate, timelineStart);
+      
+      const top = Math.max(0, startDayIndex) * PIXELS_PER_DAY;
+      const bottom = Math.min(timelineDays.length, endDayIndex + 1) * PIXELS_PER_DAY;
+      const height = bottom - top;
+
+      return {
+        id: m.id,
+        type: 'milestone',
+        title: m.title,
+        color: p?.color || '#3B82F6',
+        _left: 0,
+        _width: 100,
+        top,
+        height,
+        isCompleted: m.isCompleted,
+        raw: m
+      };
+    });
+
+    const allDayPlans = plans.filter(p => {
+      if (!p.isAllDay) return false;
+      const pDate = startOfDay(new Date(p.baseDate || (p as any).date)); // Fallback to date for backward compat
+      return pDate >= timelineDays[0] && pDate <= timelineDays[timelineDays.length - 1];
+    }).map(p => {
+      const pDate = startOfDay(new Date(p.baseDate || (p as any).date));
+      const dayIndex = differenceInDays(pDate, timelineStart);
+      const top = dayIndex * PIXELS_PER_DAY;
+      const height = PIXELS_PER_DAY;
+
+      return {
+        id: p.id,
+        type: 'allday',
+        title: p.title,
+        color: p.color || '#F59E0B',
+        _left: 0,
+        _width: 100,
+        top,
+        height,
+        isCompleted: false, // Or map to a state if we have one
+        raw: p
+      };
+    });
+
+    return [...mappedMilestones, ...allDayPlans];
+  }, [milestones, projectMap, timelineStart, timelineDays, activeTab, plans]);
+
+  const timelineSessionsLayout = useMemo(() => {
+    if (activeTab !== 'timeline') return [];
+    const validSkillIds = new Set(projects.map(p => p.skillId).filter(Boolean));
+    const projectBySkillId = new Map(projects.filter(p => p.skillId).map(p => [p.skillId, p]));
+
+    const filtered = sessions.filter(s => {
+      if (!s.skillId || !validSkillIds.has(s.skillId)) return false;
+      const sDate = startOfDay(new Date(s.startTime));
+      return sDate >= timelineDays[0] && sDate <= timelineDays[timelineDays.length - 1];
+    });
+
+    const sessionsByDayAndProject = new Map<string, any>();
+    filtered.forEach(s => {
+      const sDate = startOfDay(new Date(s.startTime));
+      const p = projectBySkillId.get(s.skillId!)!;
+      const key = `${sDate.toISOString()}_${p.id}`;
+      if (!sessionsByDayAndProject.has(key)) {
+        sessionsByDayAndProject.set(key, { date: sDate, project: p, durationMins: 0, count: 0 });
+      }
+      const data = sessionsByDayAndProject.get(key);
+      data.durationMins += Math.round(s.durationSeconds / 60);
+      data.count += 1;
+    });
+
+    return Array.from(sessionsByDayAndProject.values()).map(data => {
+      const dayIndex = differenceInDays(data.date, timelineStart);
+      const top = dayIndex * PIXELS_PER_DAY + 5;
+      const height = PIXELS_PER_DAY - 10;
+      return {
+        id: `${data.date.toISOString()}_${data.project.id}`,
+        title: `${data.project.name} (${data.count}x)`,
+        duration: data.durationMins,
+        color: data.project.color,
+        top,
+        height,
+        _left: 0,
+        _width: 100,
+      };
+    });
+  }, [sessions, projects, timelineStart, timelineDays, activeTab]);
+
   // Bulletproof native swiping that won't crash on unlinked gesture handler libraries
   const panResponder = useRef(
     PanResponder.create({
@@ -248,17 +380,30 @@ export default function CalendarScreen() {
   useEffect(() => {
     if (isSelectedToday) {
       setTimeout(() => {
-        const currentMins = getMinutesFromMidnight(new Date().toISOString());
-        // Calculate Y position of current time, subtract ~300px to center it on screen
-        const yPos = Math.max(0, currentMins * PIXELS_PER_MINUTE - 300);
-        verticalScrollRef.current?.scrollTo({ y: yPos, animated: true });
+        if (activeTab === 'timeline') {
+          const todayIndex = timelineDays.findIndex(d => isToday(d));
+          if (todayIndex !== -1) {
+            const yPos = Math.max(0, todayIndex * PIXELS_PER_DAY - 150);
+            verticalScrollRef.current?.scrollTo({ y: yPos, animated: true });
+          }
+        } else {
+          const currentMins = getMinutesFromMidnight(new Date().toISOString());
+          // Calculate Y position of current time, subtract ~300px to center it on screen
+          const yPos = Math.max(0, currentMins * PIXELS_PER_MINUTE - 300);
+          verticalScrollRef.current?.scrollTo({ y: yPos, animated: true });
+        }
       }, 100);
     }
-  }, [selectedDate, isSelectedToday]);
+  }, [selectedDate, isSelectedToday, activeTab, timelineDays]);
 
   const handleCreateNew = () => {
-    setEditingPlan(null);
-    setEditorVisible(true);
+    if (activeTab === 'timeline') {
+      setEditingMilestone(null);
+      setTimelineEditorVisible(true);
+    } else {
+      setEditingPlan(null);
+      setEditorVisible(true);
+    }
   };
 
   const handleEditPress = useCallback((plan: Plan) => {
@@ -297,6 +442,38 @@ export default function CalendarScreen() {
 
     setEditorVisible(false);
   };
+
+  const handleUpdateTimelineDates = useCallback((id: string, type: 'milestone' | 'allday', deltaStart: number, deltaEnd: number) => {
+    if (deltaStart === 0 && deltaEnd === 0) return;
+    if (type === 'milestone') {
+      const m = milestones.find(x => x.id === id);
+      if (m) {
+        const currentEndDate = new Date(m.date);
+        const currentStartDate = m.startDate ? new Date(m.startDate) : currentEndDate;
+        const newStartDate = addDays(currentStartDate, deltaStart);
+        const newEndDate = addDays(currentEndDate, deltaEnd);
+        updateMilestone(id, { 
+          startDate: newStartDate.toISOString(), 
+          date: newEndDate.toISOString() 
+        });
+      }
+    } else if (type === 'allday') {
+      const p = plans.find(x => x.id === id);
+      if (p) {
+        const currentDate = new Date(p.baseDate || (p as any).date);
+        const newDate = addDays(currentDate, deltaStart);
+        updatePlan(id, { baseDate: newDate.toISOString() });
+      }
+    }
+  }, [milestones, plans, updateMilestone, updatePlan]);
+
+  const handleTimelineMarkDone = useCallback(() => {
+    if (timelineQuickActionPlan?.type === 'milestone') {
+      const toggleMilestone = useTaskStore.getState().toggleMilestone;
+      toggleMilestone(timelineQuickActionPlan.id);
+    }
+    setTimelineQuickActionVisible(false);
+  }, [timelineQuickActionPlan]);
 
   const handleTimelinePress = (e: any) => {
     if (isLocked) return;
@@ -394,13 +571,13 @@ export default function CalendarScreen() {
         className="flex-row bg-white dark:bg-gray-950 py-2.5 z-10 border-b border-gray-100 dark:border-gray-900 justify-center gap-12 shadow-sm"
       >
         <Pressable 
-          onPress={() => setActiveTab(activeTab === 'plan' ? 'schedule' : 'plan')}
+          onPress={() => setActiveTab(activeTab === 'plan' ? 'timeline' : 'plan')}
           className="items-center justify-center py-1 px-4"
         >
           <Text className={`text-[10px] font-black tracking-[0.2em] uppercase ${
-            (activeTab === 'plan' || activeTab === 'schedule') ? 'text-yellow-600 dark:text-yellow-500' : 'text-gray-400 dark:text-gray-600'
+            (activeTab === 'plan' || activeTab === 'timeline') ? 'text-yellow-600 dark:text-yellow-500' : 'text-gray-400 dark:text-gray-600'
           }`}>
-            {activeTab === 'schedule' ? t('calendar.schedule') : t('calendar.plan')}
+            {activeTab === 'timeline' ? 'TIMELINE' : t('calendar.plan')}
           </Text>
         </Pressable>
 
@@ -442,10 +619,13 @@ export default function CalendarScreen() {
         </View>
       </View>
 
-      {activeTab === 'schedule' && <ScheduleFeedView selectedDate={selectedDate} />}
+      <View className="px-4 pt-4 z-10">
+        <OnTheRadar />
+      </View>
+
       {activeTab === 'task' && <TaskListView selectedDate={selectedDate} onScheduleTask={handleScheduleTask} />}
 
-      {(activeTab === 'plan' || activeTab === 'real') && (
+      {(activeTab === 'plan' || activeTab === 'real' || activeTab === 'timeline') && (
         <View className="flex-1" {...panResponder.panHandlers} ref={bodyRef} collapsable={false}>
         <ScrollView 
           ref={verticalScrollRef}
@@ -455,13 +635,17 @@ export default function CalendarScreen() {
         >
           {/* Wrap absolute elements in a sized Pressable to catch taps and allow edge padding */}
           <Pressable 
-            style={{ height: 24 * 60 * PIXELS_PER_MINUTE }}
-            onPress={handleTimelinePress}
+            style={{ height: activeTab === 'timeline' ? timelineDays.length * PIXELS_PER_DAY : 24 * 60 * PIXELS_PER_MINUTE }}
+            onPress={activeTab === 'timeline' ? undefined : handleTimelinePress}
           >
-            <TimelineHourMarkers pixelsPerMinute={PIXELS_PER_MINUTE} />
+            {activeTab === 'timeline' ? (
+              <TimelineDateMarkers days={timelineDays} pixelsPerDay={PIXELS_PER_DAY} />
+            ) : (
+              <TimelineHourMarkers pixelsPerMinute={PIXELS_PER_MINUTE} />
+            )}
         
-        {/* Render Sleep Blocks */}
-        {sleepBlocks.map((block, i) => (
+        {/* Render Sleep Blocks (Daily Only) */}
+        {activeTab !== 'timeline' && sleepBlocks.map((block, i) => (
           <SleepBlock 
             key={`sleep-${i}`}
             startMinutes={block.start}
@@ -471,87 +655,170 @@ export default function CalendarScreen() {
           />
         ))}
 
-        {/* Render Planned Blocks */}
+        {/* Render Planned Blocks / Milestones */}
         <View className="absolute top-0 bottom-0 left-16 right-4" pointerEvents="box-none">
-          {dailyPlans.map(plan => {
-            if (!isCompareMode && activeTab !== 'plan') return null;
-            return (
-              <View 
-                key={plan.id} 
-                style={{ 
-                  position: 'absolute',
-                  top: 0,
-                  left: isCompareMode ? `${plan._left * 0.49}%` : `${plan._left}%`, 
-                  width: isCompareMode ? `${plan._width * 0.49}%` : `${plan._width}%`,
-                  opacity: isCompareMode ? (activeTab === 'plan' ? 1 : 0.5) : 1, 
-                  zIndex: activeTab === 'plan' ? 30 : 10 
-                }}
-                pointerEvents={activeTab === 'plan' ? 'box-none' : 'none'}
-              >
-                <InteractivePlanBlock
-                  plan={plan}
-                  pixelsPerMinute={PIXELS_PER_MINUTE}
-                  onUpdatePlan={updatePlan}
-                  onEditPress={handleEditPress}
-                  setScrollEnabled={setIsScrollEnabled}
-                  width={isCompareMode ? plan._width * 0.49 : plan._width}
-                  isLocked={isLocked}
-                />
-              </View>
-            );
-          })}
+          {activeTab === 'timeline' ? (
+            timelinePlans.map((plan, i) => {
+              if (!isCompareMode && activeTab !== 'timeline') return null;
+              return (
+                <View 
+                  key={`plan-${plan.id}-${i}`}
+                  style={{ 
+                    position: 'absolute',
+                    top: 0,
+                    left: isCompareMode ? '0%' : '0%', 
+                    width: isCompareMode ? '49%' : '100%',
+                    opacity: isCompareMode ? (activeTab === 'timeline' ? 1 : 0.5) : 1, 
+                    zIndex: activeTab === 'timeline' ? 30 : 10 
+                  }}
+                  pointerEvents={activeTab === 'timeline' ? 'box-none' : 'none'}
+                >
+                  <InteractiveTimelineBlock
+                    plan={plan as TimelineRenderedPlan}
+                    pixelsPerDay={PIXELS_PER_DAY}
+                    onUpdateDates={handleUpdateTimelineDates}
+                    onEditPress={(p) => {
+                      setTimelineQuickActionPlan(p);
+                      setTimelineQuickActionVisible(true);
+                    }}
+                    setScrollEnabled={setIsScrollEnabled}
+                    width={isCompareMode ? 49 : 100}
+                    isLocked={isLocked}
+                  />
+                </View>
+              );
+            })
+          ) : (
+            dailyPlans.map(plan => {
+              if (!isCompareMode && activeTab !== 'plan') return null;
+              return (
+                <View 
+                  key={plan.id} 
+                  style={{ 
+                    position: 'absolute',
+                    top: 0,
+                    left: isCompareMode ? `${plan._left * 0.49}%` : `${plan._left}%`, 
+                    width: isCompareMode ? `${plan._width * 0.49}%` : `${plan._width}%`,
+                    opacity: isCompareMode ? (activeTab === 'plan' ? 1 : 0.5) : 1, 
+                    zIndex: activeTab === 'plan' ? 30 : 10 
+                  }}
+                  pointerEvents={activeTab === 'plan' ? 'box-none' : 'none'}
+                >
+                  <InteractivePlanBlock
+                    plan={plan}
+                    pixelsPerMinute={PIXELS_PER_MINUTE}
+                    onUpdatePlan={updatePlan}
+                    onEditPress={handleEditPress}
+                    setScrollEnabled={setIsScrollEnabled}
+                    width={isCompareMode ? plan._width * 0.49 : plan._width}
+                    isLocked={isLocked}
+                  />
+                </View>
+              );
+            })
+          )}
         </View>
 
         {/* Render Real Sessions */}
         <View className="absolute top-0 bottom-0 left-16 right-4" pointerEvents="box-none">
-          {dailySessionsLayout.map(session => {
-            if (!isCompareMode && activeTab !== 'real') return null;
-
-            const startMins = getMinutesFromMidnight(session.startTime);
-            const durationMins = Math.max(1, Math.round(session.durationSeconds / 60));
-            
-            let skillIcon = undefined;
-            if (session.skillId) {
-              const s = skills.find(sk => sk.id === session.skillId);
-              if (s) skillIcon = s.icon;
-            }
-
-            return (
-              <View 
-                key={session.id} 
-                style={{ 
-                  position: 'absolute',
-                  top: 0,
-                  left: isCompareMode ? `${51 + (session._left * 0.49)}%` : `${session._left}%`, 
-                  width: isCompareMode ? `${session._width * 0.49}%` : `${session._width}%`,
-                  opacity: isCompareMode ? (activeTab === 'real' ? 1 : 0.5) : 1, 
-                  zIndex: activeTab === 'real' ? 30 : 10 
-                }}
-                pointerEvents={activeTab === 'real' ? 'box-none' : 'none'}
-              >
-                <TimelineBlock
-                  title={session.title}
-                  startMinutes={startMins}
-                  durationMinutes={durationMins}
-                  pixelsPerMinute={PIXELS_PER_MINUTE}
-                  type="real"
-                  skillIcon={skillIcon}
-                  color={session.color}
-                  onPress={() => {
-                    setEditingRealSession(session);
-                    setRealEditorVisible(true);
+          {activeTab === 'timeline' ? (
+            timelineSessionsLayout.map((session, i) => {
+              if (!isCompareMode && activeTab !== 'timeline') return null;
+              return (
+                <View 
+                  key={`real-${session.id}-${i}`}
+                  style={{ 
+                    position: 'absolute',
+                    top: session.top,
+                    height: session.height,
+                    left: isCompareMode ? '51%' : '0%', 
+                    width: isCompareMode ? '49%' : '100%',
+                    backgroundColor: `${session.color}20`,
+                    borderLeftWidth: 3,
+                    borderLeftColor: session.color,
+                    borderRadius: 6,
+                    padding: 6,
+                    opacity: isCompareMode ? 1 : 1 
                   }}
-                />
-              </View>
-            );
-          })}
+                  pointerEvents="none"
+                >
+                  <Text numberOfLines={1} style={{ fontSize: 11, fontWeight: '800', color: session.color }}>
+                    {session.title}
+                  </Text>
+                  <Text style={{ fontSize: 9, fontWeight: '700', color: session.color, opacity: 0.8, marginTop: 2 }}>
+                    {session.duration} min
+                  </Text>
+                </View>
+              );
+            })
+          ) : (
+            dailySessionsLayout.map(session => {
+              if (!isCompareMode && activeTab !== 'real') return null;
+
+              const startMins = getMinutesFromMidnight(session.startTime);
+              const durationMins = Math.max(1, Math.round(session.durationSeconds / 60));
+              
+              let skillIcon = undefined;
+              if (session.skillId) {
+                const s = skills.find(sk => sk.id === session.skillId);
+                if (s) skillIcon = s.icon;
+              }
+
+              return (
+                <View 
+                  key={session.id} 
+                  style={{ 
+                    position: 'absolute',
+                    top: 0,
+                    left: isCompareMode ? `${51 + (session._left * 0.49)}%` : `${session._left}%`, 
+                    width: isCompareMode ? `${session._width * 0.49}%` : `${session._width}%`,
+                    opacity: isCompareMode ? (activeTab === 'real' ? 1 : 0.5) : 1, 
+                    zIndex: activeTab === 'real' ? 30 : 10 
+                  }}
+                  pointerEvents={activeTab === 'real' ? 'box-none' : 'none'}
+                >
+                  <TimelineBlock
+                    title={session.title}
+                    startMinutes={startMins}
+                    durationMinutes={durationMins}
+                    pixelsPerMinute={PIXELS_PER_MINUTE}
+                    type="real"
+                    skillIcon={skillIcon}
+                    color={session.color}
+                    onPress={() => {
+                      setEditingRealSession(session);
+                      setRealEditorVisible(true);
+                    }}
+                  />
+                </View>
+              );
+            })
+          )}
         </View>
         
-        {/* Render the current time red line indicator if viewing today */}
-        {isSelectedToday && <TimelineNowIndicator pixelsPerMinute={PIXELS_PER_MINUTE} />}
+        {/* Render the current time red line indicator */}
+        {activeTab === 'timeline' ? (
+          (() => {
+            const today = startOfDay(new Date());
+            const todayIndex = timelineDays.findIndex((d: Date) => isSameDay(d, today));
+            if (todayIndex !== -1) {
+              const now = new Date();
+              const minsSinceMidnight = now.getHours() * 60 + now.getMinutes();
+              const proportion = minsSinceMidnight / (24 * 60);
+              const top = todayIndex * PIXELS_PER_DAY + proportion * PIXELS_PER_DAY;
+              return (
+                <View style={{ position: 'absolute', top, left: 64, right: 0, flexDirection: 'row', alignItems: 'center', zIndex: 10 }} pointerEvents="none">
+                  <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: '#EF4444', marginLeft: -4 }} />
+                  <View style={{ flex: 1, height: 1, backgroundColor: '#EF4444' }} />
+                </View>
+              );
+            }
+            return null;
+          })()
+        ) : (
+          isSelectedToday && <TimelineNowIndicator pixelsPerMinute={PIXELS_PER_MINUTE} />
+        )}
         
-        {/* Empty State Watermark Removed */}
-
         {/* Center Divider Line */}
         {isCompareMode && (
           <View className="absolute top-0 bottom-0 left-[52.5%] w-[1px] bg-gray-100 dark:bg-gray-800 pointer-events-none" />
@@ -594,13 +861,16 @@ export default function CalendarScreen() {
         onMarkDone={() => {
           setQuickActionVisible(false);
           if (quickActionPlan) {
-             const d = new Date(quickActionPlan.baseDate);
-             d.setHours(Math.floor(quickActionPlan.startMinutes / 60), quickActionPlan.startMinutes % 60, 0, 0);
+             const startTime = new Date(selectedDate);
+             startTime.setHours(Math.floor(quickActionPlan.startMinutes / 60), quickActionPlan.startMinutes % 60, 0, 0);
+             const endTime = new Date(startTime.getTime() + quickActionPlan.durationMinutes * 60 * 1000);
+             
              const { addSession } = useSessionStore.getState();
              addSession({
                id: Date.now().toString(),
                title: quickActionPlan.title || 'Life Activity',
-               startTime: d.toISOString(),
+               startTime: startTime.toISOString(),
+               endTime: endTime.toISOString(),
                durationSeconds: quickActionPlan.durationMinutes * 60,
                focusDurationSeconds: quickActionPlan.durationMinutes * 60,
                distractedDurationSeconds: 0,
@@ -630,6 +900,46 @@ export default function CalendarScreen() {
         onDelete={(id) => {
           deletePlan(id);
           setEditorVisible(false);
+        }}
+      />
+
+      <TimelineEditorModal
+        visible={timelineEditorVisible}
+        milestone={editingMilestone}
+        initialDate={selectedDate}
+        onClose={() => setTimelineEditorVisible(false)}
+        onSave={(data) => {
+          if (editingMilestone) {
+            updateMilestone(editingMilestone.id, data);
+          } else {
+            addMilestone({
+              ...data,
+              id: Date.now().toString(),
+              projectId: data.projectId!
+            } as Milestone);
+          }
+          setTimelineEditorVisible(false);
+        }}
+        onDelete={(id) => {
+          deleteMilestone(id);
+          setTimelineEditorVisible(false);
+        }}
+      />
+
+      <TimelineQuickActionModal
+        visible={timelineQuickActionVisible}
+        plan={timelineQuickActionPlan}
+        onClose={() => setTimelineQuickActionVisible(false)}
+        onMarkDone={handleTimelineMarkDone}
+        onEdit={() => {
+          setTimelineQuickActionVisible(false);
+          if (timelineQuickActionPlan?.type === 'milestone') {
+            setEditingMilestone(timelineQuickActionPlan.raw as Milestone);
+            setTimelineEditorVisible(true);
+          } else if (timelineQuickActionPlan?.type === 'allday') {
+            setEditingPlan(timelineQuickActionPlan.raw as Plan);
+            setEditorVisible(true);
+          }
         }}
       />
 

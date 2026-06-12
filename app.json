@@ -2,7 +2,7 @@
   "expo": {
     "name": "ANTYO Focus",
     "slug": "antyomobile",
-    "version": "1.7.2",
+    "version": "1.9.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "antyomobile",
@@ -12,6 +12,7 @@
       "bundleIdentifier": "com.antyo.focus"
     },
     "android": {
+      "versionCode": 18,
       "softwareKeyboardLayoutMode": "pan",
       "adaptiveIcon": {
         "backgroundColor": "#ffffff",
@@ -36,7 +37,8 @@
           }
         }
       ],
-      "expo-localization"
+      "expo-localization",
+      "expo-notifications"
     ],
     "experiments": {
       "typedRoutes": true,

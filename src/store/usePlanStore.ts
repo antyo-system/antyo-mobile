@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 import { zustandStorage } from './mmkv';
+import { schedulePlanNotification, cancelPlanNotification } from '@/utils/notifications';
 
 export type Recurrence = 'none' | 'daily' | 'weekdays' | 'weekly' | 'monthly' | 'annually' | 'specific_days';
 
@@ -31,13 +32,28 @@ export const usePlanStore = create<PlanState>()(
   persist(
     (set) => ({
       plans: [],
-      addPlan: (plan) => set((state) => ({ plans: [...state.plans, plan] })),
-      updatePlan: (id, updates) =>
-        set((state) => ({
-          plans: state.plans.map((p) => (p.id === id ? { ...p, ...updates } : p)),
-        })),
-      deletePlan: (id) =>
-        set((state) => ({ plans: state.plans.filter((p) => p.id !== id) })),
+      addPlan: (plan) => {
+        schedulePlanNotification(plan);
+        set((state) => ({ plans: [...state.plans, plan] }));
+      },
+      updatePlan: (id, updates) => {
+        set((state) => {
+          const nextPlans = state.plans.map((p) => (p.id === id ? { ...p, ...updates } : p));
+          const updatedPlan = nextPlans.find((p) => p.id === id);
+          if (updatedPlan) {
+            if (updatedPlan.isReminderEnabled !== false) {
+              schedulePlanNotification(updatedPlan);
+            } else {
+              cancelPlanNotification(id);
+            }
+          }
+          return { plans: nextPlans };
+        });
+      },
+      deletePlan: (id) => {
+        cancelPlanNotification(id);
+        set((state) => ({ plans: state.plans.filter((p) => p.id !== id) }));
+      },
     }),
     {
       name: 'plan-storage',

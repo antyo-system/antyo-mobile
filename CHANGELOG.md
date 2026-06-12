@@ -8,6 +8,9 @@
 ## ✨ New Features & Fixes
 | Date | Feature | Notes |
 |---|---|---|
+| 2026-06-12 | v1.9.0 Release | Features: Timeline Feature Parity (Drag-and-Drop date shifting, 'Eye' mode split-view with Real Sessions, Mark as Done, Quick Actions Modal) and Timeline Reminders. |
+| 2026-06-11 | v1.8.0 Release | Features: Project Management Hub in Mastery Tab and 'On the Radar' early warning system for upcoming milestones in Calendar tab. |
+| 2026-06-11 | v1.7.3 Release | Features: Smart Plan Reminders (Native OS Notifications using expo-notifications) and Inline Task Scheduler from the Plan Quick Action Modal. |
 | 2026-06-11 | v1.7.2 Release | Bugfixes: Fixed Donut chart SVG rendering artifacts on Android release builds and missing translation types. |
 | 2026-06-10 | v1.7.1 Release | Strict Tracking UX: The REAL calendar column is now read-only for manual creation. Moved 'Eye' compare toggle to the sticky bottom bar. Fixed calendar freeze bug after dragging timeblocks. Fixed missing bottom Navbar on web/localhost. |
 | 2026-06-09 | v1.7.0 Release | Added Task/To-Do list feed in Calendar. Added one-tap Task Scheduling Modal. Added Zen Mode (curtain toggle). Added interactive calendar tutorial. Refined translations for 'All Day' and 'Link to Skill'. Fixed PlanEditor UI alignments. |

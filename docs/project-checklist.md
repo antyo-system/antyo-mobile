@@ -38,10 +38,38 @@ This checklist tracks the progress of **ANTYO Focus** from its MVP state all the
 - [x] Custom App Icon & Splash Screen
 
 **V1 Release Preparation (In Progress)**
-- [x] Integrate PostHog for local event analytics
-- [x] Build Android APK / AAB (ProGuard disabled for stability)
+- [x] Native OS Notifications (Smart Plan Reminders using `expo-notifications`)
+- [ ] Integrate PostHog for event analytics (Zustand event triggers pending)
+- [x] Build Android APK / AAB (ProGuard configurations set)
 - [x] Privacy Policy & Play Store Screenshots
 - [ ] Internal Testing & Production Release (V1.0)
+
+### 🔍 MVP-to-Live Production Audit Tasks
+- **🔴 Critical (Ship-blockers)**
+  - [ ] Implement Local Data Import/Restore in profile
+  - [ ] Add Zustand Store Versioning & Migration logic for all 6 persisted stores
+  - [ ] Add native `ErrorBoundary` fallback UI to layout root
+  - [ ] Migrate UUID package or utility to replace `Date.now()` IDs (14 files)
+  - [ ] Fix Delete All Data to reset all stores (Plans, Tasks, Mastery, App, Settings, Sessions)
+- **🟠 High (Launch Essentials)**
+  - [ ] Add Crash Reporting (Sentry integration)
+  - [ ] Integrate real PostHog event tracking (Timer, Calendar, Milestones)
+  - [ ] Implement native "Rate This App" trigger (`expo-store-review`)
+  - [ ] Add basic accessibility labels/roles to interactive elements
+  - [ ] Configure Play Store Deep Link scheme & store URL constant
+  - [ ] Hydration check & splash screen loading guard in `_layout.tsx`
+  - [ ] Rebuild via EAS for production APK/AAB containing `expo-notifications`
+- **🟡 Medium (Quality Bar)**
+  - [ ] Remove hardcoded default skill data ("Coding") from Mastery store initial state
+  - [ ] Write critical unit tests for `/src/utils` (`streak.ts`, `mastery.ts`, `calendar.ts`, `insights.ts`)
+  - [ ] Hardcode dynamic changelog dates in `changelog.ts`
+  - [ ] Include all stores (Skills, Tasks, App Settings) in profile Export/Backup JSON
+- **🟢 Nice-to-have (Post-launch)**
+  - [ ] Smart Notification Scheduling for recurring plans
+  - [ ] Haptic Feedback on Notification Tap timer start
+  - [ ] Onboarding skip button
+  - [ ] Localized Notification text logic
+
 
 ---
 

@@ -5,12 +5,39 @@ export interface ChangelogRelease {
   fixes: string[];
 }
 
-export const APP_VERSION = "1.7.2";
+export const APP_VERSION = "1.9.0";
 
 export const CHANGELOG: ChangelogRelease[] = [
   {
+    version: "1.9.0",
+    date: "2026-06-12",
+    features: [
+      "Timeline Feature Parity: Full synchronization of features between Daily Plan and Timeline modes. Added Drag-and-Drop date shifting, 'Eye' mode split-view with Real Sessions, and Mark as Done functionality for Milestones.",
+      "Timeline Reminders: Set automatic push notifications on the Start Date for your Project Milestones."
+    ],
+    fixes: []
+  },
+  {
+    version: "1.8.0",
+    date: "2026-06-11",
+    features: [
+      "Project Management Hub: Integrated a new Projects section into the Mastery tab to separate infinite long-term skills from finite goal-oriented projects.",
+      "On the Radar: Added a minimal, dynamic early warning system in the Calendar tab to display upcoming project milestones (within 14 days) to drive daily urgency."
+    ],
+    fixes: []
+  },
+  {
+    version: "1.7.3",
+    date: "2026-06-11",
+    features: [
+      "Smart Plan Reminders: Set start reminders on plan blocks to trigger native OS push notifications using expo-notifications.",
+      "Inline Task Scheduler: Instantly create and manage tasks directly inside the calendar plan quick actions modal."
+    ],
+    fixes: []
+  },
+  {
     version: "1.7.2",
-    date: new Date().toISOString().split('T')[0],
+    date: "2026-06-11",
     features: [],
     fixes: [
       "Fixed Donut chart rendering artifacts (SVG path parsing issues) on Android release builds.",
@@ -19,7 +46,7 @@ export const CHANGELOG: ChangelogRelease[] = [
   },
   {
     version: "1.7.1",
-    date: new Date().toISOString().split('T')[0],
+    date: "2026-06-10",
     features: [
       "Strict Tracking UX: The REAL calendar column is now strictly read-only for manual creation, enforcing the Mastery 10,000 Hours rule philosophy.",
       "Sticky Compare Toggle: Moved the 'Eye' compare toggle from the header to the sticky bottom bar for easier access when the calendar is collapsed."
@@ -32,7 +59,7 @@ export const CHANGELOG: ChangelogRelease[] = [
   },
   {
     version: "1.7.0",
-    date: new Date().toISOString().split('T')[0],
+    date: "2026-06-09",
     features: [
       "Task & To-Do List View: Added a dedicated Task feed directly inside the Calendar for better task management.",
       "Task Scheduling Modal: Added the ability to seamlessly schedule a task into a specific timeblock with one tap.",
@@ -46,7 +73,7 @@ export const CHANGELOG: ChangelogRelease[] = [
   },
   {
     version: "1.6.1",
-    date: new Date().toISOString().split('T')[0],
+    date: "2026-06-09",
     features: [],
     fixes: [
       "Fixed timer pausing when device goes to sleep. Keep-awake is now enabled on the focus screen.",
@@ -57,7 +84,7 @@ export const CHANGELOG: ChangelogRelease[] = [
   },
   {
     version: "1.6.0",
-    date: new Date().toISOString().split('T')[0],
+    date: "2026-06-09",
     features: [
       "Smart Routine Banner: Dynamic banner now smoothly bridges the gap between planned calendar schedules and real focus sessions.",
       "Dynamic Time Calculation: Automatically calculates how late you are to a scheduled session and strictly loads the exact remaining time.",
@@ -71,7 +98,7 @@ export const CHANGELOG: ChangelogRelease[] = [
   },
   {
     version: "1.5.1",
-    date: new Date().toISOString().split('T')[0],
+    date: "2026-06-07",
     features: [
       "Timer Settings UI Tweaks: Bottom sheet now expands naturally without scrolling, and scales perfectly on smaller devices."
     ],
@@ -79,7 +106,7 @@ export const CHANGELOG: ChangelogRelease[] = [
   },
   {
     version: "1.5.0",
-    date: new Date().toISOString().split('T')[0],
+    date: "2026-06-07",
     features: [
       "Pomodoro Chaining: Seamlessly chain focus sessions with break sessions automatically using the Auto-Play feature.",
       "Redesigned Timer Settings: A new, highly-polished compact UI with a bottom-sheet modal and steppers for setting durations.",
@@ -92,7 +119,7 @@ export const CHANGELOG: ChangelogRelease[] = [
   },
   {
     version: "1.4.0",
-    date: new Date().toISOString().split('T')[0],
+    date: "2026-06-07",
     features: [
       "Quick Life Logging: 'Mark as Done' button for non-skill plans allows instant tracking without a timer.",
       "Lock Schedule Mode: A new toggle to lock calendar blocks, preventing accidental dragging.",

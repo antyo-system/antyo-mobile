@@ -11,14 +11,20 @@ Berikut adalah *Master Blueprint* dari MVP hingga menghasilkan ratusan juta per 
 ## 📅 Timeline & Eksekusi Bisnis
 
 ### Phase 1: Validasi Mesin & Closed Alpha (Bulan 1 - 2)
-*Status Kita Saat Ini.* Fokus membuktikan bahwa *core loop* (Plan -> Focus -> Stats) berjalan tanpa *bug* fatal.
+*Status Kita Saat Ini:* Stabilisasi v1.8.0 (heading towards v2.0.0 Cloud Sync). Fokus membuktikan bahwa *core loop* (Plan -> Focus -> Stats) berjalan tanpa *bug* fatal dan memperkuat keandalan data lokal sebelum peluncuran live.
 
-*   **Fitur Produk:** Stabilisasi v1.5.1. Tambahkan fitur penyelamat nyawa: **Local Data Export/Import (JSON)** agar data 10.000 jam user aman meski ganti HP.
+*   **Fitur Produk (Pre-Launch Blocker Checklist):**
+    *   **Local Data Import/Restore (JSON/TXT):** Menambahkan fitur import/restore data cadangan ke profile screen agar data 10.000 jam user aman saat ganti perangkat.
+    *   **Zustand Store Versioning & Migrations:** Menambahkan versioning & migration logic pada seluruh 6 persisted store untuk mencegah data corrupt pada pembaruan mendatang.
+    *   **UUID Migration:** Mengganti penggunaan `Date.now()` dengan UUID pada seluruh model domain inti guna mendukung Cloud Sync masa depan tanpa kolisi ID.
+    *   **Crash Recovery & Error Handling:** Menerapkan global `ErrorBoundary` di root layout dan integrasi Sentry crash reporting.
+    *   **Delete All Data Fix:** Memastikan tombol hapus data membersihkan seluruh store secara menyeluruh (tidak hanya sessions).
 *   **Pengujian Tertutup (Closed Alpha):** Undang 20-50 orang (teman, kerabat, komunitas Discord) via **Apple TestFlight** & **Google Play Internal Testing**. Kumpulkan semua komplain mereka.
 *   **Sistem & Marketing:** 
     *   Beli domain (contoh: `antyofocus.com` atau `antyo.app`).
     *   Buat **Landing Page sederhana** (Satu halaman statis). Isinya: *Trailer* estetik aplikasi dan kotak "Join Waitlist / Dapatkan Akses Awal". Kumpulkan email mereka.
 *   **Legal & Administrasi:** Belum perlu mendirikan PT. Cukup beli akun Apple Developer Program ($99/tahun) dan Google Play Console ($25 *sekali bayar*) atas nama pribadi Anda. Buat dokumen *Privacy Policy* standar.
+
 
 ### Phase 2: Open Beta & "The 10,000 Hours Movement" (Bulan 3 - 6)
 Fokus mencapai **10.000 - 50.000 pengguna pertama** secara 100% GRATIS tanpa iklan.

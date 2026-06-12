@@ -7,6 +7,7 @@ If a feature is checked here, it exists in the codebase and is fully functional.
 - [x] **Skill & Pillar Creation:** Users can create custom skills (e.g., Coding) and sub-categories/pillars (e.g., React Native).
 - [x] **Mastery Progress Tracking:** Calculates total hours accumulated across all sessions towards the 10,000 hours goal.
 - [x] **Daily Targets:** Users can set a daily target (minutes) per skill. The UI turns orange and shows a flame when met.
+- [x] **Project Management Hub:** A dedicated section in the Mastery tab to separate finite projects from infinite skills.
 
 ## ⏱️ 2. The Focus Engine (Timer)
 - [x] **Smart Timer Mode:** Classic countdown timer.
@@ -25,8 +26,11 @@ If a feature is checked here, it exists in the codebase and is fully functional.
 - [x] **Manual Session Editing:** Ability to add or edit past 'Real' sessions directly from the calendar.
 - [x] **Lock Mode:** A padlock toggle to freeze the calendar and prevent accidental dragging/editing.
 - [x] **Task & To-Do List:** Switch to 'Task' mode to manage project-based tasks (`useTaskStore`) and seamlessly schedule them into the calendar.
+- [x] **Inline Task Scheduler:** Create, manage, and schedule to-do items directly from the calendar plan's Quick Action Modal.
 - [x] **Strict Real Tracking:** The Real column is read-only for manual creation, enforcing the Mastery philosophy that real sessions must be earned via the timer or by completing a plan.
 - [x] **Zen Mode (Curtain):** Toggle the calendar grid to collapse and focus entirely on the daily timeline.
+- [x] **On the Radar (Early Warning System):** A dynamic carousel displaying upcoming project milestones within 14 days to drive daily urgency.
+- [x] **Timeline Parity:** Full synchronization of tools between Daily Plan and Timeline modes, including drag-and-drop date shifting, Quick Actions Modal, and side-by-side 'Eye' mode comparison.
 
 ## 📊 4. Gamification & Statistics
 - [x] **Global Streaks (🔥):** Calculates consecutive days where the global `dailyFocusTargetHours` is met. Displayed in the Stats tab header.
@@ -43,6 +47,7 @@ If a feature is checked here, it exists in the codebase and is fully functional.
 - [x] **Onboarding Flow:** Interactive multi-step tutorial bubbles (`SpotlightOverlay`) across all major tabs.
 - [x] **Theme Customization:** Support for System, Light, and Dark Mode.
 - [x] **Changelog System:** In-app popup to notify users of version updates.
+- [x] **Smart Plan Reminders (Native OS Notifications):** Set start reminders on plans that trigger local notifications, allowing one-tap navigation to the focus screen to auto-start the timer.
 
 ---
 
