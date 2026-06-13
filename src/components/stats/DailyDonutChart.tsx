@@ -1,4 +1,4 @@
-import { View, Text } from 'react-native';
+import { View, Text, Dimensions } from 'react-native';
 import Svg, { Circle, G } from 'react-native-svg';
 import { Session } from '@/types';
 import { useMemo } from 'react';
@@ -35,19 +35,22 @@ export function DailyDonutChart({ sessions }: Props) {
   const data = useGroupedData(sessions);
   const totalDuration = data.reduce((acc, curr) => acc + curr.duration, 0);
   
-  const radius = 130;
+  const screenWidth = Dimensions.get('window').width;
+  // 48 for padding (24 on each side), max size 300
+  const svgSize = Math.min(300, screenWidth - 48);
+  const center = svgSize / 2;
   const strokeWidth = 20;
+  const radius = center - strokeWidth;
+  
   const circumference = 2 * Math.PI * radius;
   const halfCircumference = circumference / 2;
-  const svgSize = 300;
-  const center = svgSize / 2;
 
   if (totalDuration === 0) {
     return (
       <View className="items-center justify-end h-56 pt-2 pb-2 opacity-60">
         <View className="relative items-center justify-end overflow-hidden" style={{ width: svgSize, height: center + strokeWidth }}>
           <Svg width={svgSize} height={svgSize} viewBox={`0 0 ${svgSize} ${svgSize}`} className="absolute top-0">
-            <G rotation="180" origin={`${center}, ${center}`}>
+            <G rotation={180} originX={center} originY={center}>
               <Circle
                 cx={center}
                 cy={center}
@@ -80,7 +83,7 @@ export function DailyDonutChart({ sessions }: Props) {
     <View className="items-center justify-end h-56 pt-2 pb-2">
       <View className="relative items-center justify-end overflow-hidden" style={{ width: svgSize, height: center + strokeWidth }}>
         <Svg width={svgSize} height={svgSize} viewBox={`0 0 ${svgSize} ${svgSize}`} className="absolute top-0">
-          <G rotation="180" origin={`${center}, ${center}`}>
+          <G rotation={180} originX={center} originY={center}>
             {/* Background half circle */}
             <Circle
               cx={center}

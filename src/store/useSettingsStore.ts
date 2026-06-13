@@ -37,6 +37,14 @@ export const useSettingsStore = create<SettingsState>()(
     {
       name: 'settings-storage',
       storage: createJSONStorage(() => zustandStorage),
+      version: 1,
+      migrate: (persistedState: unknown, version: number) => {
+        let state = persistedState as any;
+        if (version === 0) {
+          // Migration from version 0 to 1
+        }
+        return state;
+      },
     }
   )
 );

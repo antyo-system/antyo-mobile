@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import { View, PanResponder, Pressable, Text, Image, Platform, Dimensions, Alert } from 'react-native';
-import { PinchGestureHandler, State, ScrollView } from 'react-native-gesture-handler';
+import { GestureDetector, Gesture, ScrollView } from 'react-native-gesture-handler';
+import Animated, { useSharedValue, useAnimatedStyle, runOnJS, withTiming } from 'react-native-reanimated';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useIsFocused } from '@react-navigation/native';
 import { Tabs, useNavigation } from 'expo-router';
@@ -40,6 +41,7 @@ import { images } from '@/constants/images';
 import { useAppStore } from '@/store/useAppStore';
 import { SpotlightOverlay, SpotlightStep, SpotlightCoords } from '@/components/tutorial/SpotlightOverlay';
 import { useTranslation } from '@/hooks/useTranslation';
+import * as Crypto from 'expo-crypto';
 
 
 function calculateLayout<T extends { startMinutes: number; durationMinutes?: number; durationSeconds?: number }>(items: T[]) {
@@ -131,27 +133,59 @@ export default function CalendarScreen() {
   const { t, language } = useTranslation();
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [isCompareMode, setIsCompareMode] = useState(true);
+  const [activeTab, setActiveTab] = useState<'plan' | 'timeline' | 'real' | 'task'>('plan');
+  const [isLocked, setIsLocked] = useState(false);
   const insets = useSafeAreaInsets();
   const navigation = useNavigation();
   
   // Zoom state
-  const [baseScale, setBaseScale] = useState(1);
-  const [pinchScale, setPinchScale] = useState(1);
-  const zoomScale = Math.min(Math.max(0.5, baseScale * pinchScale), 3);
+  // baseScaleSV  = committed scale after each pinch (persists between gestures)
+  // liveScaleSV  = visual multiplier applied in real-time during a pinch (UI thread only)
+  // zoomScale    = React state committed on gesture end → drives layout re-render
+  const baseScaleSV = useSharedValue(1);
+  const liveScaleSV = useSharedValue(1);
+  const focalY = useSharedValue(0);
+  const [zoomScale, setZoomScale] = useState(1);
 
   const PIXELS_PER_MINUTE = 1.5 * zoomScale;
   const PIXELS_PER_DAY = 150 * zoomScale;
 
-  const onPinchGestureEvent = useCallback((event: any) => {
-    setPinchScale(event.nativeEvent.scale);
-  }, []);
+  // Calculate content height so we can set the transform origin correctly
+  const contentHeight = activeTab === 'timeline' 
+    ? (31 * PIXELS_PER_DAY) // rough estimate, we use the actual one below
+    : 24 * 60 * PIXELS_PER_MINUTE;
 
-  const onPinchHandlerStateChange = useCallback((event: any) => {
-    if (event.nativeEvent.state === State.END) {
-      setBaseScale(prev => Math.min(Math.max(0.5, prev * event.nativeEvent.scale), 3));
-      setPinchScale(1);
-    }
-  }, []);
+  // Runs on UI thread → scaleY the content container live at 60fps
+  // We use focalY to scale exactly from where the user's fingers are
+  const liveContentStyle = useAnimatedStyle(() => {
+    return {
+      transform: [
+        { translateY: (focalY.value - contentHeight / 2) * (1 - liveScaleSV.value) },
+        { scaleY: liveScaleSV.value }
+      ]
+    };
+  });
+
+  const pinchGesture = useMemo(() =>
+    Gesture.Pinch()
+      .enabled(!isLocked)
+      .onBegin((e) => {
+        focalY.value = e.focalY;
+      })
+      .onUpdate((e) => {
+        // Clamp so we never exceed global min/max even mid-gesture
+        const candidate = baseScaleSV.value * e.scale;
+        liveScaleSV.value = Math.min(Math.max(0.5 / baseScaleSV.value, e.scale), 3 / baseScaleSV.value);
+      })
+      .onEnd((e) => {
+        const committed = Math.min(Math.max(0.5, baseScaleSV.value * e.scale), 3);
+        baseScaleSV.value = committed;
+        // Snap visual back instantly before React re-renders at new layout
+        liveScaleSV.value = withTiming(1, { duration: 0 });
+        runOnJS(setZoomScale)(committed);
+      }),
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  [contentHeight, isLocked]);
   
   // Tutorial State
   const { hasSeenCalendarTutorial, setTutorialSeen } = useAppStore();
@@ -199,8 +233,6 @@ export default function CalendarScreen() {
   const updatePlan = usePlanStore(s => s.updatePlan);
   const deletePlan = usePlanStore(s => s.deletePlan);
 
-  const [activeTab, setActiveTab] = useState<'plan' | 'timeline' | 'real' | 'task'>('plan');
-  const [isLocked, setIsLocked] = useState(false);
   const [isHeaderVisible, setIsHeaderVisible] = useState(true);
   const [isScrollEnabled, setIsScrollEnabled] = useState(true);
   const [editorVisible, setEditorVisible] = useState(false);
@@ -430,6 +462,12 @@ export default function CalendarScreen() {
     }
   }, [selectedDate, isSelectedToday, activeTab, timelineDays]);
 
+  const resetZoom = useCallback(() => {
+    baseScaleSV.value = 1;
+    liveScaleSV.value = 1;
+    setZoomScale(1);
+  }, []);
+
   const handleCreateNew = () => {
     if (activeTab === 'timeline') {
       setEditingMilestone(null);
@@ -450,7 +488,7 @@ export default function CalendarScreen() {
   }, []);
 
   const handleSavePlan = (data: Partial<Plan>) => {
-    const planId = editingPlan ? editingPlan.id : Date.now().toString();
+    const planId = editingPlan ? editingPlan.id : Crypto.randomUUID();
     // If it exists in the store, update it. Otherwise, add it.
     if (editingPlan && plans.some(p => p.id === editingPlan.id)) {
       updatePlan(editingPlan.id, data);
@@ -539,7 +577,7 @@ export default function CalendarScreen() {
 
     // Auto-create a new 30 minute plan at that exact time
     setEditingPlan({
-      id: Date.now().toString(),
+      id: Crypto.randomUUID(),
       title: '',
       startMinutes: clickedMinutes,
       durationMinutes: 30,
@@ -565,7 +603,7 @@ export default function CalendarScreen() {
     const startMins = Math.floor(currentMins / 15) * 15; // snap to 15 mins
     
     setEditingPlan({
-      id: Date.now().toString(),
+      id: Crypto.randomUUID(),
       title: taskToSchedule.title,
       startMinutes: startMins,
       durationMinutes: 30,
@@ -653,21 +691,19 @@ export default function CalendarScreen() {
         </View>
       </View>
 
-      <View className="px-4 pt-4 z-10">
+
+      {/* Radar + Priority strip — tight, no wasted space */}
+      <View className="px-4 pt-1.5 pb-1 z-10">
         <OnTheRadar />
         {topPriorityItem && (
-          <View className="mt-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl p-3 flex-row items-center shadow-sm">
-            <View className="w-8 h-8 rounded-full bg-amber-100 dark:bg-amber-800/50 items-center justify-center mr-3">
-              <Feather name="star" size={16} color="#D97706" fill="#F59E0B" />
-            </View>
-            <View className="flex-1">
-              <Text className="text-[10px] font-bold text-amber-600 dark:text-amber-500 uppercase tracking-wider mb-0.5">
-                {language === 'id' ? 'Prioritas Utama Hari Ini' : 'Top Priority Today'}
-              </Text>
-              <Text className="text-sm font-black text-gray-900 dark:text-white" numberOfLines={1}>
-                {topPriorityItem.title}
-              </Text>
-            </View>
+          <View className="flex-row items-center gap-2 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl px-3 py-1.5 mb-1">
+            <Feather name="star" size={12} color="#D97706" />
+            <Text className="text-[10px] font-bold text-amber-600 dark:text-amber-500 uppercase tracking-wider">
+              {language === 'id' ? 'Prioritas:' : 'Priority:'}
+            </Text>
+            <Text className="text-[11px] font-black text-gray-900 dark:text-white flex-1" numberOfLines={1}>
+              {topPriorityItem.title}
+            </Text>
           </View>
         )}
       </View>
@@ -675,22 +711,20 @@ export default function CalendarScreen() {
       {activeTab === 'task' && <TaskListView selectedDate={selectedDate} onScheduleTask={handleScheduleTask} />}
 
       {(activeTab === 'plan' || activeTab === 'real' || activeTab === 'timeline') && (
-        <PinchGestureHandler
-          onGestureEvent={onPinchGestureEvent}
-          onHandlerStateChange={onPinchHandlerStateChange}
-        >
-          <View className="flex-1" {...panResponder.panHandlers} ref={bodyRef} collapsable={false}>
+        <Animated.View className="flex-1" {...panResponder.panHandlers} ref={bodyRef} collapsable={false}>
           <ScrollView 
             ref={verticalScrollRef}
-          className="flex-1"
-          scrollEnabled={isScrollEnabled}
-          contentContainerStyle={{ paddingTop: 20, paddingBottom: 150 }}
-        >
-          {/* Wrap absolute elements in a sized Pressable to catch taps and allow edge padding */}
-          <Pressable 
-            style={{ height: activeTab === 'timeline' ? timelineDays.length * PIXELS_PER_DAY : 24 * 60 * PIXELS_PER_MINUTE }}
-            onPress={activeTab === 'timeline' ? undefined : handleTimelinePress}
+            className="flex-1"
+            scrollEnabled={isScrollEnabled}
+            contentContainerStyle={{ paddingTop: 20, paddingBottom: 150 }}
           >
+          <GestureDetector gesture={pinchGesture}>
+            {/* Wrap absolute elements in a sized container — Animated for live scaleY during pinch */}
+            <Animated.View style={[{ height: activeTab === 'timeline' ? timelineDays.length * PIXELS_PER_DAY : 24 * 60 * PIXELS_PER_MINUTE }, liveContentStyle]}>
+            <Pressable 
+              style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
+              onPress={activeTab === 'timeline' ? undefined : handleTimelinePress}
+            >
             {activeTab === 'timeline' ? (
               <TimelineDateMarkers days={timelineDays} pixelsPerDay={PIXELS_PER_DAY} />
             ) : (
@@ -903,9 +937,25 @@ export default function CalendarScreen() {
           <View className="absolute top-0 bottom-0 left-[52.5%] w-[1px] bg-gray-100 dark:bg-gray-800 pointer-events-none" />
         )}
           </Pressable>
-        </ScrollView>
+            </Animated.View>
+          </GestureDetector>
+          </ScrollView>
+        </Animated.View>
+      )}
+
+      {/* Zoom Reset Pill */}
+      {zoomScale !== 1 && (activeTab === 'plan' || activeTab === 'real' || activeTab === 'timeline') && (
+        <View style={{ position: 'absolute', left: 24, bottom: Math.max(insets.bottom + 84, 112), zIndex: 50 }}>
+          <Pressable 
+            onPress={resetZoom}
+            className="h-12 px-4 bg-white dark:bg-gray-800 rounded-full border border-gray-200 dark:border-gray-700 flex-row items-center justify-center shadow-lg shadow-gray-200/50 dark:shadow-none"
+          >
+            <Feather name="zoom-out" size={14} color="#6B7280" style={{ marginRight: 6 }} />
+            <Text className="text-gray-700 dark:text-gray-300 font-bold text-xs tracking-wider">
+              {Math.round(zoomScale * 100)}%
+            </Text>
+          </Pressable>
         </View>
-      </PinchGestureHandler>
       )}
 
       {/* Floating Action Button (FAB) */}
@@ -913,6 +963,8 @@ export default function CalendarScreen() {
         <Pressable 
           onPress={handleCreateNew}
           className="w-14 h-14 bg-blue-600 rounded-full items-center justify-center shadow-lg shadow-blue-500/50"
+          accessibilityRole="button"
+          accessibilityLabel="Create new plan or milestone"
         >
           <Text className="text-white text-3xl leading-none mt-[-2px]">+</Text>
         </Pressable>
@@ -947,7 +999,7 @@ export default function CalendarScreen() {
              
              const { addSession } = useSessionStore.getState();
              addSession({
-               id: Date.now().toString(),
+               id: Crypto.randomUUID(),
                title: quickActionPlan.title || 'Life Activity',
                startTime: startTime.toISOString(),
                endTime: endTime.toISOString(),
@@ -994,7 +1046,7 @@ export default function CalendarScreen() {
           } else {
             addMilestone({
               ...data,
-              id: Date.now().toString(),
+              id: Crypto.randomUUID(),
               projectId: data.projectId!
             } as Milestone);
           }
@@ -1059,7 +1111,7 @@ export default function CalendarScreen() {
           setTutorialSeen('calendar');
           // Simulated interactive onboarding: immediately open the plan editor!
           setEditingPlan({
-            id: Date.now().toString(),
+            id: Crypto.randomUUID(),
             title: '',
             startMinutes: 480, // Default to 8:00 AM
             durationMinutes: 60,

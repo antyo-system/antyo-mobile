@@ -1,6 +1,6 @@
 import { View, Text, ScrollView, Pressable, useColorScheme } from 'react-native';
 import { useTaskStore } from '@/store/useTaskStore';
-import { differenceInDays, isPast, isToday, format } from 'date-fns';
+import { differenceInDays, isPast, isToday } from 'date-fns';
 import { Feather } from '@expo/vector-icons';
 
 export function OnTheRadar() {
@@ -24,24 +24,22 @@ export function OnTheRadar() {
   if (upcomingMilestones.length === 0) return null;
 
   return (
-    <View className="mb-5 -mx-5 px-5">
+    <View className="mb-1 -mx-4 px-4">
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
-        contentContainerStyle={{ gap: 8, paddingRight: 20 }}
+        contentContainerStyle={{ gap: 6, paddingRight: 16 }}
       >
         {upcomingMilestones.map(milestone => {
           const mDate = new Date(milestone.date);
           mDate.setHours(0, 0, 0, 0);
           const diff = differenceInDays(mDate, today);
 
-          // Label
           let label = `${diff}d`;
           if (isToday(mDate)) label = 'Today';
           else if (diff === 1) label = 'Tmrw';
           else if (diff < 0) label = `${Math.abs(diff)}d over`;
 
-          // Colors by urgency
           const isCritical = diff <= 1 || isPast(mDate) || isToday(mDate);
           const isApproaching = !isCritical && diff <= 7;
 
@@ -51,17 +49,17 @@ export function OnTheRadar() {
           let iconColor: string;
 
           if (isCritical) {
-            chipBg    = isDark ? '#450a0a' : '#FEF2F2';
+            chipBg     = isDark ? '#450a0a' : '#FEF2F2';
             labelColor = isDark ? '#F87171' : '#DC2626';
             titleColor = isDark ? '#FCA5A5' : '#991B1B';
             iconColor  = isDark ? '#F87171' : '#EF4444';
           } else if (isApproaching) {
-            chipBg    = isDark ? '#431407' : '#FFFBEB';
+            chipBg     = isDark ? '#431407' : '#FFFBEB';
             labelColor = isDark ? '#FCD34D' : '#D97706';
             titleColor = isDark ? '#FDE68A' : '#92400E';
             iconColor  = isDark ? '#FBBF24' : '#F59E0B';
           } else {
-            chipBg    = isDark ? '#1F2937' : '#F9FAFB';
+            chipBg     = isDark ? '#1F2937' : '#F3F4F6';
             labelColor = isDark ? '#9CA3AF' : '#6B7280';
             titleColor = isDark ? '#E5E7EB' : '#374151';
             iconColor  = isDark ? '#6B7280' : '#9CA3AF';
@@ -72,17 +70,17 @@ export function OnTheRadar() {
               key={milestone.id}
               onPress={() => toggleMilestone(milestone.id)}
               style={{ backgroundColor: chipBg }}
-              className="flex-row items-center gap-2 px-3 py-2 rounded-full"
+              className="flex-row items-center gap-1.5 px-2.5 py-1 rounded-full"
             >
               <Feather
                 name={isCritical ? 'alert-circle' : 'flag'}
-                size={11}
+                size={10}
                 color={iconColor}
               />
               <Text
                 numberOfLines={1}
-                style={{ color: titleColor, maxWidth: 130 }}
-                className="text-xs font-bold"
+                style={{ color: titleColor, maxWidth: 110 }}
+                className="text-[11px] font-bold"
               >
                 {milestone.title}
               </Text>

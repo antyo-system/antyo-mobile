@@ -1,10 +1,9 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { View, Text, Pressable, Switch, KeyboardAvoidingView, Platform, Animated, AppState } from 'react-native';
 import { Feather } from '@expo/vector-icons';
-import { useIsFocused } from '@react-navigation/native';
+import { useIsFocused, useNavigation } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTimerStore } from '@/store/useTimerStore';
-import { Tabs } from 'expo-router';
 import { TimerDisplay } from '@/components/timer/TimerDisplay';
 import { TimerControls } from '@/components/timer/TimerControls';
 import { TimerTitleInput } from '@/components/timer/TimerTitleInput';
@@ -22,6 +21,7 @@ import { SessionCompleteOverlay } from '@/components/timer/SessionCompleteOverla
 import { getMasteryProgress } from '@/utils/mastery';
 import { useTranslation } from '@/hooks/useTranslation';
 import { activateKeepAwakeAsync, deactivateKeepAwake } from 'expo-keep-awake';
+import * as Crypto from 'expo-crypto';
 
 export default function TimerScreen() {
   const { t } = useTranslation();
@@ -174,6 +174,14 @@ export default function TimerScreen() {
   const [tutorialVisible, setTutorialVisible] = useState(false);
   const [tutorialSteps, setTutorialSteps] = useState<SpotlightStep[]>([]);
   const isFocused = useIsFocused();
+  const navigation = useNavigation();
+
+  useEffect(() => {
+    navigation.setOptions({
+      headerShown: false,
+      tabBarStyle: tutorialVisible ? { display: 'none' } : undefined
+    });
+  }, [navigation, tutorialVisible]);
   
   const rootRef = useRef<View>(null);
   const taskRef = useRef<View>(null);
@@ -257,7 +265,7 @@ export default function TimerScreen() {
           const finalDuration = cycleMode ? totalFocusElapsed + duration : duration;
           
           addSession({
-            id: Date.now().toString(),
+            id: Crypto.randomUUID(),
             title: currentTitle || 'Focus Session',
             durationSeconds: finalDuration,
             startTime: sessionStartTime,
@@ -349,7 +357,7 @@ export default function TimerScreen() {
         // Don't save if it was incredibly short (less than 10 seconds)
         if (finalDuration > 10) {
           addSession({
-            id: Date.now().toString(),
+            id: Crypto.randomUUID(),
             title: currentTitle || 'Focus Session',
             durationSeconds: finalDuration,
             startTime: sessionStartTime,
@@ -365,7 +373,7 @@ export default function TimerScreen() {
         }
       } else if (sessionType === 'break' && cycleMode && totalFocusElapsed > 10) {
         addSession({
-          id: Date.now().toString(),
+          id: Crypto.randomUUID(),
           title: currentTitle || 'Focus Session',
           durationSeconds: totalFocusElapsed,
           startTime: sessionStartTime,
@@ -385,10 +393,6 @@ export default function TimerScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-gray-50 dark:bg-gray-950" edges={['top']}>
-      <Tabs.Screen options={{ 
-        headerShown: false,
-        tabBarStyle: tutorialVisible ? { display: 'none' } : undefined
-      }} />
 
       <SessionCompleteOverlay
         visible={overlayVisible}
@@ -442,6 +446,8 @@ export default function TimerScreen() {
                     }, 100);
                   }}
                   className="flex-row items-center justify-between bg-blue-600 shadow-xl rounded-2xl p-4 border border-blue-500"
+                  accessibilityRole="button"
+                  accessibilityLabel={`Load session: ${activeRoutine.title}`}
                 >
                   <View className="flex-row items-center gap-3 flex-1 mr-3">
                     <View className="w-10 h-10 bg-white/20 rounded-full items-center justify-center">

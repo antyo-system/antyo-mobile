@@ -170,6 +170,7 @@ Use `StyleSheet.create` or inline styles ONLY for the following where NativeWind
 ## Documentation & Idea Bank Rules
 - **Idea Bank Location:** All future ideas, brainstorms, or postponed features MUST be saved and appended to the existing `docs/upcoming_idea.md` file. 
 - **CRITICAL RULE:** Do NOT create a new `upcoming_idea.md` file in the root directory. Always verify the existence of `docs/upcoming_idea.md` and append to it.
+- **Checklist Tracking:** ALWAYS update `docs/project-checklist.md` to check off (`[x]`) tasks immediately after they are completed. If a task was already completed, verify it is marked as `[x]`.
 
 ---
 

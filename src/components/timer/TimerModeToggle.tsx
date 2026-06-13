@@ -26,6 +26,9 @@ export function TimerModeToggle() {
       <Pressable
         onPress={() => handlePress('timer')}
         className="active:opacity-60 py-2"
+        accessibilityRole="tab"
+        accessibilityState={{ selected: mode === 'timer' }}
+        accessibilityLabel={t('timer.timer')}
       >
         <Text className={`font-black text-xs tracking-[0.2em] uppercase ${mode === 'timer' ? 'text-blue-600 dark:text-blue-400' : 'text-gray-400 dark:text-gray-600'}`}>
           {t('timer.timer')}
@@ -35,6 +38,9 @@ export function TimerModeToggle() {
       <Pressable
         onPress={() => handlePress('stopwatch')}
         className="active:opacity-60 py-2"
+        accessibilityRole="tab"
+        accessibilityState={{ selected: mode === 'stopwatch' }}
+        accessibilityLabel={t('timer.stopwatch')}
       >
         <Text className={`font-black text-xs tracking-[0.2em] uppercase ${mode === 'stopwatch' ? 'text-blue-600 dark:text-blue-400' : 'text-gray-400 dark:text-gray-600'}`}>
           {t('timer.stopwatch')}

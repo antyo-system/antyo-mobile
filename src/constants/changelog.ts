@@ -5,9 +5,20 @@ export interface ChangelogRelease {
   fixes: string[];
 }
 
-export const APP_VERSION = "1.10.0";
+export const APP_VERSION = "1.11.0";
 
 export const CHANGELOG: ChangelogRelease[] = [
+  {
+    version: "1.11.0",
+    date: "2026-06-13",
+    features: [
+      "Smart Notification Scheduling: Automatically sets native recurring calendar notifications for your repeating routines.",
+      "Haptic Feedback Integration: Experience satisfying tactile feedback when starting a timer directly from a notification tap.",
+      "Localized Notifications: Native push notifications are now seamlessly localized based on your app's language settings (English, Indonesian, Mandarin).",
+      "Full Data Portability: The JSON Export/Backup feature now safely includes all application state, settings, and task milestones."
+    ],
+    fixes: []
+  },
   {
     version: "1.10.0",
     date: "2026-06-12",

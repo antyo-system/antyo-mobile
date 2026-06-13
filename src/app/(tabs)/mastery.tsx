@@ -10,13 +10,14 @@ import { useSessionStore } from '@/store/useSessionStore';
 import { useTimerStore } from '@/store/useTimerStore';
 import { getMasteryProgress } from '@/utils/mastery';
 import { Feather } from '@expo/vector-icons';
-import { useIsFocused } from '@react-navigation/native';
+import { useIsFocused, useNavigation } from '@react-navigation/native';
 import { isToday } from 'date-fns';
-import { router, Tabs } from 'expo-router';
+import { router } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
 import { Animated, Dimensions, Pressable, ScrollView, Text, useColorScheme, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from '@/hooks/useTranslation';
+import * as Crypto from 'expo-crypto';
 
 const { width } = Dimensions.get('window');
 
@@ -204,6 +205,14 @@ export default function MasteryScreen() {
   const [tutorialVisible, setTutorialVisible] = useState(false);
   const [tutorialSteps, setTutorialSteps] = useState<SpotlightStep[]>([]);
   const isFocused = useIsFocused();
+  const navigation = useNavigation();
+
+  useEffect(() => {
+    navigation.setOptions({
+      headerShown: false,
+      tabBarStyle: tutorialVisible ? { display: 'none' } : undefined
+    });
+  }, [navigation, tutorialVisible]);
 
   const addRef = useRef<View>(null);
   const listRef = useRef<View>(null);
@@ -274,7 +283,7 @@ export default function MasteryScreen() {
 
   const handleSaveRoutine = (data: Partial<Plan>) => {
     addPlan({
-      id: Date.now().toString(),
+      id: Crypto.randomUUID(),
       title: data.title || 'New Routine',
       startMinutes: data.startMinutes ?? 9 * 60,
       durationMinutes: data.durationMinutes ?? 30,
@@ -295,10 +304,6 @@ export default function MasteryScreen() {
   return (
     <SafeAreaView className="flex-1 bg-gray-50 dark:bg-gray-950" edges={['top']}>
       <View style={{ flex: 1 }} ref={rootRef} collapsable={false}>
-        <Tabs.Screen options={{
-          headerShown: false,
-          tabBarStyle: tutorialVisible ? { display: 'none' } : undefined
-        }} />
 
         <ScrollView ref={scrollViewRef} className="flex-1" contentContainerStyle={{ padding: 24, paddingBottom: 130 }}>
           <View className="flex-row justify-between items-center mb-2 mt-4">

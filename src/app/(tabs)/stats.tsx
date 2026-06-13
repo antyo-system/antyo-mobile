@@ -2,8 +2,8 @@ import { usePlanStore } from '@/store/usePlanStore';
 import { useSessionStore } from '@/store/useSessionStore';
 import { useSettingsStore } from '@/store/useSettingsStore';
 import { Feather } from '@expo/vector-icons';
-import { useIsFocused } from '@react-navigation/native';
-import { Tabs, router } from 'expo-router';
+import { useIsFocused, useNavigation } from '@react-navigation/native';
+import { router } from 'expo-router';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Dimensions, Pressable, ScrollView, Text, View, Modal, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -41,6 +41,14 @@ export default function StatsScreen() {
   const [tutorialVisible, setTutorialVisible] = useState(false);
   const [tutorialSteps, setTutorialSteps] = useState<SpotlightStep[]>([]);
   const isFocused = useIsFocused();
+  const navigation = useNavigation();
+
+  useEffect(() => {
+    navigation.setOptions({
+      headerShown: false,
+      tabBarStyle: tutorialVisible ? { display: 'none' } : undefined
+    });
+  }, [navigation, tutorialVisible]);
 
   const filterRef = useRef<View>(null);
   const timerRef = useRef<View>(null);
@@ -179,10 +187,6 @@ export default function StatsScreen() {
   return (
     <SafeAreaView className="flex-1 bg-gray-50 dark:bg-gray-950" edges={['top']}>
       <View style={{ flex: 1 }} ref={rootRef} collapsable={false}>
-        <Tabs.Screen options={{
-          headerShown: false,
-          tabBarStyle: tutorialVisible ? { display: 'none' } : undefined
-        }} />
 
         <ScrollView ref={scrollViewRef} className="flex-1" contentContainerStyle={{ padding: 24, paddingBottom: 130 }}>
           

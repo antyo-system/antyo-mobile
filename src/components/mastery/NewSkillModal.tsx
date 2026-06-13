@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { KeyboardAvoidingView, Modal, Platform, Pressable, ScrollView, Switch, Text, TextInput, useColorScheme, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from '@/hooks/useTranslation';
+import * as Crypto from 'expo-crypto';
 
 interface Props {
   visible: boolean;
@@ -66,7 +67,7 @@ export function NewSkillModal({ visible, onClose }: Props) {
   const handleSave = () => {
     if (!skillName.trim()) return;
 
-    const skillId = Date.now().toString();
+    const skillId = Crypto.randomUUID();
     const targetMins = parseInt(dailyTarget);
 
     addSkill({
@@ -85,7 +86,7 @@ export function NewSkillModal({ visible, onClose }: Props) {
       const durationMinutes = endMinutes - startMinutes;
 
       addPlan({
-        id: Date.now().toString() + '-routine',
+        id: Crypto.randomUUID(),
         title: `${skillName.trim()} Routine`,
         startMinutes,
         durationMinutes,

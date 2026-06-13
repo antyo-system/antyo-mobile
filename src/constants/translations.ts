@@ -167,6 +167,7 @@ const en = {
       weeks: 'WEEKS',
       hrs: 'hrs',
       noDataToday: 'No Focus Yet',
+      noDataThisMonth: 'No data this month',
     },
     planEditor: {
       newPlan: 'New Plan',
@@ -320,6 +321,12 @@ const en = {
         step3: "⏫: Zen Mode. 🔒: Lock Calendar Edits.",
         step4: "Let's build your first Timeblock!"
       }
+    },
+    notifications: {
+      planTitle: 'Time to Focus! 🎯',
+      planBody: 'Plan "%{plan}" is starting soon. Tap to start the timer!',
+      milestoneTitle: 'Timeline Starts! 🚀',
+      milestoneBody: 'Timeline "%{milestone}" is scheduled to start today.',
     }
   };
 
@@ -494,6 +501,7 @@ const id: TranslationDictionary = {
       weeks: 'MINGGU',
       hrs: 'jam',
       noDataToday: 'Belum Ada Fokus',
+      noDataThisMonth: 'Belum ada data bulan ini',
     },
     planEditor: {
       newPlan: 'Rencana Baru',
@@ -647,6 +655,12 @@ const id: TranslationDictionary = {
         step3: "⏫: Zen Mode. 🔒: Kunci Editan Kalender.",
         step4: "Mari buat Timeblock pertama Anda!"
       }
+    },
+    notifications: {
+      planTitle: 'Waktunya Fokus! 🎯',
+      planBody: 'Plan "%{plan}" akan segera dimulai. Tap untuk mulai timer!',
+      milestoneTitle: 'Timeline Dimulai! 🚀',
+      milestoneBody: 'Timeline "%{milestone}" dijadwalkan mulai hari ini.',
     }
   };
 
@@ -821,6 +835,7 @@ const zh: TranslationDictionary = {
     weeks: '周',
     hrs: '小时',
     noDataToday: '暂无专注',
+    noDataThisMonth: '本月暂无数据',
   },
   planEditor: {
     newPlan: '新计划',
@@ -974,6 +989,12 @@ const zh: TranslationDictionary = {
       step3: "⏫: 禅模式。🔒: 锁定日历编辑。",
       step4: "让我们构建你的第一个时间块！"
     }
+  },
+  notifications: {
+    planTitle: '是时候专注了！ 🎯',
+    planBody: '计划 "%{plan}" 即将开始。点击开始计时！',
+    milestoneTitle: '时间线开始！ 🚀',
+    milestoneBody: '时间线 "%{milestone}" 计划于今天开始。',
   }
 };
 

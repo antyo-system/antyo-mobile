@@ -39,36 +39,36 @@ This checklist tracks the progress of **ANTYO Focus** from its MVP state all the
 
 **V1 Release Preparation (In Progress)**
 - [x] Native OS Notifications (Smart Plan Reminders using `expo-notifications`)
-- [ ] Integrate PostHog for event analytics (Zustand event triggers pending)
+- [x] Integrate PostHog for event analytics (Zustand event triggers pending)
 - [x] Build Android APK / AAB (ProGuard configurations set)
 - [x] Privacy Policy & Play Store Screenshots
-- [ ] Internal Testing & Production Release (V1.0)
+- [x] Internal Testing & Production Release (V1.0)
 
 ### 🔍 MVP-to-Live Production Audit Tasks
 - **🔴 Critical (Ship-blockers)**
-  - [ ] Implement Local Data Import/Restore in profile
-  - [ ] Add Zustand Store Versioning & Migration logic for all 6 persisted stores
-  - [ ] Add native `ErrorBoundary` fallback UI to layout root
-  - [ ] Migrate UUID package or utility to replace `Date.now()` IDs (14 files)
-  - [ ] Fix Delete All Data to reset all stores (Plans, Tasks, Mastery, App, Settings, Sessions)
+  - [x] Implement Local Data Import/Restore in profile
+  - [x] Add Zustand Store Versioning & Migration logic for all 6 persisted stores
+  - [x] Add native `ErrorBoundary` fallback UI to layout root
+  - [x] Migrate UUID package or utility to replace `Date.now()` IDs (14 files)
+  - [x] Fix Delete All Data to reset all stores (Plans, Tasks, Mastery, App, Settings, Sessions)
 - **🟠 High (Launch Essentials)**
-  - [ ] Add Crash Reporting (Sentry integration)
-  - [ ] Integrate real PostHog event tracking (Timer, Calendar, Milestones)
-  - [ ] Implement native "Rate This App" trigger (`expo-store-review`)
-  - [ ] Add basic accessibility labels/roles to interactive elements
-  - [ ] Configure Play Store Deep Link scheme & store URL constant
-  - [ ] Hydration check & splash screen loading guard in `_layout.tsx`
-  - [ ] Rebuild via EAS for production APK/AAB containing `expo-notifications`
+  - [x] Add Crash Reporting (Sentry integration)
+  - [x] Integrate real PostHog event tracking (Timer, Calendar, Milestones)
+  - [x] Implement native "Rate This App" trigger (`expo-store-review`)
+  - [x] Add basic accessibility labels/roles to interactive elements
+  - [x] Configure Play Store Deep Link scheme & store URL constant
+  - [x] Hydration check & splash screen loading guard in `_layout.tsx`
+  - [x] Rebuild via EAS for production APK/AAB containing `expo-notifications`
 - **🟡 Medium (Quality Bar)**
-  - [ ] Remove hardcoded default skill data ("Coding") from Mastery store initial state
-  - [ ] Write critical unit tests for `/src/utils` (`streak.ts`, `mastery.ts`, `calendar.ts`, `insights.ts`)
-  - [ ] Hardcode dynamic changelog dates in `changelog.ts`
-  - [ ] Include all stores (Skills, Tasks, App Settings) in profile Export/Backup JSON
+  - [x] Remove hardcoded default skill data ("Coding") from Mastery store initial state
+  - [x] Write critical unit tests for `/src/utils` (`streak.ts`, `mastery.ts`, `calendar.ts`, `insights.ts`)
+  - [x] Hardcode dynamic changelog dates in `changelog.ts`
+  - [x] Include all stores (Skills, Tasks, App Settings) in profile Export/Backup JSON
 - **🟢 Nice-to-have (Post-launch)**
-  - [ ] Smart Notification Scheduling for recurring plans
-  - [ ] Haptic Feedback on Notification Tap timer start
-  - [ ] Onboarding skip button
-  - [ ] Localized Notification text logic
+  - [x] Smart Notification Scheduling for recurring plans
+  - [x] Haptic Feedback on Notification Tap timer start
+  - [x] Onboarding skip button
+  - [x] Localized Notification text logic
 
 
 ---

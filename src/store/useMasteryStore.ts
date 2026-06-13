@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { zustandStorage } from './mmkv';
+import * as Crypto from 'expo-crypto';
 
 export interface Pillar {
   id: string;
@@ -38,39 +39,15 @@ interface MasteryState {
 export const useMasteryStore = create<MasteryState>()(
   persist(
     (set) => ({
-      skills: [
-        // Default examples
-        {
-          id: '1',
-          name: 'Coding',
-          icon: 'terminal',
-          color: 'blue',
-          totalSeconds: 3600 * 120, // 120 hours (Apprentice)
-          createdAt: new Date().toISOString(),
-          pillars: [
-            {
-              id: 'p1',
-              name: 'React Native',
-              totalSeconds: 3600 * 80,
-              createdAt: new Date().toISOString(),
-            },
-            {
-              id: 'p2',
-              name: 'Backend API',
-              totalSeconds: 3600 * 40,
-              createdAt: new Date().toISOString(),
-            }
-          ]
-        }
-      ],
+      skills: [],
       addSkill: ({ id, initialPillars, ...rest }) => set((state) => ({
         skills: [...state.skills, {
           ...rest,
-          id: id || Date.now().toString(),
+          id: id || Crypto.randomUUID(),
           totalSeconds: 0,
           createdAt: new Date().toISOString(),
           pillars: initialPillars ? initialPillars.map(name => ({
-            id: Math.random().toString(36).substring(2, 9),
+            id: Crypto.randomUUID(),
             name,
             totalSeconds: 0,
             createdAt: new Date().toISOString()
@@ -105,7 +82,7 @@ export const useMasteryStore = create<MasteryState>()(
         skills: state.skills.map((s) => s.id === skillId ? {
           ...s,
           pillars: [...(s.pillars || []), {
-            id: Date.now().toString(),
+            id: Crypto.randomUUID(),
             name,
             totalSeconds: 0,
             createdAt: new Date().toISOString()
@@ -128,6 +105,14 @@ export const useMasteryStore = create<MasteryState>()(
     {
       name: 'mastery-storage',
       storage: createJSONStorage(() => zustandStorage),
+      version: 1,
+      migrate: (persistedState: unknown, version: number) => {
+        let state = persistedState as any;
+        if (version === 0) {
+          // Migration from version 0 to 1
+        }
+        return state;
+      },
     }
   )
 );

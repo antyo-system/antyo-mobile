@@ -1,5 +1,6 @@
 import { View, Text } from 'react-native';
 import Svg, { Path, Defs, LinearGradient, Stop } from 'react-native-svg';
+import { Feather } from '@expo/vector-icons';
 import { Session } from '@/types';
 import { useMemo } from 'react';
 import { subDays, startOfDay, isSameDay } from 'date-fns';
@@ -40,9 +41,12 @@ export function MonthlyLineChart({ sessions, daysCount = 30 }: Props) {
   
   if (totalSeconds === 0) {
     return (
-      <View className="h-48 items-center justify-center">
-        <Text className="text-gray-400 font-bold tracking-widest uppercase text-xs">
-          {t('statsComp.noDataThisMonth') || 'NO DATA THIS MONTH'}
+      <View className="h-48 items-center justify-center bg-gray-50/50 dark:bg-gray-900/20 rounded-3xl border border-gray-100 dark:border-gray-800">
+        <View className="w-12 h-12 bg-gray-100 dark:bg-gray-800 rounded-full items-center justify-center mb-3">
+          <Feather name="bar-chart-2" size={24} color="#9CA3AF" />
+        </View>
+        <Text className="text-gray-400 font-bold tracking-widest uppercase text-[10px]">
+          {t('statsComp.noDataThisMonth') !== 'statsComp.noDataThisMonth' ? t('statsComp.noDataThisMonth') : 'NO DATA THIS MONTH'}
         </Text>
       </View>
     );

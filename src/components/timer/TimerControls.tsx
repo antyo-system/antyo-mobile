@@ -6,7 +6,7 @@ import Animated, { useSharedValue, useAnimatedStyle, withSpring } from 'react-na
 import { useTimerStore } from '@/store/useTimerStore';
 import { Ionicons } from '@expo/vector-icons';
 
-function AnimatedButton({ onPress, className, children }: { onPress: () => void, className: string, children: React.ReactNode }) {
+function AnimatedButton({ onPress, className, children, accessibilityRole, accessibilityLabel }: { onPress: () => void, className: string, children: React.ReactNode, accessibilityRole?: any, accessibilityLabel?: string }) {
   const scale = useSharedValue(1);
   const animatedStyle = useAnimatedStyle(() => ({ transform: [{ scale: scale.value }] }));
   
@@ -17,6 +17,8 @@ function AnimatedButton({ onPress, className, children }: { onPress: () => void,
         onPressIn={() => { scale.value = withSpring(0.9, { damping: 15, stiffness: 200 }); }}
         onPressOut={() => { scale.value = withSpring(1, { damping: 15, stiffness: 200 }); }}
         className={className}
+        accessibilityRole={accessibilityRole}
+        accessibilityLabel={accessibilityLabel}
       >
         {children}
       </Pressable>
@@ -68,6 +70,8 @@ export function TimerControls({ onSaveAndStop, playButtonRef }: TimerControlsPro
           <AnimatedButton 
             onPress={handleStart} 
             className="items-center justify-center p-4"
+            accessibilityRole="button"
+            accessibilityLabel="Start Timer"
           >
             <Ionicons name="play" size={72} color={iconColor} />
           </AnimatedButton>
@@ -79,12 +83,16 @@ export function TimerControls({ onSaveAndStop, playButtonRef }: TimerControlsPro
           <AnimatedButton 
             onPress={handlePause} 
             className="items-center justify-center p-4"
+            accessibilityRole="button"
+            accessibilityLabel="Pause Timer"
           >
             <Ionicons name="pause" size={72} color={iconColor} />
           </AnimatedButton>
           <AnimatedButton 
             onPress={handleStopPress} 
             className="items-center justify-center p-4"
+            accessibilityRole="button"
+            accessibilityLabel="Stop Timer"
           >
             <Ionicons name="stop" size={72} color={iconColor} />
           </AnimatedButton>
@@ -96,6 +104,8 @@ export function TimerControls({ onSaveAndStop, playButtonRef }: TimerControlsPro
           <AnimatedButton 
             onPress={handleStart} 
             className="items-center justify-center p-4"
+            accessibilityRole="button"
+            accessibilityLabel="Resume Timer"
           >
             <Ionicons name="play" size={72} color={iconColor} />
           </AnimatedButton>
@@ -103,6 +113,8 @@ export function TimerControls({ onSaveAndStop, playButtonRef }: TimerControlsPro
           <AnimatedButton 
             onPress={handleStopPress} 
             className="items-center justify-center p-4"
+            accessibilityRole="button"
+            accessibilityLabel="Stop Timer"
           >
             <Ionicons name="stop" size={72} color={iconColor} />
           </AnimatedButton>
@@ -129,6 +141,8 @@ export function TimerControls({ onSaveAndStop, playButtonRef }: TimerControlsPro
               <Pressable 
                 onPress={() => setStopConfirmVisible(false)}
                 className="flex-1 py-4 bg-gray-100 dark:bg-gray-800 rounded-2xl items-center"
+                accessibilityRole="button"
+                accessibilityLabel="Cancel"
               >
                 <Text className="font-bold text-gray-600 dark:text-gray-300">Cancel</Text>
               </Pressable>
@@ -140,6 +154,8 @@ export function TimerControls({ onSaveAndStop, playButtonRef }: TimerControlsPro
                   onSaveAndStop();
                 }}
                 className={`flex-1 py-4 rounded-2xl items-center shadow-lg ${sessionType === 'break' ? 'bg-orange-600 shadow-orange-500/30' : 'bg-red-600 shadow-red-500/30'}`}
+                accessibilityRole="button"
+                accessibilityLabel={sessionType === 'break' ? 'Skip Break' : 'End Session'}
               >
                 <Text className="font-bold text-white">
                   {sessionType === 'break' ? 'Skip' : 'End'}

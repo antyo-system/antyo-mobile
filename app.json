@@ -2,7 +2,7 @@
   "expo": {
     "name": "ANTYO Focus",
     "slug": "antyomobile",
-    "version": "1.10.0",
+    "version": "1.11.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "antyomobile",
@@ -12,7 +12,7 @@
       "bundleIdentifier": "com.antyo.focus"
     },
     "android": {
-      "versionCode": 18,
+      "versionCode": 19,
       "softwareKeyboardLayoutMode": "pan",
       "adaptiveIcon": {
         "backgroundColor": "#ffffff",
@@ -38,7 +38,16 @@
         }
       ],
       "expo-localization",
-      "expo-notifications"
+      "expo-notifications",
+      [
+        "@sentry/react-native/expo",
+        {
+          "url": "https://sentry.io/",
+          "project": "react native",
+          "organization": "antyo"
+        }
+      ],
+      "@sentry/react-native"
     ],
     "experiments": {
       "typedRoutes": true,

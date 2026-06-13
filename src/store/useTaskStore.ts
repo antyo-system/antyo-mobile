@@ -2,6 +2,8 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { zustandStorage } from './mmkv';
 import { scheduleMilestoneNotification, cancelMilestoneNotification } from '@/utils/notifications';
+import * as Crypto from 'expo-crypto';
+import { posthog } from '@/lib/posthog';
 
 export interface Project {
   id: string;
@@ -64,7 +66,7 @@ export const useTaskStore = create<TaskState>()(
       addProject: (name, color, skillId, targetDate) => set((state) => ({
         projects: [
           ...state.projects,
-          { id: Date.now().toString(), name, color, skillId, targetDate }
+          { id: Crypto.randomUUID(), name, color, skillId, targetDate }
         ]
       })),
 
@@ -83,7 +85,7 @@ export const useTaskStore = create<TaskState>()(
           ...state.tasks,
           {
             ...taskData,
-            id: Date.now().toString(),
+            id: Crypto.randomUUID(),
             completed: false,
             createdAt: Date.now(),
           }
@@ -127,7 +129,7 @@ export const useTaskStore = create<TaskState>()(
       addMilestone: (milestoneData) => {
         const newMilestone = {
           ...milestoneData,
-          id: Date.now().toString(),
+          id: Crypto.randomUUID(),
           isCompleted: false,
         };
         set((state) => ({
@@ -139,7 +141,7 @@ export const useTaskStore = create<TaskState>()(
       addMilestoneWithDates: (milestoneData) => {
         const newMilestone = {
           ...milestoneData,
-          id: Date.now().toString(),
+          id: Crypto.randomUUID(),
           isCompleted: false,
         };
         set((state) => ({
@@ -163,11 +165,20 @@ export const useTaskStore = create<TaskState>()(
         });
       },
 
-      toggleMilestone: (id) => set((state) => ({
-        milestones: state.milestones.map(m => 
-          m.id === id ? { ...m, isCompleted: !m.isCompleted } : m
-        )
-      })),
+      toggleMilestone: (id) => set((state) => {
+        const milestone = state.milestones.find(m => m.id === id);
+        if (milestone && !milestone.isCompleted) {
+          posthog.capture('milestone_completed', {
+            projectId: milestone.projectId,
+            hasDeadline: !!milestone.date,
+          } as Record<string, any>);
+        }
+        return {
+          milestones: state.milestones.map(m => 
+            m.id === id ? { ...m, isCompleted: !m.isCompleted } : m
+          )
+        };
+      }),
 
       deleteMilestone: (id) => {
         set((state) => ({ milestones: state.milestones.filter((m) => m.id !== id) }));
@@ -177,6 +188,14 @@ export const useTaskStore = create<TaskState>()(
     {
       name: 'antyo-task-storage',
       storage: createJSONStorage(() => zustandStorage),
+      version: 1,
+      migrate: (persistedState: unknown, version: number) => {
+        let state = persistedState as any;
+        if (version === 0) {
+          // Migration from version 0 to 1
+        }
+        return state;
+      },
     }
   )
 );

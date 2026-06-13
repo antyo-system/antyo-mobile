@@ -15,6 +15,8 @@ interface AppState {
   hasCompletedTutorial: boolean;
   completeTutorial: () => void;
   resetTutorials: () => void;
+  hasPromptedReview: boolean;
+  setHasPromptedReview: (value: boolean) => void;
 }
 
 export const useAppStore = create<AppState>()(
@@ -43,10 +45,20 @@ export const useAppStore = create<AppState>()(
         hasSeenMasteryTutorial: false,
         hasSeenStatsTutorial: false,
       }),
+      hasPromptedReview: false,
+      setHasPromptedReview: (value) => set({ hasPromptedReview: value }),
     }),
     {
       name: 'app-storage',
       storage: createJSONStorage(() => zustandStorage),
+      version: 1,
+      migrate: (persistedState: unknown, version: number) => {
+        let state = persistedState as any;
+        if (version === 0) {
+          // Migration from version 0 to 1
+        }
+        return state;
+      },
       onRehydrateStorage: () => (state) => {
         state?.setHasHydrated(true);
       },

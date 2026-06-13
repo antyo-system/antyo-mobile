@@ -10,8 +10,11 @@ import { ChangelogModal } from '@/components/profile/ChangelogModal';
 import { APP_VERSION } from '@/constants/changelog';
 import * as FileSystem from 'expo-file-system/legacy';
 import * as Sharing from 'expo-sharing';
+import * as DocumentPicker from 'expo-document-picker';
 import { usePlanStore } from '@/store/usePlanStore';
 import { useAppStore } from '@/store/useAppStore';
+import { useMasteryStore } from '@/store/useMasteryStore';
+import { useTaskStore } from '@/store/useTaskStore';
 import { useTranslation } from '@/hooks/useTranslation';
 
 export default function ProfileScreen() {
@@ -74,6 +77,20 @@ export default function ProfileScreen() {
           style: 'destructive',
           onPress: () => {
             useSessionStore.getState().clearSessions?.();
+            usePlanStore.setState({ plans: [] });
+            useMasteryStore.setState({ skills: [] });
+            useTaskStore.setState({ tasks: [], projects: [], milestones: [] });
+            useSettingsStore.setState({
+              sleepStart: '23:00',
+              sleepEnd: '06:00',
+              defaultBreakMinutes: 5,
+              dailyFocusTargetHours: 4,
+              birthYear: 1990,
+              retirementAge: 65,
+              appearance: 'system',
+            });
+            useAppStore.getState().resetTutorials?.();
+            useAppStore.getState().setHasSeenOnboarding?.(false);
           },
         },
       ]
@@ -83,14 +100,14 @@ export default function ProfileScreen() {
   const handleExportData = async () => {
     try {
       const data = {
-        sessions,
-        plans,
-        settings: {
-          sleepStart, sleepEnd,
-          defaultBreakMinutes,
-          dailyFocusTargetHours,
-          birthYear, retirementAge,
-        }
+        sessions: useSessionStore.getState().sessions,
+        plans: usePlanStore.getState().plans,
+        skills: useMasteryStore.getState().skills,
+        tasks: useTaskStore.getState().tasks,
+        projects: useTaskStore.getState().projects,
+        milestones: useTaskStore.getState().milestones,
+        settings: useSettingsStore.getState(),
+        appState: useAppStore.getState(),
       };
       
       const jsonStr = JSON.stringify(data, null, 2);
@@ -155,6 +172,58 @@ export default function ProfileScreen() {
     } catch (err) {
       console.error('CSV Export failed:', err);
       Alert.alert(t('settings.error'), t('settings.exportCsvFailed'));
+    }
+  };
+
+  const handleImportData = async () => {
+    try {
+      const result = await DocumentPicker.getDocumentAsync({
+        type: ['text/plain', 'application/json'],
+        copyToCacheDirectory: true,
+      });
+
+      if (result.canceled) return;
+
+      const fileContent = await FileSystem.readAsStringAsync(result.assets[0].uri, {
+        encoding: FileSystem.EncodingType.UTF8
+      });
+
+      const data = JSON.parse(fileContent);
+
+      if (!data.settings && !data.sessions && !data.plans) {
+        Alert.alert(t('settings.error'), 'Invalid backup file structure.');
+        return;
+      }
+
+      Alert.alert(
+        'Restore Data',
+        'This will replace all your current data with the backup. Are you sure?',
+        [
+          { text: t('settings.cancel'), style: 'cancel' },
+          {
+            text: 'Restore',
+            style: 'destructive',
+            onPress: () => {
+              if (data.sessions) useSessionStore.setState({ sessions: data.sessions });
+              if (data.plans) usePlanStore.setState({ plans: data.plans });
+              if (data.skills) useMasteryStore.setState({ skills: data.skills });
+              if (data.tasks) useTaskStore.setState({ tasks: data.tasks });
+              if (data.projects) useTaskStore.setState({ projects: data.projects });
+              if (data.milestones) useTaskStore.setState({ milestones: data.milestones });
+              if (data.settings) updateSettings(data.settings);
+              if (data.appState) {
+                // Restore app state but keep _hasHydrated true
+                useAppStore.setState({ ...data.appState, _hasHydrated: true });
+              }
+              
+              Alert.alert('Success', 'Data successfully restored. Please restart the app if some UI elements do not update immediately.');
+            }
+          }
+        ]
+      );
+    } catch (err) {
+      console.error('Import failed:', err);
+      Alert.alert(t('settings.error'), 'Failed to import data');
     }
   };
 
@@ -568,6 +637,12 @@ export default function ProfileScreen() {
                 iconBg="bg-gray-500/10"
                 label={t('settings.backupData')}
                 onPress={handleExportData}
+              />
+              <SettingRow
+                icon="upload-cloud"
+                iconBg="bg-blue-500/10"
+                label="Import/Restore Data"
+                onPress={handleImportData}
               />
               <SettingRow
                 icon="grid"

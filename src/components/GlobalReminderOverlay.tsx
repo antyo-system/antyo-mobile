@@ -1,12 +1,11 @@
 import { useState, useEffect } from 'react';
 import { View, Text, Modal, Pressable } from 'react-native';
-import { useRouter } from 'expo-router';
+import { router } from 'expo-router';
 import { usePlanStore, Plan } from '@/store/usePlanStore';
 import { useTimerStore } from '@/store/useTimerStore';
 import * as Haptics from 'expo-haptics';
 
 export function GlobalReminderOverlay() {
-  const router = useRouter();
   const plans = usePlanStore(s => s.plans);
   const [notifiedPlanIds, setNotifiedPlanIds] = useState<Set<string>>(new Set());
   const [activeAlert, setActiveAlert] = useState<Plan | null>(null);

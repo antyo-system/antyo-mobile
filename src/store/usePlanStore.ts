@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 import { zustandStorage } from './mmkv';
 import { schedulePlanNotification, cancelPlanNotification } from '@/utils/notifications';
+import { posthog } from '@/lib/posthog';
 
 export type Recurrence = 'none' | 'daily' | 'weekdays' | 'weekly' | 'monthly' | 'annually' | 'specific_days';
 
@@ -34,6 +35,12 @@ export const usePlanStore = create<PlanState>()(
     (set) => ({
       plans: [],
       addPlan: (plan) => {
+        posthog.capture('plan_created', {
+          durationMinutes: plan.durationMinutes,
+          recurrence: plan.recurrence,
+          skillId: plan.skillId,
+          isAllDay: plan.isAllDay,
+        } as Record<string, any>);
         schedulePlanNotification(plan);
         set((state) => ({ plans: [...state.plans, plan] }));
       },
@@ -59,6 +66,14 @@ export const usePlanStore = create<PlanState>()(
     {
       name: 'plan-storage',
       storage: createJSONStorage(() => zustandStorage),
+      version: 1,
+      migrate: (persistedState: unknown, version: number) => {
+        let state = persistedState as any;
+        if (version === 0) {
+          // Migration from version 0 to 1
+        }
+        return state;
+      },
     }
   )
 );

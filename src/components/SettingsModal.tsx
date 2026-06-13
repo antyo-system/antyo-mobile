@@ -16,7 +16,12 @@ export function SettingsModal({ visible, onClose, onViewPress }: Props) {
       <View className="flex-1 bg-white dark:bg-gray-950 px-6 pt-16 pb-8">
         <View className="flex-row items-center justify-between mb-8">
           <Text className="text-3xl font-bold text-gray-900 dark:text-white">Settings</Text>
-          <Pressable onPress={onClose} className="bg-gray-100 dark:bg-gray-800 p-3 rounded-full active:opacity-70">
+          <Pressable 
+            onPress={onClose} 
+            className="bg-gray-100 dark:bg-gray-800 p-3 rounded-full active:opacity-70"
+            accessibilityRole="button"
+            accessibilityLabel="Close Settings"
+          >
             <Text className="text-gray-500 dark:text-gray-400 font-bold text-lg leading-none">✕</Text>
           </Pressable>
         </View>
@@ -76,6 +81,8 @@ export function SettingsModal({ visible, onClose, onViewPress }: Props) {
               value={settings.hapticsEnabled}
               onValueChange={(val) => settings.updateSettings({ hapticsEnabled: val })}
               trackColor={{ true: '#2563eb' }}
+              accessibilityRole="switch"
+              accessibilityLabel="Enable Haptics and Vibration"
             />
           </View>
         </View>

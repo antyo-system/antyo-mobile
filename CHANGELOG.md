@@ -8,6 +8,7 @@
 ## ✨ New Features & Fixes
 | Date | Feature | Notes |
 |---|---|---|
+| 2026-06-13 | v1.11.0 Release | Features: Smart Notification Scheduling (recurring calendar notifications), Haptic Feedback Integration, Localized Notifications (EN, ID, ZH), and Full Data Portability including all settings in Export/Backup JSON. |
 | 2026-06-12 | v1.10.0 Release | Features: Smart Timer Split System (Pomodoro Cycle), Custom Pomodoro Target Mode in Timer Settings, Priority System (Stars) for tasks, and Pinch-to-Zoom gesture for Timeline view. |
 | 2026-06-12 | v1.9.0 Release | Features: Timeline Feature Parity (Drag-and-Drop date shifting, 'Eye' mode split-view with Real Sessions, Mark as Done, Quick Actions Modal) and Timeline Reminders. |
 | 2026-06-11 | v1.8.0 Release | Features: Project Management Hub in Mastery Tab and 'On the Radar' early warning system for upcoming milestones in Calendar tab. |
