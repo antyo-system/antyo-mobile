@@ -39,7 +39,17 @@ interface MasteryState {
 export const useMasteryStore = create<MasteryState>()(
   persist(
     (set) => ({
-      skills: [],
+      skills: [
+        {
+          id: 'default-skill-1',
+          name: 'Reading',
+          icon: 'book',
+          color: '#3B82F6',
+          totalSeconds: 0,
+          createdAt: new Date().toISOString(),
+          pillars: [],
+        }
+      ],
       addSkill: ({ id, initialPillars, ...rest }) => set((state) => ({
         skills: [...state.skills, {
           ...rest,

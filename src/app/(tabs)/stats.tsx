@@ -115,7 +115,7 @@ export default function StatsScreen() {
   const plannedMinutes = useMemo(() => getPlannedMinutes(plans, startDate, daysCount), [plans, startDate, daysCount]);
 
   const { dailyFocusTargetHours, birthYear, retirementAge } = useSettingsStore();
-  const { currentStreak } = useMemo(() => calculateStreak(sessions, dailyFocusTargetHours), [sessions, dailyFocusTargetHours]);
+  const { currentStreak, longestStreak } = useMemo(() => calculateStreak(sessions, dailyFocusTargetHours), [sessions, dailyFocusTargetHours]);
 
   const lifetimeDaysLeft = useMemo(() => {
     const endOfLife = new Date(`${birthYear + retirementAge}-01-01`);
@@ -194,14 +194,20 @@ export default function StatsScreen() {
             <Text className="text-3xl font-black tracking-tight text-gray-900 dark:text-white">
               {t('stats.title')}
             </Text>
-            <View className="flex-row items-center gap-3">
+            <View className="flex-row items-center gap-2">
+              {longestStreak > 0 && longestStreak > currentStreak && (
+                <View className="flex-row items-center bg-gray-100 dark:bg-gray-800/60 px-3 py-1.5 rounded-full border border-gray-200 dark:border-gray-800">
+                  <Text className="text-gray-500 dark:text-gray-400 font-black text-sm mr-1">{longestStreak}</Text>
+                  <Text className="text-sm">🏆</Text>
+                </View>
+              )}
               {currentStreak > 0 && (
                 <View className="flex-row items-center bg-orange-50 dark:bg-orange-900/30 px-3 py-1.5 rounded-full border border-orange-200 dark:border-orange-800">
                   <Text className="text-orange-600 dark:text-orange-400 font-black text-sm mr-1">{currentStreak}</Text>
                   <Text className="text-sm">🔥</Text>
                 </View>
               )}
-              <Pressable onPress={() => router.push('/profile')} className="w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-800 items-center justify-center overflow-hidden">
+              <Pressable onPress={() => router.push('/profile')} className="w-10 h-10 ml-1 rounded-full bg-gray-200 dark:bg-gray-800 items-center justify-center overflow-hidden">
                 <Feather name="settings" size={18} color="#6B7280" />
               </Pressable>
             </View>

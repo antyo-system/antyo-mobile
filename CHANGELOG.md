@@ -8,6 +8,11 @@
 ## ✨ New Features & Fixes
 | Date | Feature | Notes |
 |---|---|---|
+| 2026-06-14 | v1.12.4 Release | Features: Custom Native SDK integration. Rebuilt Smart Mode camera from scratch using Native Android MediaPipe Tasks Vision and CameraX via a Custom Expo Module. |
+| 2026-06-14 | v1.12.3 Release | Features: Smart Mode AI Upgrade with Euler Angles tracking (Yaw, Pitch, Roll) and Eye-Open probabilities for intelligent distraction detection. |
+| 2026-06-14 | v1.12.2 Release | Features: Smart Mode Accuracy with dynamic face distance tracking to ensure true focus, plus visual bounding box feedback. |
+| 2026-06-14 | v1.12.1 Release | Bugfix: Fixed Smart Mode camera initialization error by properly installing and configuring `react-native-vision-camera-worklets` for VisionCamera V5. |
+| 2026-06-14 | v1.12.0 Release | Features: Computer Vision Real Focus Tracking (Smart Mode) using on-device ML via the front camera to passively monitor real focus and distraction time. |
 | 2026-06-13 | v1.11.0 Release | Features: Smart Notification Scheduling (recurring calendar notifications), Haptic Feedback Integration, Localized Notifications (EN, ID, ZH), and Full Data Portability including all settings in Export/Backup JSON. |
 | 2026-06-12 | v1.10.0 Release | Features: Smart Timer Split System (Pomodoro Cycle), Custom Pomodoro Target Mode in Timer Settings, Priority System (Stars) for tasks, and Pinch-to-Zoom gesture for Timeline view. |
 | 2026-06-12 | v1.9.0 Release | Features: Timeline Feature Parity (Drag-and-Drop date shifting, 'Eye' mode split-view with Real Sessions, Mark as Done, Quick Actions Modal) and Timeline Reminders. |

@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useMemo, useCallback } from 'react';
-import { View, PanResponder, Pressable, Text, Image, Platform, Dimensions, Alert } from 'react-native';
-import { GestureDetector, Gesture, ScrollView } from 'react-native-gesture-handler';
+import { View, PanResponder, Pressable, Text, Image, Platform, Dimensions, Alert, ScrollView } from 'react-native';
+import { GestureDetector, Gesture } from 'react-native-gesture-handler';
 import Animated, { useSharedValue, useAnimatedStyle, runOnJS, withTiming } from 'react-native-reanimated';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useIsFocused } from '@react-navigation/native';
@@ -168,7 +168,7 @@ export default function CalendarScreen() {
 
   const pinchGesture = useMemo(() =>
     Gesture.Pinch()
-      .enabled(!isLocked)
+      .enabled(!isLocked && Platform.OS !== 'web')
       .onBegin((e) => {
         focalY.value = e.focalY;
       })
@@ -180,12 +180,15 @@ export default function CalendarScreen() {
       .onEnd((e) => {
         const committed = Math.min(Math.max(0.5, baseScaleSV.value * e.scale), 3);
         baseScaleSV.value = committed;
-        // Snap visual back instantly before React re-renders at new layout
-        liveScaleSV.value = withTiming(1, { duration: 0 });
         runOnJS(setZoomScale)(committed);
       }),
   // eslint-disable-next-line react-hooks/exhaustive-deps
   [contentHeight, isLocked]);
+
+  useEffect(() => {
+    // Snap visual back to 1 only AFTER the new layout (driven by zoomScale) has been rendered
+    liveScaleSV.value = 1;
+  }, [zoomScale, liveScaleSV]);
   
   // Tutorial State
   const { hasSeenCalendarTutorial, setTutorialSeen } = useAppStore();
@@ -673,6 +676,18 @@ export default function CalendarScreen() {
         </Pressable>
 
         <View className="absolute right-4 top-2.5 flex-row gap-2">
+          {/* Zoom Indicator */}
+          {Math.round(zoomScale * 100) !== 100 && (
+            <Pressable 
+              onPress={resetZoom}
+              className="px-3 py-1 items-center justify-center rounded-xl bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800"
+            >
+              <Text className="text-[10px] font-bold text-blue-600 dark:text-blue-500">
+                {Math.round(zoomScale * 100)}%
+              </Text>
+            </Pressable>
+          )}
+
           {/* Compare Toggle */}
           <Pressable 
             onPress={() => setIsCompareMode(p => !p)}
@@ -711,16 +726,17 @@ export default function CalendarScreen() {
       {activeTab === 'task' && <TaskListView selectedDate={selectedDate} onScheduleTask={handleScheduleTask} />}
 
       {(activeTab === 'plan' || activeTab === 'real' || activeTab === 'timeline') && (
-        <Animated.View className="flex-1" {...panResponder.panHandlers} ref={bodyRef} collapsable={false}>
+        <Animated.View className="flex-1" {...panResponder.panHandlers} ref={bodyRef} collapsable={false} style={Platform.OS === 'web' ? { touchAction: 'pan-y' } as any : undefined}>
           <ScrollView 
             ref={verticalScrollRef}
             className="flex-1"
             scrollEnabled={isScrollEnabled}
             contentContainerStyle={{ paddingTop: 20, paddingBottom: 150 }}
           >
-          <GestureDetector gesture={pinchGesture}>
-            {/* Wrap absolute elements in a sized container — Animated for live scaleY during pinch */}
+          {(() => {
+            const innerContent = (
             <Animated.View style={[{ height: activeTab === 'timeline' ? timelineDays.length * PIXELS_PER_DAY : 24 * 60 * PIXELS_PER_MINUTE }, liveContentStyle]}>
+
             <Pressable 
               style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
               onPress={activeTab === 'timeline' ? undefined : handleTimelinePress}
@@ -938,7 +954,9 @@ export default function CalendarScreen() {
         )}
           </Pressable>
             </Animated.View>
-          </GestureDetector>
+            );
+            return Platform.OS === 'web' ? innerContent : <GestureDetector gesture={pinchGesture}>{innerContent}</GestureDetector>;
+          })()}
           </ScrollView>
         </Animated.View>
       )}

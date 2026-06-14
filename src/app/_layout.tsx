@@ -1,26 +1,33 @@
 import '../global.css';
 
-import { Stack, ErrorBoundaryProps } from 'expo-router';
-import { useColorScheme, LogBox, Appearance, Platform, View, Text, Pressable, SafeAreaView } from 'react-native';
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import * as SplashScreen from 'expo-splash-screen';
-import { useEffect } from 'react';
+import { posthog } from '@/lib/posthog';
 import { useAppStore } from '@/store/useAppStore';
 import { useSettingsStore } from '@/store/useSettingsStore';
-import * as Notifications from 'expo-notifications';
 import { useTimerStore } from '@/store/useTimerStore';
-import { router } from 'expo-router';
+import { usePlanStore } from '@/store/usePlanStore';
+import { updateTimerWidget } from '@/widgets/widget-task-handler';
 import { Ionicons } from '@expo/vector-icons';
-import * as Sentry from '@sentry/react-native';
-import { PostHogProvider } from 'posthog-react-native';
-import { posthog } from '@/lib/posthog';
 import * as Haptics from 'expo-haptics';
+import * as Notifications from 'expo-notifications';
+import { ErrorBoundaryProps, router, Stack } from 'expo-router';
+import * as SplashScreen from 'expo-splash-screen';
+import { PostHogProvider } from 'posthog-react-native';
+import { useEffect } from 'react';
+import { Appearance, LogBox, Platform, Pressable, SafeAreaView, Text, useColorScheme, View } from 'react-native';
+import { registerWidgetTaskHandler } from 'react-native-android-widget';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
-Sentry.init({
-  dsn: '__YOUR_DSN__',
-  debug: false,
-  tracesSampleRate: 1.0,
-});
+if (Platform.OS === 'android') {
+  registerWidgetTaskHandler(async () => {
+    await updateTimerWidget();
+  });
+}
+
+// Sentry.init({
+//   dsn: 'https://d4ad46c4fcab43c9109ec33cdd149c24@o4511555720445952.ingest.us.sentry.io/4511555738664960',
+//   debug: false,
+//   tracesSampleRate: 1.0,
+// });
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -46,12 +53,12 @@ function RootLayout() {
 
   // Keep splash screen visible while loading
   useEffect(() => {
-    SplashScreen.preventAutoHideAsync().catch(() => {});
+    SplashScreen.preventAutoHideAsync().catch(() => { });
   }, []);
 
   useEffect(() => {
     if (hasHydrated) {
-      SplashScreen.hideAsync().catch(() => {});
+      SplashScreen.hideAsync().catch(() => { });
     }
 
     // Setup Notification Tap Listener
@@ -60,21 +67,21 @@ function RootLayout() {
       if (data?.action === 'start_timer' && data?.planId) {
         const plans = usePlanStore.getState().plans;
         const plan = plans.find(p => p.id === data.planId);
-        
+
         if (plan) {
           const timerStore = useTimerStore.getState();
           timerStore.setDuration(plan.durationMinutes * 60);
           if (plan.title) timerStore.setTitle(plan.title);
           if (plan.skillId) timerStore.setSelectedSkillId(plan.skillId);
           if (plan.pillarId) timerStore.setSelectedPillarId(plan.pillarId);
-          
+
           timerStore.startTimer();
-          
+
           const isHapticsEnabled = useSettingsStore.getState().hapticsEnabled;
           if (isHapticsEnabled) {
-            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
+            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => { });
           }
-          
+
           // Small delay to ensure stores are updated before routing
           setTimeout(() => {
             router.replace('/');
@@ -116,7 +123,7 @@ function RootLayout() {
   );
 }
 
-export default Sentry.wrap(RootLayout);
+export default RootLayout;
 
 export function ErrorBoundary({ error, retry }: ErrorBoundaryProps) {
   return (
@@ -132,13 +139,13 @@ export function ErrorBoundary({ error, retry }: ErrorBoundaryProps) {
           <Text className="text-gray-500 dark:text-gray-400 text-center mb-8">
             {error.message || "An unexpected error occurred. Please try again."}
           </Text>
-          <Pressable 
+          <Pressable
             onPress={retry}
             className="w-full bg-blue-600 active:bg-blue-700 py-4 rounded-xl items-center mb-3"
           >
             <Text className="text-white font-semibold text-base">Try Again</Text>
           </Pressable>
-          <Pressable 
+          <Pressable
             onPress={() => router.replace('/')}
             className="w-full py-4 rounded-xl items-center"
           >

@@ -74,17 +74,15 @@ This checklist tracks the progress of **ANTYO Focus** from its MVP state all the
 ---
 
 ## Phase 2: The Hook & Gamification
-**Status: ⏳ Pending**
+**Status: ⏳ In Progress**
 *Fokus: Psikologi Habit 10.000 Jam & Viralitas Organik.*
 
-- [ ] **Task 2.1: Widgets & Live Activities**
+- [x] **Task 2.1: Widgets & Live Activities**
   - **Goal:** Support iOS Live Activities & Android Widgets so the timer is always visible on the lock/home screen.
 - [ ] **Task 2.2: Milestone Sharing (Viral Loop)**
   - **Goal:** Build an aesthetic "Share to IG Story / TikTok" image generator when users hit milestones (e.g., "100 Hours of Coding").
 - [ ] **Task 2.3: Streaks & Heatmap**
   - **Goal:** Add a GitHub-style contribution graph to trigger FOMO and maintain daily streaks.
-- [ ] **Task 2.4: Pillars Visual Expansion**
-  - **Goal:** Upgrade the Pillars UI into a visual "Skill Tree" resembling RPG games for stronger gamification.
 
 ---
 

@@ -16,8 +16,8 @@ const SLIDES = [
   },
   {
     id: '1',
-    title: 'The 10,000 Hours Rule',
-    subtitle: 'Track your skills RPG-style and level up from Novice to Grandmaster.',
+    title: 'Mastery & Missions',
+    subtitle: 'Level up Skills towards 10,000 hours, and conquer Projects with strict timelines.',
     icon: 'award',
     color: 'text-gray-900 dark:text-white',
     bg: 'bg-gray-100 dark:bg-gray-800',

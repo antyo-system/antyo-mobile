@@ -1,16 +1,18 @@
-import { isSameDay, differenceInDays, startOfDay, subDays } from 'date-fns';
+import { differenceInDays, startOfDay } from 'date-fns';
 import { Session } from '@/types';
 
 export interface StreakData {
   currentStreak: number;
+  longestStreak: number;
   achievedDates: Date[];
 }
 
 /**
- * Calculates the current day streak based on sessions and a target.
+ * Calculates the current and longest day streaks based on sessions and a target.
+ * Uses a strict 1-day gap logic (must maintain daily).
  * @param sessions Array of focus sessions
  * @param targetHours The target number of hours per day to hit
- * @returns StreakData containing the current streak and the list of achieved dates
+ * @returns StreakData containing the current streak, longest streak, and achieved dates
  */
 export function calculateStreak(sessions: Session[], targetHours: number): StreakData {
   const targetSeconds = targetHours * 3600;
@@ -37,39 +39,50 @@ export function calculateStreak(sessions: Session[], targetHours: number): Strea
   achievedDates.sort((a, b) => b.getTime() - a.getTime());
 
   let currentStreak = 0;
+  let longestStreak = 0;
   const today = startOfDay(new Date());
 
   if (achievedDates.length > 0) {
     const lastAchieved = startOfDay(achievedDates[0]);
     
     // Calculate gap from today to the most recent achieved date.
-    // diff = 0 (achieved today)
-    // diff = 1 (achieved yesterday, 0 absent)
-    // diff = 2 (achieved day before yesterday, 1 absent)
-    // diff = 3 (achieved 3 days ago, 2 absent)
-    // diff > 3 (3+ absent, streak resets to 0)
     const daysFromToday = differenceInDays(today, lastAchieved);
 
-    if (daysFromToday <= 3) {
-      currentStreak = 1; // Count the most recent achieved date
+    // Strict FOMO mode: Must be today or yesterday to maintain current streak
+    if (daysFromToday <= 1) {
+      currentStreak = 1; 
       
-      // Iterate backwards through the rest of the achieved dates
+      // Iterate backwards to find current streak
       for (let i = 1; i < achievedDates.length; i++) {
         const curr = startOfDay(achievedDates[i - 1]);
         const prev = startOfDay(achievedDates[i]);
         
         const diff = differenceInDays(curr, prev);
         
-        // Allowed gap is up to 3 days (meaning max 2 absent days in between)
-        if (diff <= 3) {
+        if (diff === 1) {
           currentStreak++;
         } else {
-          // Gap is too large, streak breaks here
-          break;
+          break; // Streak broken
         }
+      }
+    }
+
+    // Calculate longest streak historically
+    let tempStreak = 1;
+    longestStreak = 1;
+    for (let i = 1; i < achievedDates.length; i++) {
+      const curr = startOfDay(achievedDates[i - 1]);
+      const prev = startOfDay(achievedDates[i]);
+      const diff = differenceInDays(curr, prev);
+      
+      if (diff === 1) {
+        tempStreak++;
+        longestStreak = Math.max(longestStreak, tempStreak);
+      } else {
+        tempStreak = 1; // reset temp
       }
     }
   }
 
-  return { currentStreak, achievedDates };
+  return { currentStreak, longestStreak, achievedDates };
 }

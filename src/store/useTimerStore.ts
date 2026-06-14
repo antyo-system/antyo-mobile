@@ -1,4 +1,9 @@
 import { create } from 'zustand';
+import { Platform } from 'react-native';
+import { startActivity, createTimerActivity, updateActivity, stopActivity } from '@heojeongbo/expo-live-activity';
+import { updateTimerWidget } from '@/widgets/widget-task-handler';
+
+const LIVE_ACTIVITY_ID = 'antyo_focus_timer';
 
 export type TimerStatus = 'idle' | 'running' | 'paused';
 export type TimerMode = 'timer' | 'stopwatch';
@@ -18,6 +23,13 @@ interface TimerState {
   selectedSkillId: string | null;
   selectedPillarId: string | null;
 
+  // Smart Mode
+  isSmartMode: boolean;
+  cameraPermissionStatus: 'not-determined' | 'granted' | 'denied';
+  focusTimeElapsed: number;
+  distractedTimeElapsed: number;
+  isCurrentlyDistracted: boolean;
+
   // Cycle Mode
   targetDurationSeconds?: number;
   cyclesCompleted: number;
@@ -29,6 +41,9 @@ interface TimerState {
   setTitle: (title: string) => void;
   setSelectedSkillId: (id: string | null) => void;
   setSelectedPillarId: (id: string | null) => void;
+  setSmartMode: (smart: boolean) => void;
+  setCameraPermission: (status: 'not-determined' | 'granted' | 'denied') => void;
+  setCurrentlyDistracted: (distracted: boolean) => void;
   setMode: (mode: TimerMode) => void;
   setSessionType: (type: SessionType) => void;
   setAutoPlay: (auto: boolean) => void;
@@ -62,6 +77,12 @@ export const useTimerStore = create<TimerState>((set, get) => ({
   selectedSkillId: null,
   selectedPillarId: null,
 
+  isSmartMode: false,
+  cameraPermissionStatus: 'not-determined',
+  focusTimeElapsed: 0,
+  distractedTimeElapsed: 0,
+  isCurrentlyDistracted: false,
+
   targetDurationSeconds: undefined,
   cyclesCompleted: 0,
   totalCycles: 0,
@@ -71,6 +92,9 @@ export const useTimerStore = create<TimerState>((set, get) => ({
   setTitle: (title) => set({ currentTitle: title }),
   setSelectedSkillId: (id) => set({ selectedSkillId: id, selectedPillarId: null }),
   setSelectedPillarId: (id: string | null) => set({ selectedPillarId: id }),
+  setSmartMode: (smart) => set({ isSmartMode: smart }),
+  setCameraPermission: (status) => set({ cameraPermissionStatus: status }),
+  setCurrentlyDistracted: (distracted) => set({ isCurrentlyDistracted: distracted }),
 
   setMode: (mode) => {
     const { status, duration } = get();
@@ -102,20 +126,59 @@ export const useTimerStore = create<TimerState>((set, get) => ({
   },
 
   startTimer: () => {
-    const { status, sessionStartTime } = get();
+    const { status, sessionStartTime, currentTitle, duration, timeLeft } = get();
     if (status === 'idle' || status === 'paused') {
+      const isStartingFresh = status === 'idle';
       set({
         status: 'running',
         // Only set start time if we are starting fresh
-        sessionStartTime: status === 'idle' ? new Date().toISOString() : sessionStartTime,
+        sessionStartTime: isStartingFresh ? new Date().toISOString() : sessionStartTime,
       });
+      
+      // Update Widgets & Live Activities
+      if (Platform.OS === 'android') {
+        updateTimerWidget();
+      } else if (Platform.OS === 'ios') {
+        if (isStartingFresh) {
+          startActivity(createTimerActivity({
+            id: LIVE_ACTIVITY_ID,
+            name: currentTitle || 'FOCUS SESSION',
+            totalTime: duration,
+            remainingTime: timeLeft,
+            isRunning: true
+          })).catch(console.warn);
+        } else {
+          const config = createTimerActivity({
+            id: LIVE_ACTIVITY_ID,
+            name: currentTitle || 'FOCUS SESSION',
+            totalTime: duration,
+            remainingTime: timeLeft,
+            isRunning: true
+          });
+          updateActivity(LIVE_ACTIVITY_ID, config.content).catch(console.warn);
+        }
+      }
     }
   },
 
   pauseTimer: () => {
-    const { status } = get();
+    const { status, currentTitle, duration, timeLeft } = get();
     if (status === 'running') {
       set({ status: 'paused' });
+      
+      // Update Widgets & Live Activities
+      if (Platform.OS === 'android') {
+        updateTimerWidget();
+      } else if (Platform.OS === 'ios') {
+        const config = createTimerActivity({
+          id: LIVE_ACTIVITY_ID,
+          name: currentTitle || 'FOCUS SESSION',
+          totalTime: duration,
+          remainingTime: timeLeft,
+          isRunning: false
+        });
+        updateActivity(LIVE_ACTIVITY_ID, config.content).catch(console.warn);
+      }
     }
   },
 
@@ -135,7 +198,17 @@ export const useTimerStore = create<TimerState>((set, get) => ({
       totalCycles: 0,
       totalFocusElapsed: 0,
       cycleMode: false,
+      focusTimeElapsed: 0,
+      distractedTimeElapsed: 0,
+      isCurrentlyDistracted: false,
     });
+    
+    // Stop Widgets & Live Activities
+    if (Platform.OS === 'android') {
+      updateTimerWidget();
+    } else if (Platform.OS === 'ios') {
+      stopActivity(LIVE_ACTIVITY_ID).catch(console.warn);
+    }
   },
 
   tick: () => {
@@ -147,6 +220,16 @@ export const useTimerStore = create<TimerState>((set, get) => ({
         }
       } else if (mode === 'stopwatch') {
         set({ timeElapsed: timeElapsed + 1 });
+      }
+
+      // Smart Mode Tracking
+      const { isSmartMode, isCurrentlyDistracted, focusTimeElapsed, distractedTimeElapsed } = get();
+      if (isSmartMode) {
+        if (isCurrentlyDistracted) {
+          set({ distractedTimeElapsed: distractedTimeElapsed + 1 });
+        } else {
+          set({ focusTimeElapsed: focusTimeElapsed + 1 });
+        }
       }
     }
   },

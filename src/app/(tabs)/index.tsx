@@ -9,6 +9,9 @@ import { TimerControls } from '@/components/timer/TimerControls';
 import { TimerTitleInput } from '@/components/timer/TimerTitleInput';
 import { TimerModeToggle } from '@/components/timer/TimerModeToggle';
 import { TimerDurationModal } from '@/components/timer/TimerDurationModal';
+import { SmartModeToggle } from '@/components/timer/SmartModeToggle';
+import { SmartModeTracker } from '@/components/timer/SmartModeTracker';
+import { FocusCamera } from '@/components/timer/FocusCamera';
 import { useShallow } from 'zustand/react/shallow';
 import { useSessionStore } from '@/store/useSessionStore';
 import { useMasteryStore } from '@/store/useMasteryStore';
@@ -31,10 +34,10 @@ export default function TimerScreen() {
       try {
         if (Platform.OS === 'web') {
           if (typeof document !== 'undefined' && document.visibilityState === 'visible') {
-            await activateKeepAwakeAsync();
+            await activateKeepAwakeAsync().catch(() => {});
           }
         } else {
-          await activateKeepAwakeAsync();
+          await activateKeepAwakeAsync().catch(() => {});
         }
       } catch (e) {
         // Ignore keep awake errors
@@ -103,6 +106,7 @@ export default function TimerScreen() {
   }, [defaultBreakMinutes, setBreakDuration]);
 
   const [durationModalVisible, setDurationModalVisible] = useState(false);
+  const [cameraVisible, setCameraVisible] = useState(false);
   const plans = usePlanStore(s => s.plans);
   const [currentMins, setCurrentMins] = useState(() => {
     const now = new Date();
@@ -411,8 +415,9 @@ export default function TimerScreen() {
           <View className="flex-1 pt-6 pb-8 px-6" pointerEvents="box-none">
             
             {/* Top: Smart Mode Toggle */}
-            <View className="items-center justify-start z-10 pt-2 w-full">
+            <View className="items-center justify-start z-10 pt-2 w-full gap-4">
               <TimerModeToggle />
+              <SmartModeToggle onViewPress={() => setCameraVisible(true)} />
             </View>
 
             {/* Smart Routine Banner */}
@@ -489,6 +494,7 @@ export default function TimerScreen() {
                 
                 <View className="mt-8" ref={durationRef} collapsable={false}>
                   <TimerDisplay onOpenModal={() => setDurationModalVisible(true)} />
+                  <SmartModeTracker />
                   {isOverlapping && upcomingRoutine && (
                     <Text className="text-orange-500 text-center text-xs font-bold mt-3">
                       {t('focus.overlapWarning', { 
@@ -520,6 +526,15 @@ export default function TimerScreen() {
           }}
         />
       </View>
+
+      <View className="absolute inset-0" pointerEvents="box-none" style={{ zIndex: 100 }}>
+        <FocusCamera 
+          isVisible={cameraVisible} 
+          onClose={() => setCameraVisible(false)} 
+          onMaximize={() => setCameraVisible(true)}
+        />
+      </View>
+
       <TimerDurationModal visible={durationModalVisible} onClose={() => setDurationModalVisible(false)} />
     </SafeAreaView>
   );

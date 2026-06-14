@@ -32,7 +32,7 @@ const en = {
     },
     mastery: {
       title: 'Goals',
-      subtitle: 'The journey to 10,000 hours of deep work.',
+      subtitle: 'Master your skills. Conquer your projects.',
       hours: 'Hours',
       dailyTarget: 'Daily Target',
       min: 'min',
@@ -366,7 +366,7 @@ const id: TranslationDictionary = {
     },
     mastery: {
       title: 'Goals',
-      subtitle: 'Perjalanan menuju 10.000 jam kerja mendalam.',
+      subtitle: 'Kuasai keahlian Anda. Taklukkan proyek Anda.',
       hours: 'Jam',
       dailyTarget: 'Target Harian',
       min: 'mnt',
@@ -700,7 +700,7 @@ const zh: TranslationDictionary = {
   },
   mastery: {
     title: '目标',
-    subtitle: '通向一万小时深度工作的旅程。',
+    subtitle: '掌握您的技能。征服您的项目。',
     hours: '小时',
     dailyTarget: '每日目标',
     min: '分钟',

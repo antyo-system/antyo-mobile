@@ -2,24 +2,31 @@
   "expo": {
     "name": "ANTYO Focus",
     "slug": "antyomobile",
-    "version": "1.11.0",
+    "version": "1.12.4",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "antyomobile",
     "userInterfaceStyle": "automatic",
     "ios": {
       "icon": "./assets/expo.icon",
-      "bundleIdentifier": "com.antyo.focus"
+      "bundleIdentifier": "com.antyo.focus",
+      "infoPlist": {
+        "NSCameraUsageDescription": "Allow ANTYO Focus to access your camera to passively track your focus."
+      }
     },
     "android": {
-      "versionCode": 19,
+      "versionCode": 20,
       "softwareKeyboardLayoutMode": "pan",
       "adaptiveIcon": {
         "backgroundColor": "#ffffff",
         "foregroundImage": "./assets/images/android-icon-foreground.png"
       },
       "predictiveBackGestureEnabled": false,
-      "package": "com.antyo.focus"
+      "package": "com.antyo.focus",
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.RECORD_AUDIO"
+      ]
     },
     "web": {
       "output": "static",
@@ -47,7 +54,23 @@
           "organization": "antyo"
         }
       ],
-      "@sentry/react-native"
+      "@sentry/react-native",
+      [
+        "react-native-android-widget",
+        {
+          "widgets": [
+            {
+              "name": "TimerWidget",
+              "label": "ANTYO Timer",
+              "minWidth": "110dp",
+              "minHeight": "110dp",
+              "description": "Active timer focus",
+              "previewImage": "./assets/images/icon.png"
+            }
+          ]
+        }
+      ],
+      "./node_modules/@heojeongbo/expo-live-activity/plugin/build/index.js"
     ],
     "experiments": {
       "typedRoutes": true,

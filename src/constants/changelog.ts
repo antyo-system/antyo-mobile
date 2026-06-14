@@ -5,9 +5,49 @@ export interface ChangelogRelease {
   fixes: string[];
 }
 
-export const APP_VERSION = "1.11.0";
+export const APP_VERSION = "1.12.4";
 
 export const CHANGELOG: ChangelogRelease[] = [
+  {
+    version: "1.12.4",
+    date: new Date().toISOString().split('T')[0],
+    features: [
+      "Custom Native SDK: Rebuilt Smart Mode camera from scratch using Native Android MediaPipe Tasks Vision and CameraX via a Custom Expo Module for extreme performance and pixel-perfect accuracy."
+    ],
+    fixes: []
+  },
+  {
+    version: "1.12.3",
+    date: new Date().toISOString().split('T')[0],
+    features: [
+      "Smart Mode AI Upgrade: Implemented robust Euler Angles tracking (Yaw, Pitch, Roll) and Eye-Open probabilities to intelligently detect distractions like looking away or sleeping."
+    ],
+    fixes: []
+  },
+  {
+    version: "1.12.2",
+    date: new Date().toISOString().split('T')[0],
+    features: [
+      "Smart Mode Accuracy: Added dynamic face distance detection logic to ensure true focus, with visual color feedback on the focus bounding box."
+    ],
+    fixes: []
+  },
+  {
+    version: "1.12.1",
+    date: new Date().toISOString().split('T')[0],
+    features: [],
+    fixes: [
+      "Fixed Smart Mode camera initialization error by correctly installing and configuring the new VisionCamera Worklets package."
+    ]
+  },
+  {
+    version: "1.12.0",
+    date: "2026-06-14",
+    features: [
+      "Computer Vision Real Focus Tracking (Smart Mode): Uses on-device ML through the front camera to passively monitor real focus and actual distraction time without manual intervention."
+    ],
+    fixes: []
+  },
   {
     version: "1.11.0",
     date: "2026-06-13",
